@@ -98,5 +98,6 @@
    - [Thu Oct 15 13:21:36 2026] You send 880 platinum to Orrin.,
    - [Thu Oct 15 13:21:36 2026] You successfully purchased 1 Crashing Wave Earring(s) from Orrin. The item has been sent to your parcels.,
    - [Thu Oct 15 13:21:50 2026] Zenrel Ottonoggin says, 'Greetings, Aldra. You look like you could use a Saturated Marrow.',
-   - [Thu Oct 15 13:22:00 2026] There was insufficient inventory space or container space to perform this move item(s) action.
+   - [Thu Oct 15 13:22:00 2026] There was insufficient inventory space or container space to perform this move item(s) action.,
+  BonusReportLogEvent { BonusKey = item-exp } - [Sat Oct 31 06:36:34 2026] This land is saturated with unstable magic, improving the experience tied to items for all who venture here.
 ]

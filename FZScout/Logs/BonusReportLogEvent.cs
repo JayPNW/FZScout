@@ -9,6 +9,7 @@ record BonusReportLogEvent(BonusKey BonusKey) : LogEvent
     {
         [Prefix + "improving the experiences of all who venture here."] = new("experience"),
         [Prefix + "improving the experience tied to abilities for all who venture here."] = new("aa"),
+        [Prefix + "improving the experience tied to items for all who venture here."] = new("item-exp"),
         [Prefix + "multiplying the loot that may be found here."] = new("loot"),
         [Prefix + "multiplying the coin that may be found here."] = new("coin"),
         [Prefix + "which has drawn many creatures of exceptional rarity here."] = new("rare"),
