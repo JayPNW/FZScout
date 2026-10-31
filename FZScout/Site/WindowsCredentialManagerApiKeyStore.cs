@@ -3,16 +3,17 @@ using System.Text;
 
 namespace FZScout.Site;
 
-/// <summary>Keeps the API key in Windows Credential Manager, never in a file.</summary>
-static class ApiKeyStore
+class WindowsCredentialManagerApiKeyStore : IApiKeyStore
 {
-    const string Target = "FZScout/ApiKey";
+    const string CredentialName = "FZScout/ApiKey";
     const int CredTypeGeneric = 1;
     const int CredPersistLocalMachine = 2;
 
-    public static ApiKey? Load()
+    public string StorageLocationForDisplay => "Windows Credential Manager";
+
+    public ApiKey? Load()
     {
-        if (!CredRead(Target, CredTypeGeneric, 0, out var credentialPointer))
+        if (!CredRead(CredentialName, CredTypeGeneric, 0, out var credentialPointer))
         {
             return null;
         }
@@ -34,7 +35,7 @@ static class ApiKeyStore
         }
     }
 
-    public static void Save(ApiKey apiKey)
+    public void Save(ApiKey apiKey)
     {
         var blob = Encoding.Unicode.GetBytes(apiKey.Value);
         var blobPointer = Marshal.AllocHGlobal(blob.Length);
@@ -44,7 +45,7 @@ static class ApiKeyStore
             var credential = new Credential
             {
                 Type = CredTypeGeneric,
-                TargetName = Target,
+                TargetName = CredentialName,
                 CredentialBlobSize = blob.Length,
                 CredentialBlob = blobPointer,
                 Persist = CredPersistLocalMachine,

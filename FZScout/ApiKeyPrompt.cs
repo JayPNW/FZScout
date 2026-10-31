@@ -10,13 +10,15 @@ namespace FZScout;
 class ApiKeyPrompt
 {
     readonly BonusReporter _reporter;
+    readonly IApiKeyStore _apiKeyStore;
     readonly ConsoleLog _log;
     bool _needed;
     Task<string>? _answer;
 
-    public ApiKeyPrompt(BonusReporter bonusReporter, ConsoleLog log)
+    public ApiKeyPrompt(BonusReporter bonusReporter, IApiKeyStore apiKeyStore, ConsoleLog log)
     {
         this._reporter = bonusReporter;
+        this._apiKeyStore = apiKeyStore;
         this._log = log;
         bonusReporter.ApiKeyNeeded += () => this._needed = true;
     }
@@ -47,13 +49,13 @@ class ApiKeyPrompt
 
         try
         {
-            ApiKeyStore.Save(apiKey);
+            this._apiKeyStore.Save(apiKey);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             this._log.Error($"Couldn't save the API key, so it will only be used until the app closes: {exception.Message}");
         }
-        this._log.Info("API key saved to Windows Credential Manager.");
+        this._log.Info($"API key saved to {this._apiKeyStore.StorageLocationForDisplay}.");
 
         await this._reporter.ChangeApiKeyAsync(apiKey, cancellationToken);
     }
