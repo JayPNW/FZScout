@@ -166,21 +166,13 @@ class LogWatcher(ConsoleLog log)
         return after.Any(file => file.Value > before.GetValueOrDefault(file.Key));
     }
 
-    class WatchedLog(Character character, LogTail tail)
+    record WatchedLog(Character Character, LogTail Tail)
     {
-        public Character Character => character;
-
-        public LogTail Tail => tail;
-
         public bool IsActive { get; set; }
     }
 
-    class ProcessWatch(DateTimeOffset firstSeen, Dictionary<string, long> sizesWhenFirstSeen)
+    record ProcessWatch(DateTimeOffset FirstSeen, Dictionary<string, long> SizesWhenFirstSeen)
     {
-        public DateTimeOffset FirstSeen => firstSeen;
-
-        public Dictionary<string, long> SizesWhenFirstSeen => sizesWhenFirstSeen;
-
         /// <summary>We've either seen a log grow or shown the hint, so there's nothing more to check.</summary>
         public bool Settled { get; set; }
     }

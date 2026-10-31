@@ -58,7 +58,7 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache
         LogErrorAction a => LogErrorAsync(a.Message),
         LogInfoAction a => LogInfoAsync(a.Message),
         DropPendingReportsAction a => DropRetriesAsync(a.Character),
-        ReportBonusAction or ReportNoBonusAction => AttemptAsync(action, now, isRetry: false, cancellationToken),
+        ReportAction a => AttemptAsync(a, now, isRetry: false, cancellationToken),
         _ => throw new ArgumentOutOfRangeException(nameof(action), action, null),
     };
 
@@ -72,13 +72,6 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache
             await AttemptAsync(retry.Action, now, isRetry: true, cancellationToken);
         }
     }
-
-    static (Character Character, BonusReport Report) Describe(ScoutAction action) => action switch
-    {
-        ReportBonusAction a => (a.Character, a.Report),
-        ReportNoBonusAction a => (a.Character, new BonusReport(a.Character.Server, a.Zone, BonusKey.None)),
-        _ => throw new ArgumentOutOfRangeException(nameof(action), action, null),
-    };
 
     Task DropRetriesAsync(Character character)
     {
@@ -102,12 +95,12 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache
         return Task.CompletedTask;
     }
 
-    async Task AttemptAsync(ScoutAction action, DateTimeOffset now, bool isRetry, CancellationToken cancellationToken)
+    async Task AttemptAsync(ReportAction action, DateTimeOffset now, bool isRetry, CancellationToken cancellationToken)
     {
-        var (character, report) = Describe(action);
+        var report = action.Report;
 
         // A newer report for the same character and zone replaces one waiting to retry.
-        this._retries.Remove((character, report.Zone));
+        this._retries.Remove((action.Character, report.Zone));
 
         if (!CanReport(report))
         {
@@ -128,7 +121,7 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache
         }
 
         log.Error($"Couldn't report {report}. {result.Error}");
-        await HandleFailureAsync(result.Outcome, action, character, report, now, isRetry, cancellationToken);
+        await HandleFailureAsync(result.Outcome, action, now, isRetry, cancellationToken);
     }
 
     bool CanReport(BonusReport report)
@@ -174,12 +167,12 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache
         return true;
     }
 
-    Task HandleFailureAsync(ApiOutcome outcome, ScoutAction action, Character character, BonusReport report, DateTimeOffset now, bool isRetry, CancellationToken cancellationToken) => outcome switch
+    Task HandleFailureAsync(ApiOutcome outcome, ReportAction action, DateTimeOffset now, bool isRetry, CancellationToken cancellationToken) => outcome switch
     {
         ApiOutcome.KeyRejected => StopUntilKeyChanges(),
-        ApiOutcome.Banned => StopReportingTo(report.Server),
-        ApiOutcome.NotFound => serverListCache.ReloadAsync(report.Server, now, cancellationToken),
-        ApiOutcome.Unavailable => RetryOnce(action, character, report, now, isRetry),
+        ApiOutcome.Banned => StopReportingTo(action.Report.Server),
+        ApiOutcome.NotFound => serverListCache.ReloadAsync(action.Report.Server, now, cancellationToken),
+        ApiOutcome.Unavailable => RetryOnce(action, now, isRetry),
         _ => Task.CompletedTask,
     };
 
@@ -198,19 +191,19 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache
         return Task.CompletedTask;
     }
 
-    Task RetryOnce(ScoutAction action, Character character, BonusReport report, DateTimeOffset now, bool isRetry)
+    Task RetryOnce(ReportAction action, DateTimeOffset now, bool isRetry)
     {
         if (isRetry)
         {
-            log.Error($"Gave up reporting {report}.");
+            log.Error($"Gave up reporting {action.Report}.");
         }
         else
         {
-            this._retries[(character, report.Zone)] = new PendingRetry(action, now + RetryDelay);
+            this._retries[(action.Character, action.Report.Zone)] = new PendingRetry(action, now + RetryDelay);
         }
 
         return Task.CompletedTask;
     }
 
-    record PendingRetry(ScoutAction Action, DateTimeOffset At);
+    record PendingRetry(ReportAction Action, DateTimeOffset At);
 }

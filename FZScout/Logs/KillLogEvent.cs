@@ -5,6 +5,11 @@ record KillLogEvent : LogEvent
 {
     public static LogEvent? TryParse(string message)
     {
-        return message.StartsWith("You have slain ", StringComparison.Ordinal) ? new KillLogEvent() : (LogEvent?)null;
+        if (message.StartsWith("You have slain ", StringComparison.Ordinal))
+        {
+            return new KillLogEvent();
+        }
+
+        return null;
     }
 }

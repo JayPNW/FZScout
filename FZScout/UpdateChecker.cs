@@ -7,15 +7,8 @@ namespace FZScout;
 /// Releases are numbered 1, 2, 3... and a CI build of release N is <c>N-ci.99</c>, which comes before release N.
 /// Asks GitHub for the latest release (never a prerelease) and tells the user if it is newer than this build.
 /// </summary>
-class UpdateChecker(ConsoleLog log, HttpMessageHandler httpMessageHandler) : IDisposable
+class UpdateChecker(ConsoleLog log, HttpClient httpClient)
 {
-    readonly HttpClient _githubApiHttpClient = new GitHubApiHttpClient(httpMessageHandler);
-
-    public void Dispose()
-    {
-        this._githubApiHttpClient.Dispose();
-    }
-
     public async Task CheckAsync(string? currentVersion, CancellationToken cancellationToken = default)
     {
         if (!TryParseVersion(currentVersion, out var current, out var isPrerelease))
@@ -25,10 +18,9 @@ class UpdateChecker(ConsoleLog log, HttpMessageHandler httpMessageHandler) : IDi
 
         try
         {
-            var latestReleaseApi = new Uri($"/repos/{GitHubRepository.OwnerAndName}/releases/latest", UriKind.Relative);
-
-            using var request = new HttpRequestMessage(HttpMethod.Get, latestReleaseApi);
-            using var response = await this._githubApiHttpClient.SendAsync(request, cancellationToken);
+            using var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.github.com/repos/{GitHubRepository.OwnerAndName}/releases/latest");
+            request.Headers.UserAgent.ParseAdd("FZScout");
+            using var response = await httpClient.SendAsync(request, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
                 return;
@@ -67,17 +59,6 @@ class UpdateChecker(ConsoleLog log, HttpMessageHandler httpMessageHandler) : IDi
         var parts = core.Split('-', 2);
         isPrerelease = parts.Length > 1;
         return int.TryParse(parts[0], out number);
-    }
-
-    class GitHubApiHttpClient : HttpClient
-    {
-        public GitHubApiHttpClient(HttpMessageHandler httpMessageHandler)
-            : base(httpMessageHandler, disposeHandler: false)
-        {
-            BaseAddress = new Uri("https://api.github.com");
-            Timeout = TimeSpan.FromSeconds(30);
-            DefaultRequestHeaders.UserAgent.ParseAdd("FZScout");
-        }
     }
 
     record ReleaseDto(

@@ -15,6 +15,7 @@ public class ScoutTests : IDisposable
     readonly TempFolder _everQuest = new();
     readonly FakeSite _site = new();
     readonly StringWriter _output = new();
+    readonly LogWatcher _watcher;
     readonly Scout _scout;
     readonly string _log;
     List<EqProcess> _processes;
@@ -32,7 +33,8 @@ public class ScoutTests : IDisposable
         var serverListCache = new ServerListCache(fangbreakerZoneClient, log);
         var bonusReporter = new BonusReporter(fangbreakerZoneClient, serverListCache, log);
         bonusReporter.SetApiKey(new ApiKey("fz_live_test"));
-        this._scout = new Scout(new LogWatcher(log), serverListCache, bonusReporter, () => this._processes);
+        this._watcher = new LogWatcher(log);
+        this._scout = new Scout(this._watcher, serverListCache, bonusReporter, () => this._processes);
     }
 
     static CancellationToken Cancel => TestContext.Current.CancellationToken;
@@ -100,12 +102,12 @@ public class ScoutTests : IDisposable
         await Tick(29);
         Write("You have entered Befallen.");
         await Tick(29);
-        Assert.Empty(this._scout.Watcher.ActiveLogs);
+        Assert.Empty(this._watcher.ActiveLogs);
 
         await Tick(30);
         Write("You have entered Befallen.");
         await Tick(31);
-        Assert.Equal([this._log], this._scout.Watcher.ActiveLogs);
+        Assert.Equal([this._log], this._watcher.ActiveLogs);
     }
 
     void Write(string message) => File.AppendAllText(this._log, $"[Thu Oct 29 12:00:00 2026] {message}\r\n");

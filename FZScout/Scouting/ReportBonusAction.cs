@@ -2,4 +2,4 @@
 
 namespace FZScout.Scouting;
 
-record ReportBonusAction(Character Character, BonusReport Report) : ScoutAction;
+record ReportBonusAction(Character Character, BonusReport Report) : ReportAction(Character, Report);

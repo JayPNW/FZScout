@@ -17,7 +17,7 @@ public class UpdateCheckerTests
     {
         var output = new StringWriter();
         var handler = new StubHttpHandler(HttpStatusCode.OK, $$"""{"tag_name":"v{{latest}}","html_url":"https://example.test/r"}""");
-        using var checker = new UpdateChecker(new ConsoleLog(output, TimeProvider.System), handler);
+        var checker = new UpdateChecker(new ConsoleLog(output, TimeProvider.System), new HttpClient(handler));
 
         await checker.CheckAsync(current, TestContext.Current.CancellationToken);
 
@@ -28,7 +28,7 @@ public class UpdateCheckerTests
     public async Task StaysQuietWhenGitHubIsUnreachable()
     {
         var output = new StringWriter();
-        using var checker = new UpdateChecker(new ConsoleLog(output, TimeProvider.System), new StubHttpHandler(new HttpRequestException()));
+        var checker = new UpdateChecker(new ConsoleLog(output, TimeProvider.System), new HttpClient(new StubHttpHandler(new HttpRequestException())));
 
         await checker.CheckAsync("1", TestContext.Current.CancellationToken);
 

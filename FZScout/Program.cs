@@ -24,13 +24,13 @@ static class Program
         var version = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
         log.Info($"FZScout v{version}");
 
-        using var httpClientHandler = new HttpClientHandler();
-        using var httpClient = new HttpClient(httpClientHandler, disposeHandler: false) { Timeout = TimeSpan.FromSeconds(30) };
+        using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
         var fangbreakerZoneClient = new FangbreakerZoneClient(httpClient);
         var serverListCache = new ServerListCache(fangbreakerZoneClient, log);
         var bonusReporter = new BonusReporter(fangbreakerZoneClient, serverListCache, log);
         var prompt = new ApiKeyPrompt(bonusReporter, log);
-        var scout = new Scout(new LogWatcher(log), serverListCache, bonusReporter, EqProcesses.Find);
+        var logWatcher = new LogWatcher(log);
+        var scout = new Scout(logWatcher, serverListCache, bonusReporter, EqProcesses.Find);
 
         using var cancel = new CancellationTokenSource();
         Console.CancelKeyPress += (_, e) =>
@@ -39,11 +39,10 @@ static class Program
             cancel.Cancel();
         };
 
-        using var updateChecker = new UpdateChecker(log, httpClientHandler);
-        await updateChecker.CheckAsync(version, cancel.Token);
+        await new UpdateChecker(log, httpClient).CheckAsync(version, cancel.Token);
         await bonusReporter.ChangeApiKeyAsync(ApiKeyStore.Load(), cancel.Token);
         await TickAsync(scout, timeProvider, log, cancel.Token);
-        PrintWatchedLogs(scout.Watcher, log);
+        PrintWatchedLogs(logWatcher, log);
         log.Info("Press Ctrl+C to exit.");
 
         using var timer = new PeriodicTimer(TimeSpan.FromSeconds(1), timeProvider);

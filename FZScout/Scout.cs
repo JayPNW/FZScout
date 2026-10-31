@@ -10,8 +10,6 @@ class Scout(LogWatcher logWatcher, ServerListCache serverListCache, BonusReporte
     readonly Dictionary<Character, CharacterScout> _characters = [];
     DateTimeOffset? _nextScan;
 
-    public LogWatcher Watcher => logWatcher;
-
     /// <summary>Call about once a second.</summary>
     public async Task TickAsync(DateTimeOffset now, CancellationToken cancellationToken = default)
     {

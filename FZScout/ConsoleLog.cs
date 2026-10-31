@@ -4,11 +4,6 @@
 /// <param name="write">Writes one line, in a color if one is given.</param>
 class ConsoleLog(Action<string, ConsoleColor?> write, TimeProvider timeProvider)
 {
-    public const ConsoleColor ErrorColor = ConsoleColor.Red;
-
-    public const ConsoleColor HilightColor = ConsoleColor.Yellow;
-    public const ConsoleColor WarningColor = ConsoleColor.Cyan;
-
     /// <summary>Plain text, for tests.</summary>
     public ConsoleLog(TextWriter writer, TimeProvider timeProvider)
         : this((line, _) => writer.WriteLine(line), timeProvider)
@@ -20,11 +15,11 @@ class ConsoleLog(Action<string, ConsoleColor?> write, TimeProvider timeProvider)
     public void Info(string message) => Write(message, null);
 
     /// <summary>Something worked that the user cares about, like a bonus uploaded to the site.</summary>
-    public void Success(string message) => Write(message, HilightColor);
+    public void Success(string message) => Write(message, ConsoleColor.Yellow);
 
-    public void Warning(string message) => Write($"WARNING: {message}", WarningColor);
+    public void Warning(string message) => Write($"WARNING: {message}", ConsoleColor.Cyan);
 
-    public void Error(string message) => Write($"ERROR: {message}", ErrorColor);
+    public void Error(string message) => Write($"ERROR: {message}", ConsoleColor.Red);
 
     static void WriteToConsole(string line, ConsoleColor? color)
     {
