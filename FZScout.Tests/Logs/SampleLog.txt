@@ -1,0 +1,100 @@
+[Mon Sep 14 14:03:30 2026] This land is saturated with unstable magic, improving the experience tied to abilities for all who venture here.
+[Wed Sep 16 17:00:12 2026] You have entered Tirranun's Delve: Grounding the Drakes.
+[Wed Sep 16 17:27:06 2026] You have entered Lavaspinner's Lair: The Drake Menace.
+[Fri Sep 18 17:08:01 2026] Corvin punches an elite kyv hunter for 107 points of damage.
+[Fri Sep 18 17:08:01 2026] Corvin crushes an elite kyv hunter for 156 points of damage.
+[Fri Sep 18 17:08:02 2026] Dunmor has been slain by an elite kyv hunter!
+[Sun Sep 20 11:46:05 2026] This land is saturated with unstable magic, which has drawn many creatures of exceptional rarity here.
+[Sun Sep 20 16:55:58 2026] This land is saturated with unstable magic, enhancing the benefits of offerings for all who venture here.
+[Sun Sep 20 19:15:20 2026] You have entered an area where Bind Affinity is allowed.
+[Mon Sep 21 19:17:49 2026] This land is saturated with unstable magic, improving the rate at which proficiency is gained while adventuring here.
+[Sat Sep 26 16:32:29 2026] You have entered an area where levitation effects do not function.
+[Sun Sep 27 09:53:45 2026] This land is saturated with unstable magic, which has drawn numerous mundane creatures here.
+[Mon Sep 28 20:31:00 2026] This land is saturated with unstable magic, multiplying the loot that may be found here.
+[Tue Oct 06 16:54:40 2026] This land is saturated with unstable magic, magnifying the recognition one may receive from their adventures here.
+[Sat Oct 10 23:12:30 2026] A War Wraith's corpse stumbles, falling lifelessly to the ground, its wings tattered and torn from the long battle.
+[Sat Oct 10 23:12:30 2026] You hit a War Wraith for 3635 points of fire damage by Firebolt of Tallon.
+[Sat Oct 10 23:12:30 2026] A War Wraith's armor is pierced by a flaming bolt.
+[Sat Oct 10 23:12:30 2026] You have slain a War Wraith!
+[Sat Oct 10 23:12:32 2026] Eswin healed himself over time for 306 hit points by Supernal Cleansing.
+[Sat Oct 10 23:13:31 2026] You have slain Diaku Guardian!
+[Sun Oct 11 15:28:58 2026] This land is saturated with unstable magic, multiplying the coin that may be found here.
+[Wed Oct 14 23:52:55 2026] A dragorn commoner was slain by Fenwick!
+[Wed Oct 14 23:56:41 2026] Garth tells General:1, 'goodnight all'
+[Wed Oct 14 23:57:08 2026] The mystic symbol fades.
+[Wed Oct 14 23:57:28 2026] --a The Great Father's Fall Page 2 was left on a dragorn commoner's corpse.--
+[Thu Oct 15 00:00:17 2026] Fonts of unstable magic are erupting and receding in response to some nameless power. The magic is cascading throughout Norrath and into the Planes beyond. Hunt for the lands that have been most recently saturated with this magic to reap their many and varied resources.
+[Thu Oct 15 00:00:37 2026] This land is saturated with unstable magic, improving the experiences of all who venture here.
+[Thu Oct 15 00:00:39 2026] Hollis tells General:1, 'dl rare'
+[Thu Oct 15 00:01:02 2026] Brisa tells General:1, 'Bloodfields XP'
+[Thu Oct 15 00:01:06 2026] Brisa begins casting Origin.
+[Thu Oct 15 00:01:13 2026] Ivy tells General:1, 'Valor exp'
+[Thu Oct 15 00:01:16 2026] Jory tells General:1, 'KT respawn'
+[Thu Oct 15 00:01:18 2026] You begin casting Origin.
+[Thu Oct 15 00:01:21 2026] Brisa fades away.
+[Thu Oct 15 00:01:34 2026] LOADING, PLEASE WAIT...
+[Thu Oct 15 00:01:43 2026] Kael tells General:1, 'Paw = Nothing'
+[Thu Oct 15 00:01:47 2026] You have entered Ak'Anon.
+[Thu Oct 15 00:01:47 2026] Your whirligig flyer zips off with metallic buzzing.
+[Thu Oct 15 00:01:49 2026] Channels: 1=General(126), 2=Magician(12)
+[Thu Oct 15 00:01:49 2026] Channels: 1=General(126), 2=Magician(12), 3=Faydwer(1)
+[Thu Oct 15 00:04:46 2026] It will take you about 30 seconds to prepare your camp.
+[Thu Oct 15 00:04:47 2026] You abandon your preparations to camp.
+[Thu Oct 15 00:04:51 2026] This land is saturated with unstable magic, enhancing the potency of any offerings made here.
+[Thu Oct 15 00:04:54 2026] It will take you about 30 seconds to prepare your camp.
+[Thu Oct 15 00:04:58 2026] It will take about 25 more seconds to prepare your camp.
+[Thu Oct 15 00:05:03 2026] It will take about 20 more seconds to prepare your camp.
+[Thu Oct 15 00:05:08 2026] It will take about 15 more seconds to prepare your camp.
+[Thu Oct 15 00:05:13 2026] It will take about 10 more seconds to prepare your camp.
+[Thu Oct 15 00:05:18 2026] It will take about 5 more seconds to prepare your camp.
+[Thu Oct 15 00:05:59 2026] You are encumbered!
+[Thu Oct 15 13:10:34 2026] You are not currently assigned to an adventure.
+[Thu Oct 15 13:10:42 2026] Channels: 1=General(241), 2=Magician(24), 3=Faydwer(1)
+[Thu Oct 15 13:10:44 2026] Welcome to EverQuest!
+[Thu Oct 15 13:10:44 2026] You have entered Ak'Anon.
+[Thu Oct 15 13:10:45 2026] Your legacy server experience bonus for reaching the maximum level has increased to 70%!
+[Thu Oct 15 13:10:50 2026] Lark tells General:1, 'divine int is just the best '
+[Thu Oct 15 13:12:05 2026] Your heroism fades.
+[Thu Oct 15 13:13:39 2026] You were hit by non-melee for 3 damage.
+[Thu Oct 15 13:13:39 2026] YOU were injured by falling.
+[Thu Oct 15 13:13:51 2026] Zenrel Ottonoggin says, 'Greetings, Aldra. You look like you could use a Golden Ember Powder.'
+[Thu Oct 15 13:13:51 2026] This land is saturated with unstable magic, enhancing the potency of any offerings made here.
+[Thu Oct 15 13:14:13 2026] Tamno Shifa told you, 'A fine donation!  You'll receive 13 favor for that Emerald.'
+[Thu Oct 15 13:14:22 2026] You no longer have a target.
+[Thu Oct 15 13:14:23 2026] Tamno Shifa told you, 'We graciously accept your Emerald as tribute, thank you!'
+[Thu Oct 15 13:14:23 2026] You have received 45 favor for your tribute!
+[Thu Oct 15 13:14:52 2026] Your Magician equipment set has been saved.
+[Thu Oct 15 13:14:58 2026] You are not currently assigned to an adventure.
+[Thu Oct 15 13:15:02 2026] You have left all channels
+[Thu Oct 15 13:15:02 2026] Autojoining channels...
+[Thu Oct 15 13:15:03 2026] Channels: 1=General(242), 2=Druid(12), 3=Faydwer(1)
+[Thu Oct 15 13:15:03 2026] Channels: 1=General(242), 2=Druid(12), 3=Faydwer(1)
+[Thu Oct 15 13:15:03 2026] You successfully loaded your Druid equipment set.
+[Thu Oct 15 13:17:31 2026] You have scrounged up Pod of Water.
+[Thu Oct 15 13:17:40 2026] Tamno Shifa told you, 'I am not the one to whom you owe allegiance.'
+[Thu Oct 15 13:17:52 2026] Your Druid equipment set has been saved.
+[Thu Oct 15 13:17:57 2026] You are not currently assigned to an adventure.
+[Thu Oct 15 13:18:01 2026] You have left all channels
+[Thu Oct 15 13:18:02 2026] Channels: 1=General(250), 2=Enchanter(13), 3=Faydwer(1)
+[Thu Oct 15 13:18:03 2026] You successfully loaded your Enchanter equipment set.
+[Thu Oct 15 13:19:16 2026] Tamno Shifa told you, 'I cannot accept your Waterflow Stone as a tribute item.'
+[Thu Oct 15 13:19:25 2026] Tamno Shifa told you, 'A fine donation!  You'll receive 125 favor for that Ruby.'
+[Thu Oct 15 13:19:28 2026] Tamno Shifa told you, 'We graciously accept your Ruby as tribute, thank you!'
+[Thu Oct 15 13:19:28 2026] You have received 429 favor for your tribute!
+[Thu Oct 15 13:19:30 2026] Tamno Shifa told you, 'A fine donation!  You'll receive 50 favor for that Fire Opal.'
+[Thu Oct 15 13:19:34 2026] Tamno Shifa told you, 'We graciously accept your Fire Opal as tribute, thank you!'
+[Thu Oct 15 13:19:34 2026] You have received 343 favor for your tribute!
+[Thu Oct 15 13:19:48 2026] Mira tells General:1, 'wtb krono 150k pst'
+[Thu Oct 15 13:20:14 2026] You no longer have a target.
+[Thu Oct 15 13:20:16 2026] To begin searching for items, select a search parameter from one of the drop down menus or type in an item name in the edit box and click Find.
+[Thu Oct 15 13:20:38 2026] You have received a new parcel delivery containing 1 Greatstaff of Thunder from Nessa!
+[Thu Oct 15 13:20:38 2026] You send 11 platinum to Nessa.
+[Thu Oct 15 13:20:38 2026] You successfully purchased 1 Greatstaff of Thunder(s) from Nessa. The item has been sent to your parcels.
+[Thu Oct 15 13:21:23 2026] You have received a new parcel delivery containing 1 Earring of Thunder from Orrin!
+[Thu Oct 15 13:21:23 2026] You send 3300 platinum to Orrin.
+[Thu Oct 15 13:21:23 2026] You successfully purchased 1 Earring of Thunder(s) from Orrin. The item has been sent to your parcels.
+[Thu Oct 15 13:21:36 2026] You have received a new parcel delivery containing 1 Crashing Wave Earring from Orrin!
+[Thu Oct 15 13:21:36 2026] You send 880 platinum to Orrin.
+[Thu Oct 15 13:21:36 2026] You successfully purchased 1 Crashing Wave Earring(s) from Orrin. The item has been sent to your parcels.
+[Thu Oct 15 13:21:50 2026] Zenrel Ottonoggin says, 'Greetings, Aldra. You look like you could use a Saturated Marrow.'
+[Thu Oct 15 13:22:00 2026] There was insufficient inventory space or container space to perform this move item(s) action.

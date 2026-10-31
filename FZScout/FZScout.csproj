@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>FZScout</RootNamespace>
+    <Product>Resource Hunter Bonus Scout</Product>
+    <!-- The release being worked on: a strictly incrementing integer. The release workflow publishes it, then bumps it. -->
+    <Version>2</Version>
+  </PropertyGroup>
+
+  <!-- Published as a self-contained, single-file x64 exe. Only when publishing, so the tests can reference this project. -->
+  <PropertyGroup Condition="'$(_IsPublishing)' == 'true'">
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <!-- Nothing next to the exe: symbols go inside it, and the XML docs exist only for the analyzers. -->
+    <DebugType>embedded</DebugType>
+    <PublishDocumentationFile>false</PublishDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="FZScout.Tests" />
+  </ItemGroup>
+
+</Project>
