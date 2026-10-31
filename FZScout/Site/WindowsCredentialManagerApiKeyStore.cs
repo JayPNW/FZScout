@@ -3,17 +3,17 @@ using System.Text;
 
 namespace FZScout.Site;
 
-class WindowsCredentialManagerApiKeyStore : IApiKeyStore
+class WindowsCredentialManagerApiKeyStore(string credentialName = "FZScout/ApiKey") : IApiKeyStore
 {
-    const string CredentialName = "FZScout/ApiKey";
     const int CredTypeGeneric = 1;
     const int CredPersistLocalMachine = 2;
+    const int ErrorNotFound = 1168;
 
     public string StorageLocationForDisplay => "Windows Credential Manager";
 
     public ApiKey? Load()
     {
-        if (!CredRead(CredentialName, CredTypeGeneric, 0, out var credentialPointer))
+        if (!CredRead(credentialName, CredTypeGeneric, 0, out var credentialPointer))
         {
             return null;
         }
@@ -45,7 +45,7 @@ class WindowsCredentialManagerApiKeyStore : IApiKeyStore
             var credential = new Credential
             {
                 Type = CredTypeGeneric,
-                TargetName = CredentialName,
+                TargetName = credentialName,
                 CredentialBlobSize = blob.Length,
                 CredentialBlob = blobPointer,
                 Persist = CredPersistLocalMachine,
@@ -62,11 +62,22 @@ class WindowsCredentialManagerApiKeyStore : IApiKeyStore
         }
     }
 
+    public void Delete()
+    {
+        if (!CredDelete(credentialName, CredTypeGeneric, 0) && Marshal.GetLastWin32Error() != ErrorNotFound)
+        {
+            throw new InvalidOperationException($"Couldn't delete the API key from Windows Credential Manager (error {Marshal.GetLastWin32Error()}).");
+        }
+    }
+
     [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "CredReadW")]
     static extern bool CredRead(string target, int type, int flags, out IntPtr credential);
 
     [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "CredWriteW")]
     static extern bool CredWrite(ref Credential credential, int flags);
+
+    [DllImport("advapi32.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "CredDeleteW")]
+    static extern bool CredDelete(string target, int type, int flags);
 
     [DllImport("advapi32.dll")]
     static extern void CredFree(IntPtr buffer);

@@ -37,6 +37,24 @@ public abstract class ApiKeyStoreContract
     }
 
     [Fact]
+    public void LoadsNothingAfterADelete()
+    {
+        this.Store.Save(new ApiKey("fz_live_saved"));
+
+        this.Store.Delete();
+
+        Assert.Null(this.Store.Load());
+    }
+
+    [Fact]
+    public void DeletingWithNothingSavedIsFine()
+    {
+        this.Store.Delete();
+
+        Assert.Null(this.Store.Load());
+    }
+
+    [Fact]
     public void SaysWhereTheKeyIsKept()
     {
         Assert.False(string.IsNullOrWhiteSpace(this.Store.StorageLocationForDisplay));
