@@ -12,14 +12,16 @@ class ApiKeyPrompt
     readonly BonusReporter _reporter;
     readonly IApiKeyStore _apiKeyStore;
     readonly ConsoleLog _log;
+    readonly Func<CancellationToken, Task<string>> _readApiKeyAsync;
     bool _needed;
     Task<string>? _answer;
 
-    public ApiKeyPrompt(BonusReporter bonusReporter, IApiKeyStore apiKeyStore, ConsoleLog log)
+    public ApiKeyPrompt(BonusReporter bonusReporter, IApiKeyStore apiKeyStore, ConsoleLog log, Func<CancellationToken, Task<string>> readApiKeyAsync)
     {
         this._reporter = bonusReporter;
         this._apiKeyStore = apiKeyStore;
         this._log = log;
+        this._readApiKeyAsync = readApiKeyAsync;
         bonusReporter.ApiKeyNeeded += () => this._needed = true;
     }
 
@@ -30,7 +32,7 @@ class ApiKeyPrompt
         {
             this._needed = false;
             this._log.Info("Paste your API key. (For help see https://jaypnw.github.io/FZScout/create-api-key.html):");
-            this._answer = Task.Run(ReadHidden, cancellationToken);
+            this._answer = this._readApiKeyAsync(cancellationToken);
         }
 
         if (this._answer is not { IsCompleted: true })
@@ -58,36 +60,5 @@ class ApiKeyPrompt
         this._log.Info($"API key saved to {this._apiKeyStore.StorageLocationForDisplay}.");
 
         await this._reporter.ChangeApiKeyAsync(apiKey, cancellationToken);
-    }
-
-    /// <summary>Reads a line, echoing * for each character so the key doesn't end up on screen.</summary>
-    static string ReadHidden()
-    {
-        if (Console.IsInputRedirected)
-        {
-            return Console.ReadLine() ?? string.Empty;
-        }
-
-        var text = new System.Text.StringBuilder();
-        while (true)
-        {
-            var key = Console.ReadKey(intercept: true);
-            if (key.Key == ConsoleKey.Enter)
-            {
-                Console.WriteLine();
-                return text.ToString();
-            }
-
-            if (key.Key == ConsoleKey.Backspace && text.Length > 0)
-            {
-                text.Length--;
-                Console.Write("\b \b");
-            }
-            else if (!char.IsControl(key.KeyChar))
-            {
-                text.Append(key.KeyChar);
-                Console.Write('*');
-            }
-        }
     }
 }

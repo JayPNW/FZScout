@@ -29,7 +29,7 @@ static class Program
         var serverListCache = new ServerListCache(fangbreakerZoneClient, log);
         var bonusReporter = new BonusReporter(fangbreakerZoneClient, serverListCache, log);
         var apiKeyStore = new WindowsCredentialManagerApiKeyStore();
-        var prompt = new ApiKeyPrompt(bonusReporter, apiKeyStore, log);
+        var prompt = new ApiKeyPrompt(bonusReporter, apiKeyStore, log, HiddenConsoleInput.ReadLineInBackgroundAsync);
         var logWatcher = new LogWatcher(log);
         var scout = new Scout(logWatcher, serverListCache, bonusReporter, EqProcesses.Find);
 
