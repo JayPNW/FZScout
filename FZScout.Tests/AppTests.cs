@@ -36,9 +36,9 @@ public class AppTests : IDisposable
 
         this._app = new App(new AppDependencies(
             this._userInput,
+            new ConsoleReporter(this._output, this._time),
             GetVersion: () => "1",
             this._time,
-            new ConsoleReporter(this._output, this._time),
             TryClaimSingleInstance: this._singleInstance.TryClaim,
             this._apiKeyStore,
             this._site.Client,

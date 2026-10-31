@@ -17,9 +17,9 @@ static class Program
         var timeProvider = TimeProvider.System;
         return new App(new AppDependencies(
             new ConsoleUserInput(),
+            new ConsoleReporter(timeProvider),
             GetVersion: GetVersion,
             timeProvider,
-            new ConsoleReporter(timeProvider),
             TryClaimSingleInstance: SingleInstance.TryClaim,
             ApiKeyStore: new WindowsCredentialManagerApiKeyStore(),
             new FangbreakerZoneClient(),

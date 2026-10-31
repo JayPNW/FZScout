@@ -5,9 +5,9 @@ namespace FZScout;
 
 record AppDependencies(
     IUserInput UserInput,
+    ConsoleReporter Log,
     Func<string?> GetVersion,
     TimeProvider TimeProvider,
-    ConsoleReporter Log,
     Func<IDisposable?> TryClaimSingleInstance,
     IApiKeyStore ApiKeyStore,
     FangbreakerZoneClient FangbreakerZoneClient,
