@@ -5,9 +5,17 @@ using System.Text.Json;
 namespace FZScout.Site;
 
 /// <summary>Talks to fangbreaker.zone and frostreaver.zone. See InternalDocumentation/API.md.</summary>
-class FangbreakerZoneClient(HttpClient httpClient)
+class FangbreakerZoneClient(HttpMessageHandler httpMessageHandler)
 {
     static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
+
+    readonly HttpClient _httpClient = new(httpMessageHandler) { Timeout = TimeSpan.FromSeconds(30) };
+
+    /// <summary>Talks to the real sites.</summary>
+    public FangbreakerZoneClient()
+        : this(new HttpClientHandler())
+    {
+    }
 
     public async Task<ApiResult<IReadOnlySet<BonusKey>>> GetBonusTypesAsync(Server server, CancellationToken cancellationToken = default)
     {
@@ -48,7 +56,7 @@ class FangbreakerZoneClient(HttpClient httpClient)
         var description = $"{request.Method} {request.RequestUri}";
         try
         {
-            using var response = await httpClient.SendAsync(request, cancellationToken);
+            using var response = await this._httpClient.SendAsync(request, cancellationToken);
             var body = await response.Content.ReadAsStringAsync(cancellationToken);
             if (response.StatusCode != HttpStatusCode.OK)
             {

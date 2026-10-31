@@ -25,7 +25,7 @@ static class Program
         log.Info($"FZScout v{version}");
 
         using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
-        var fangbreakerZoneClient = new FangbreakerZoneClient(httpClient);
+        var fangbreakerZoneClient = new FangbreakerZoneClient();
         var serverListCache = new ServerListCache(fangbreakerZoneClient, log);
         var bonusReporter = new BonusReporter(fangbreakerZoneClient, serverListCache, log);
         var apiKeyStore = new WindowsCredentialManagerApiKeyStore();

@@ -15,7 +15,7 @@ class FakeSite : HttpMessageHandler
     /// <summary>Each request as <c>GET /path</c> or <c>POST /path {body}</c>.</summary>
     public List<string> Requests { get; } = [];
 
-    public FangbreakerZoneClient Client => new(new HttpClient(this));
+    public FangbreakerZoneClient Client => new(this);
 
     /// <summary>Fails every request to a route like <c>POST /api/client/bonuses</c> with this status.</summary>
     public void Fail(string route, HttpStatusCode httpStatusCode) => this._failures[route] = httpStatusCode;

@@ -110,7 +110,7 @@ public class FangbreakerZoneClientTests
     public async Task NetworkFailureIsUnavailable()
     {
         var handler = new StubHttpHandler(new HttpRequestException("No such host is known."));
-        var fangbreakerZoneClient = new FangbreakerZoneClient(new HttpClient(handler));
+        var fangbreakerZoneClient = new FangbreakerZoneClient(handler);
 
         var result = await fangbreakerZoneClient.GetBonusTypesAsync(Server.Fangbreaker, TestContext.Current.CancellationToken);
 
@@ -139,6 +139,6 @@ public class FangbreakerZoneClientTests
     static (FangbreakerZoneClient Client, StubHttpHandler Handler) Create(HttpStatusCode httpStatusCode, string body)
     {
         var handler = new StubHttpHandler(httpStatusCode, body);
-        return (new FangbreakerZoneClient(new HttpClient(handler)), handler);
+        return (new FangbreakerZoneClient(handler), handler);
     }
 }

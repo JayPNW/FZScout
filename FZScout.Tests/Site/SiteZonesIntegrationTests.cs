@@ -10,8 +10,7 @@ public class SiteZonesIntegrationTests
     [Fact]
     public async Task KnownZones()
     {
-        using var httpClient = new HttpClient();
-        var fangbreakerZoneClient = new FangbreakerZoneClient(httpClient);
+        var fangbreakerZoneClient = new FangbreakerZoneClient();
 
         var lists = new List<(Server Server, IReadOnlySet<string> Zones)>();
         foreach (var server in Server.All)
