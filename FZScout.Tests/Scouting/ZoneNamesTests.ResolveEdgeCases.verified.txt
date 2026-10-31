@@ -1,0 +1,19 @@
+﻿| Befallen                                 | typical                    | Befallen |
+| Clan Crushbone                           | typical                    | Crushbone |
+| Nagafen's Lair                           | typical                    | Nagafen's Lair (SolB) |
+| Chardok: The Halls of Betrayal           | typical                    | Halls of Betrayal |
+| Lavaspinner's Lair: Lavaspinner's Locals | typical                    | Lavaspinner's Lair |
+| Lavaspinner's Lair: The Drake Menace     | typical                    | Lavaspinner's Lair |
+| The Plane of Tranquility                 | typical                    | <no bonus> |
+| The Plane of Knowledge                   | typical                    | <no bonus> |
+| The Guild Lobby                          | typical                    | <no bonus> |
+| Guild Hall                               | typical                    | <no bonus> |
+| The Halls of Honor                       | typical                    | <unknown> |
+| The Burning Woods                        | typical                    | <unknown> |
+| The Halls of Honor                       | site has Halls of Honor    | Halls of Honor |
+| Nexus                                    | site has The Nexus         | The Nexus |
+| The Deep                                 | site has Deep and The Deep | The Deep |
+| The City of Guk                          | site has Upper Guk         | Upper Guk |
+| Chardok: The Halls of Betrayal           | site has only Chardok      | <unknown> |
+| Befallen                                 | no site list               | <unresolved> |
+| The Guild Lobby                          | no site list               | <no bonus> |

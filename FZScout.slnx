@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="FZScout/FZScout.csproj" />
+  <Project Path="FZScout.Tests/FZScout.Tests.csproj" />
+</Solution>

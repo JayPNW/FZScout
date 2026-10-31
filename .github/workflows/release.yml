@@ -1,0 +1,29 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+      - run: ./build-and-test.cmd
+      - name: Publish release
+        run: ./scripts/release.ps1 -GitHubToken ${{ secrets.GITHUB_TOKEN }}
+      - name: Bump to the next version
+        shell: bash
+        run: |
+          csproj=FZScout/FZScout.csproj
+          current=$(sed -n 's|.*<Version>\([0-9]*\)</Version>.*|\1|p' "$csproj")
+          sed -i "s|<Version>$current</Version>|<Version>$((current + 1))</Version>|" "$csproj"
+          git config user.name "Github Actions"
+          git config user.email actions@github.com
+          git commit -am "bump version after release $current"
+          git pull --rebase
+          git push
