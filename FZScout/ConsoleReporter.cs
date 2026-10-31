@@ -10,7 +10,11 @@ class ConsoleReporter(Action<string, ConsoleColor?> write, TimeProvider timeProv
     {
     }
 
-    public static ConsoleReporter ForConsole(TimeProvider timeProvider) => new(WriteToConsole, timeProvider);
+    /// <summary>Colored, to the real console.</summary>
+    public ConsoleReporter(TimeProvider timeProvider)
+        : this(WriteToConsole, timeProvider)
+    {
+    }
 
     public void Info(string message) => Write(message, null);
 
