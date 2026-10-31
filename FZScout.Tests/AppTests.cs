@@ -39,7 +39,7 @@ public class AppTests : IDisposable
             ExitRequested: Cancel,
             GetVersion: () => "1",
             this._time,
-            new ConsoleLog(this._output, this._time),
+            new ConsoleReporter(this._output, this._time),
             TryClaimSingleInstance: this._singleInstance.TryClaim,
             WaitForAnyKey: () => this._timesWaitedForAnyKey++,
             ReadApiKeyAsync: TypeApiKeyAsync,

@@ -4,7 +4,7 @@
 /// Watches the logs of running EverQuest processes and turns new lines into events.
 /// See "Finding logs" and "Logging hint" in InternalDocumentation/SPEC.md.
 /// </summary>
-class LogWatcher(ConsoleLog log)
+class LogWatcher(ConsoleReporter log)
 {
     public static readonly TimeSpan ScanInterval = TimeSpan.FromSeconds(30);
 

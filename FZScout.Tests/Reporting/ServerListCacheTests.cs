@@ -17,7 +17,7 @@ public class ServerListCacheTests
 
     public ServerListCacheTests()
     {
-        this._cache = new ServerListCache(this._site.Client, new ConsoleLog(this._output, new FakeTimeProvider(Start)));
+        this._cache = new ServerListCache(this._site.Client, new ConsoleReporter(this._output, new FakeTimeProvider(Start)));
     }
 
     static CancellationToken Cancel => TestContext.Current.CancellationToken;

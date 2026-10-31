@@ -19,7 +19,7 @@ static class Program
             ExitRequested: CtrlC.CreateExitRequestedToken(),
             GetVersion: GetVersion,
             timeProvider,
-            ConsoleLog.ForConsole(timeProvider),
+            ConsoleReporter.ForConsole(timeProvider),
             TryClaimSingleInstance: SingleInstance.TryClaim,
             WaitForAnyKey: WaitForAnyKey,
             ReadApiKeyAsync: HiddenConsoleInput.ReadLineInBackgroundAsync,

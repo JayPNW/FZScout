@@ -28,7 +28,7 @@ public class ScoutTests : IDisposable
         File.WriteAllText(this._log, string.Empty);
         this._processes = [new EqProcess(100, this._everQuest.File("eqgame.exe"))];
 
-        var log = new ConsoleLog(this._output, new FakeTimeProvider(Start));
+        var log = new ConsoleReporter(this._output, new FakeTimeProvider(Start));
         var fangbreakerZoneClient = this._site.Client;
         var serverListCache = new ServerListCache(fangbreakerZoneClient, log);
         var bonusReporter = new BonusReporter(fangbreakerZoneClient, serverListCache, log);

@@ -5,7 +5,7 @@
   FindEqProcesses: EqProcesses.Find,
   GetVersion: Program.GetVersion,
   GitHubClient: GitHubClient,
-  Log: ConsoleLog,
+  Log: ConsoleReporter,
   ReadApiKeyAsync: HiddenConsoleInput.ReadLineInBackgroundAsync,
   TimeProvider: SystemTimeProvider,
   TryClaimSingleInstance: SingleInstance.TryClaim,

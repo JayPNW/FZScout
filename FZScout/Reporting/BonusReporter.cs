@@ -4,7 +4,7 @@ using FZScout.Site;
 namespace FZScout.Reporting;
 
 /// <summary>Carries out what the scouts decide, following the Reporting section of InternalDocumentation/SPEC.md.</summary>
-class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache serverListCache, ConsoleLog log)
+class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache serverListCache, ConsoleReporter log)
 {
     public static readonly TimeSpan RetryDelay = TimeSpan.FromMinutes(1);
 

@@ -7,7 +7,7 @@ namespace FZScout.Reporting;
 /// Each server's <c>types</c> and <c>zones</c> lists, loaded when first needed.
 /// If loading fails, it retries once after a minute; if that fails too, it tries again the next time the lists are needed.
 /// </summary>
-class ServerListCache(FangbreakerZoneClient fangbreakerZoneClient, ConsoleLog log)
+class ServerListCache(FangbreakerZoneClient fangbreakerZoneClient, ConsoleReporter log)
 {
     public static readonly TimeSpan RetryDelay = TimeSpan.FromMinutes(1);
 

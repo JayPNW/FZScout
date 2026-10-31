@@ -11,12 +11,12 @@ class ApiKeyPrompt
 {
     readonly BonusReporter _reporter;
     readonly IApiKeyStore _apiKeyStore;
-    readonly ConsoleLog _log;
+    readonly ConsoleReporter _log;
     readonly Func<CancellationToken, Task<string>> _readApiKeyAsync;
     bool _needed;
     Task<string>? _answer;
 
-    public ApiKeyPrompt(BonusReporter bonusReporter, IApiKeyStore apiKeyStore, ConsoleLog log, Func<CancellationToken, Task<string>> readApiKeyAsync)
+    public ApiKeyPrompt(BonusReporter bonusReporter, IApiKeyStore apiKeyStore, ConsoleReporter log, Func<CancellationToken, Task<string>> readApiKeyAsync)
     {
         this._reporter = bonusReporter;
         this._apiKeyStore = apiKeyStore;

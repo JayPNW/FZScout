@@ -2,15 +2,15 @@
 
 /// <summary>The app's log: timestamped lines, colored on the console. Never pass it the API key.</summary>
 /// <param name="write">Writes one line, in a color if one is given.</param>
-class ConsoleLog(Action<string, ConsoleColor?> write, TimeProvider timeProvider)
+class ConsoleReporter(Action<string, ConsoleColor?> write, TimeProvider timeProvider)
 {
     /// <summary>Plain text, for tests.</summary>
-    public ConsoleLog(TextWriter writer, TimeProvider timeProvider)
+    public ConsoleReporter(TextWriter writer, TimeProvider timeProvider)
         : this((line, _) => writer.WriteLine(line), timeProvider)
     {
     }
 
-    public static ConsoleLog ForConsole(TimeProvider timeProvider) => new(WriteToConsole, timeProvider);
+    public static ConsoleReporter ForConsole(TimeProvider timeProvider) => new(WriteToConsole, timeProvider);
 
     public void Info(string message) => Write(message, null);
 

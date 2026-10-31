@@ -13,7 +13,7 @@ record AppDependencies(
     CancellationToken ExitRequested,
     Func<string?> GetVersion,
     TimeProvider TimeProvider,
-    ConsoleLog Log,
+    ConsoleReporter Log,
     Func<IDisposable?> TryClaimSingleInstance,
     Action WaitForAnyKey,
     Func<CancellationToken, Task<string>> ReadApiKeyAsync,

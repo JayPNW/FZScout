@@ -21,7 +21,7 @@ public class BonusReporterTests
 
     public BonusReporterTests()
     {
-        var log = new ConsoleLog(this._output, new FakeTimeProvider(Start));
+        var log = new ConsoleReporter(this._output, new FakeTimeProvider(Start));
         var fangbreakerZoneClient = this._site.Client;
         this._reporter = new BonusReporter(fangbreakerZoneClient, new ServerListCache(fangbreakerZoneClient, log), log);
         this._reporter.SetApiKey(new ApiKey("fz_live_test"));

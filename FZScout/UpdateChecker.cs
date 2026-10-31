@@ -5,7 +5,7 @@
 /// Asks GitHub for the latest release (never a prerelease) and tells the user if it is newer than this build.
 /// Not being able to check is not worth bothering anyone about.
 /// </summary>
-class UpdateChecker(ConsoleLog log, GitHubClient gitHubClient)
+class UpdateChecker(ConsoleReporter log, GitHubClient gitHubClient)
 {
     public async Task CheckAsync(string? currentVersion, CancellationToken cancellationToken = default)
     {

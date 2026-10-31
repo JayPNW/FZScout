@@ -16,7 +16,7 @@ public class LogWatcherTests : IDisposable
 
     public LogWatcherTests()
     {
-        this._watcher = new LogWatcher(new ConsoleLog(this._output, new FakeTimeProvider(Start)));
+        this._watcher = new LogWatcher(new ConsoleReporter(this._output, new FakeTimeProvider(Start)));
         Directory.CreateDirectory(LogsFolder);
         this._eq = new EqProcess(100, this._everQuest.File("eqgame.exe"));
     }
