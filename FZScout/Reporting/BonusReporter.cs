@@ -40,7 +40,7 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache
         var result = await fangbreakerZoneClient.ReportBonusAsync(KeyCheck, apiKey.Value, cancellationToken);
         if (result.IsSuccess)
         {
-            log.Info("API key working.");
+            log.Info("API key verified.");
             return;
         }
 
