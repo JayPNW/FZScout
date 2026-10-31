@@ -15,7 +15,6 @@ class App
     readonly ApiKeyPrompt _apiKeyPrompt;
     readonly LogWatcher _logWatcher;
     readonly Scout _scout;
-    readonly UpdateChecker _updateChecker;
 
     public App(AppDependencies dependencies)
     {
@@ -26,7 +25,6 @@ class App
         this._apiKeyPrompt = new ApiKeyPrompt(this._bonusReporter, dependencies.ApiKeyStore, log, dependencies.ReadApiKeyAsync);
         this._logWatcher = new LogWatcher(log);
         this._scout = new Scout(this._logWatcher, serverListCache, this._bonusReporter, dependencies.FindEqProcesses);
-        this._updateChecker = new UpdateChecker(log, dependencies.GitHubClient);
     }
 
     public AppDependencies Dependencies { get; }
@@ -61,7 +59,7 @@ class App
     public async Task StartAsync()
     {
         this.Dependencies.Log.Info($"FZScout v{this.Dependencies.GetVersion()}");
-        await this._updateChecker.CheckAsync(this.Dependencies.GetVersion(), this.Dependencies.ExitRequested);
+        await this.Dependencies.GitHubUpdateChecker.CheckAsync(this.Dependencies.GetVersion(), this.Dependencies.Log, this.Dependencies.ExitRequested);
         await this._bonusReporter.ChangeApiKeyAsync(this.Dependencies.ApiKeyStore.Load(), this.Dependencies.ExitRequested);
         await TickScoutAsync();
         PrintWatchedLogs();

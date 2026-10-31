@@ -19,5 +19,5 @@ record AppDependencies(
     Func<CancellationToken, Task<string>> ReadApiKeyAsync,
     IApiKeyStore ApiKeyStore,
     FangbreakerZoneClient FangbreakerZoneClient,
-    GitHubClient GitHubClient,
+    GitHubUpdateChecker GitHubUpdateChecker,
     Func<IReadOnlyCollection<EqProcess>> FindEqProcesses);

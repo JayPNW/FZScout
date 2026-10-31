@@ -25,7 +25,7 @@ static class Program
             ReadApiKeyAsync: HiddenConsoleInput.ReadLineInBackgroundAsync,
             ApiKeyStore: new WindowsCredentialManagerApiKeyStore(),
             new FangbreakerZoneClient(),
-            new GitHubClient(),
+            new GitHubUpdateChecker(),
             FindEqProcesses: EqProcesses.Find));
     }
 

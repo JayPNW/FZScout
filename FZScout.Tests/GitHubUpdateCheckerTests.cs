@@ -3,7 +3,7 @@ using FZScout.Tests.Site;
 
 namespace FZScout.Tests;
 
-public class UpdateCheckerTests
+public class GitHubUpdateCheckerTests
 {
     [Theory]
     [InlineData("2", "3", true)]
@@ -17,9 +17,9 @@ public class UpdateCheckerTests
     {
         var output = new StringWriter();
         var handler = new StubHttpHandler(HttpStatusCode.OK, $$"""{"tag_name":"v{{latest}}","html_url":"https://example.test/r"}""");
-        var checker = new UpdateChecker(new ConsoleReporter(output, TimeProvider.System), new GitHubClient(handler));
+        var checker = new GitHubUpdateChecker(handler);
 
-        await checker.CheckAsync(current, TestContext.Current.CancellationToken);
+        await checker.CheckAsync(current, new ConsoleReporter(output, TimeProvider.System), TestContext.Current.CancellationToken);
 
         Assert.Equal(announced, output.ToString().Contains("https://example.test/r"));
     }
@@ -28,9 +28,9 @@ public class UpdateCheckerTests
     public async Task StaysQuietWhenGitHubIsUnreachable()
     {
         var output = new StringWriter();
-        var checker = new UpdateChecker(new ConsoleReporter(output, TimeProvider.System), new GitHubClient(new StubHttpHandler(new HttpRequestException())));
+        var checker = new GitHubUpdateChecker(new StubHttpHandler(new HttpRequestException()));
 
-        await checker.CheckAsync("1", TestContext.Current.CancellationToken);
+        await checker.CheckAsync("1", new ConsoleReporter(output, TimeProvider.System), TestContext.Current.CancellationToken);
 
         Assert.Equal(string.Empty, output.ToString());
     }

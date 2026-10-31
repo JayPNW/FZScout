@@ -4,7 +4,7 @@
   FangbreakerZoneClient: FangbreakerZoneClient,
   FindEqProcesses: EqProcesses.Find,
   GetVersion: Program.GetVersion,
-  GitHubClient: GitHubClient,
+  GitHubUpdateChecker: GitHubUpdateChecker,
   Log: ConsoleReporter,
   ReadApiKeyAsync: HiddenConsoleInput.ReadLineInBackgroundAsync,
   TimeProvider: SystemTimeProvider,

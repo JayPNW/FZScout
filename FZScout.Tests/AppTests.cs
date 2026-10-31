@@ -45,7 +45,7 @@ public class AppTests : IDisposable
             ReadApiKeyAsync: TypeApiKeyAsync,
             this._apiKeyStore,
             this._site.Client,
-            new GitHubClient(new StubHttpHandler(HttpStatusCode.NotFound, string.Empty)),
+            new GitHubUpdateChecker(new StubHttpHandler(HttpStatusCode.NotFound, string.Empty)),
             FindEqProcesses: () => processes));
     }
 
