@@ -16,20 +16,16 @@ static class Program
     {
         var timeProvider = TimeProvider.System;
         return new App(new AppDependencies(
-            ExitRequested: CtrlC.CreateExitRequestedToken(),
+            new ConsoleUserInput(),
             GetVersion: GetVersion,
             timeProvider,
             new ConsoleReporter(timeProvider),
             TryClaimSingleInstance: SingleInstance.TryClaim,
-            WaitForAnyKey: WaitForAnyKey,
-            ReadApiKeyAsync: HiddenConsoleInput.ReadLineInBackgroundAsync,
             ApiKeyStore: new WindowsCredentialManagerApiKeyStore(),
             new FangbreakerZoneClient(),
             new GitHubUpdateChecker(),
             FindEqProcesses: EqProcesses.Find));
     }
-
-    static void WaitForAnyKey() => Console.ReadKey(intercept: true);
 
     static string? GetVersion() => Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
 }

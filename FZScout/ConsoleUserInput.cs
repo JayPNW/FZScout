@@ -1,12 +1,28 @@
 namespace FZScout;
 
-/// <summary>Reads a line from the console, echoing * for each character so a secret like the API key doesn't end up on screen.</summary>
-static class HiddenConsoleInput
+/// <summary>The real keyboard. Ctrl+C asks the app to exit, so it can stop cleanly instead of being killed.</summary>
+class ConsoleUserInput : IUserInput
 {
-    /// <summary>Reads on a background thread so the caller can keep working while the user types.</summary>
-    public static Task<string> ReadLineInBackgroundAsync(CancellationToken cancellationToken) => Task.Run(ReadLine, cancellationToken);
+    readonly CancellationTokenSource _exitRequested = new();
 
-    static string ReadLine()
+    public ConsoleUserInput()
+    {
+        Console.CancelKeyPress += (_, e) =>
+        {
+            e.Cancel = true;
+            this._exitRequested.Cancel();
+        };
+    }
+
+    public CancellationToken ExitRequested => this._exitRequested.Token;
+
+    public void WaitForAnyKey() => Console.ReadKey(intercept: true);
+
+    /// <summary>Reads on a background thread so the caller can keep working while the user types.</summary>
+    public Task<string> ReadApiKeyAsync(CancellationToken cancellationToken) => Task.Run(ReadLineHidden, cancellationToken);
+
+    /// <summary>Reads a line, echoing * for each character so the API key doesn't end up on screen.</summary>
+    static string ReadLineHidden()
     {
         if (Console.IsInputRedirected)
         {

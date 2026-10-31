@@ -22,7 +22,7 @@ class App
         var log = dependencies.Log;
         var serverListCache = new ServerListCache(dependencies.FangbreakerZoneClient, log);
         this._bonusReporter = new BonusReporter(dependencies.FangbreakerZoneClient, serverListCache, log);
-        this._apiKeyPrompt = new ApiKeyPrompt(this._bonusReporter, dependencies.ApiKeyStore, log, dependencies.ReadApiKeyAsync);
+        this._apiKeyPrompt = new ApiKeyPrompt(this._bonusReporter, dependencies.ApiKeyStore, log, dependencies.UserInput.ReadApiKeyAsync);
         this._logWatcher = new LogWatcher(log);
         this._scout = new Scout(this._logWatcher, serverListCache, this._bonusReporter, dependencies.FindEqProcesses);
     }
@@ -37,7 +37,7 @@ class App
         {
             this.Dependencies.Log.Error("FZScout is already running.");
             this.Dependencies.Log.Info("Press any key to exit.");
-            this.Dependencies.WaitForAnyKey();
+            this.Dependencies.UserInput.WaitForAnyKey();
             return;
         }
 
@@ -46,12 +46,12 @@ class App
         using var timer = new PeriodicTimer(TickInterval, this.Dependencies.TimeProvider);
         try
         {
-            while (await timer.WaitForNextTickAsync(this.Dependencies.ExitRequested))
+            while (await timer.WaitForNextTickAsync(this.Dependencies.UserInput.ExitRequested))
             {
                 await TickAsync();
             }
         }
-        catch (OperationCanceledException) when (this.Dependencies.ExitRequested.IsCancellationRequested)
+        catch (OperationCanceledException) when (this.Dependencies.UserInput.ExitRequested.IsCancellationRequested)
         {
         }
     }
@@ -59,8 +59,8 @@ class App
     public async Task StartAsync()
     {
         this.Dependencies.Log.Info($"FZScout v{this.Dependencies.GetVersion()}");
-        await this.Dependencies.GitHubUpdateChecker.CheckAsync(this.Dependencies.GetVersion(), this.Dependencies.Log, this.Dependencies.ExitRequested);
-        await this._bonusReporter.ChangeApiKeyAsync(this.Dependencies.ApiKeyStore.Load(), this.Dependencies.ExitRequested);
+        await this.Dependencies.GitHubUpdateChecker.CheckAsync(this.Dependencies.GetVersion(), this.Dependencies.Log, this.Dependencies.UserInput.ExitRequested);
+        await this._bonusReporter.ChangeApiKeyAsync(this.Dependencies.ApiKeyStore.Load(), this.Dependencies.UserInput.ExitRequested);
         await TickScoutAsync();
         PrintWatchedLogs();
         this.Dependencies.Log.Info("Press Ctrl+C to exit.");
@@ -68,7 +68,7 @@ class App
 
     public async Task TickAsync()
     {
-        await this._apiKeyPrompt.TickAsync(this.Dependencies.ExitRequested);
+        await this._apiKeyPrompt.TickAsync(this.Dependencies.UserInput.ExitRequested);
         await TickScoutAsync();
     }
 
@@ -77,7 +77,7 @@ class App
     {
         try
         {
-            await this._scout.TickAsync(this.Dependencies.TimeProvider.GetUtcNow(), this.Dependencies.ExitRequested);
+            await this._scout.TickAsync(this.Dependencies.TimeProvider.GetUtcNow(), this.Dependencies.UserInput.ExitRequested);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {

@@ -20,12 +20,11 @@ public class AppTests : IDisposable
     readonly FakeTimeProvider _time = new(new DateTimeOffset(2026, 10, 29, 12, 0, 0, TimeSpan.Zero));
     readonly StringWriter _output = new();
     readonly FakeSite _site = new();
+    readonly InMemoryUserInput _userInput = new(Cancel, TypedApiKey.Value);
     readonly InMemorySingleInstance _singleInstance = new();
     readonly InMemoryApiKeyStore _apiKeyStore = new();
     readonly string _log;
     readonly App _app;
-    int _timesAskedForApiKey;
-    int _timesWaitedForAnyKey;
 
     public AppTests()
     {
@@ -36,13 +35,11 @@ public class AppTests : IDisposable
         IReadOnlyCollection<EqProcess> processes = [new EqProcess(100, this._everQuest.File("eqgame.exe"))];
 
         this._app = new App(new AppDependencies(
-            ExitRequested: Cancel,
+            this._userInput,
             GetVersion: () => "1",
             this._time,
             new ConsoleReporter(this._output, this._time),
             TryClaimSingleInstance: this._singleInstance.TryClaim,
-            WaitForAnyKey: () => this._timesWaitedForAnyKey++,
-            ReadApiKeyAsync: TypeApiKeyAsync,
             this._apiKeyStore,
             this._site.Client,
             new GitHubUpdateChecker(new StubHttpHandler(HttpStatusCode.NotFound, string.Empty)),
@@ -64,7 +61,7 @@ public class AppTests : IDisposable
         await this._app.RunAsync();
 
         Assert.Contains("ERROR: FZScout is already running.", Output);
-        Assert.Equal(1, this._timesWaitedForAnyKey);
+        Assert.Equal(1, this._userInput.TimesWaitedForAnyKey);
         Assert.Empty(this._site.Requests);
     }
 
@@ -77,7 +74,7 @@ public class AppTests : IDisposable
 
         Assert.Equal([KeyCheckRequest], this._site.Requests);
         Assert.Contains("API key verified.", Output);
-        Assert.Equal(0, this._timesAskedForApiKey);
+        Assert.Equal(0, this._userInput.TimesAskedForApiKey);
     }
 
     [Fact]
@@ -88,7 +85,7 @@ public class AppTests : IDisposable
 
         await Tick();
 
-        Assert.Equal(1, this._timesAskedForApiKey);
+        Assert.Equal(1, this._userInput.TimesAskedForApiKey);
         Assert.Equal(TypedApiKey, this._apiKeyStore.Load());
         Assert.Equal([KeyCheckRequest], this._site.Requests);
         Assert.Contains("API key verified.", Output);
@@ -105,7 +102,7 @@ public class AppTests : IDisposable
         this._site.Succeed("POST /api/client/bonuses");
         await Tick();
 
-        Assert.Equal(1, this._timesAskedForApiKey);
+        Assert.Equal(1, this._userInput.TimesAskedForApiKey);
         Assert.Equal(TypedApiKey, this._apiKeyStore.Load());
         Assert.Contains("API key verified.", Output);
     }
@@ -126,12 +123,6 @@ public class AppTests : IDisposable
         Assert.Equal(
             """POST /api/client/bonuses {"serverName":"Fangbreaker","zoneName":"Crushbone","bonusKey":"loot"}""",
             this._site.Requests[^1]);
-    }
-
-    Task<string> TypeApiKeyAsync(CancellationToken _)
-    {
-        this._timesAskedForApiKey++;
-        return Task.FromResult(TypedApiKey.Value);
     }
 
     void Write(string message) => File.AppendAllText(this._log, $"[Thu Oct 29 12:00:00 2026] {message}\r\n");

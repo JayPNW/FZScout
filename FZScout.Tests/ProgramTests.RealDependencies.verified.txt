@@ -1,13 +1,11 @@
 ﻿{
   ApiKeyStore: WindowsCredentialManagerApiKeyStore,
-  ExitRequested: CancellationToken,
   FangbreakerZoneClient: FangbreakerZoneClient,
   FindEqProcesses: EqProcesses.Find,
   GetVersion: Program.GetVersion,
   GitHubUpdateChecker: GitHubUpdateChecker,
   Log: ConsoleReporter,
-  ReadApiKeyAsync: HiddenConsoleInput.ReadLineInBackgroundAsync,
   TimeProvider: SystemTimeProvider,
   TryClaimSingleInstance: SingleInstance.TryClaim,
-  WaitForAnyKey: Program.WaitForAnyKey
+  UserInput: ConsoleUserInput
 }
