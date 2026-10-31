@@ -1,6 +1,6 @@
 # Create an API Key
 
-1. Open https://fangbreaker.zone or https://frostreaver.zone and log in with Discord.
+1. Open [https://fangbreaker.zone](https://fangbreaker.zone) or [https://frostreaver.zone](https://frostreaver.zone) and log in with Discord.
 
    ![Login button](assets/login-button.png)
 
@@ -8,11 +8,11 @@
 
    ![Account menu](assets/account-menu.png)
 
-1. Click **Generate API Key**. One key works on both sites. If you already have a key in fzClient, you can use that one instead. **Rotate API Key** makes a new key, and the old one stops working in fzClient.
+1. Click **Generate API Key**. (If you already have a key you should reuse it. **Rotate API Key** makes a new key, and the old one stops working.)
 
    ![Generate API Key button](assets/api-key-generate.png)
 
-1. Click **Copy**. The site shows the full key only this once.
+1. Click **Copy**. The site shows the full key only this once, so if you lose it you'll need to revoke and generate a new one.
 
    ![Copy button](assets/api-key-copy.png)
 
