@@ -24,7 +24,6 @@ static class Program
         var version = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
         log.Info($"FZScout v{version}");
 
-        using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
         var fangbreakerZoneClient = new FangbreakerZoneClient();
         var serverListCache = new ServerListCache(fangbreakerZoneClient, log);
         var bonusReporter = new BonusReporter(fangbreakerZoneClient, serverListCache, log);
@@ -40,7 +39,7 @@ static class Program
             cancel.Cancel();
         };
 
-        await new UpdateChecker(log, httpClient).CheckAsync(version, cancel.Token);
+        await new UpdateChecker(log, new GitHubClient()).CheckAsync(version, cancel.Token);
         await bonusReporter.ChangeApiKeyAsync(apiKeyStore.Load(), cancel.Token);
         await TickAsync(scout, timeProvider, log, cancel.Token);
         PrintWatchedLogs(logWatcher, log);

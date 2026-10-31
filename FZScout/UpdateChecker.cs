@@ -1,13 +1,11 @@
-﻿using System.Net.Http.Json;
-using System.Text.Json.Serialization;
-
-namespace FZScout;
+﻿namespace FZScout;
 
 /// <summary>
 /// Releases are numbered 1, 2, 3... and a CI build of release N is <c>N-ci.99</c>, which comes before release N.
 /// Asks GitHub for the latest release (never a prerelease) and tells the user if it is newer than this build.
+/// Not being able to check is not worth bothering anyone about.
 /// </summary>
-class UpdateChecker(ConsoleLog log, HttpClient httpClient)
+class UpdateChecker(ConsoleLog log, GitHubClient gitHubClient)
 {
     public async Task CheckAsync(string? currentVersion, CancellationToken cancellationToken = default)
     {
@@ -16,32 +14,17 @@ class UpdateChecker(ConsoleLog log, HttpClient httpClient)
             return;
         }
 
-        try
+        var release = await gitHubClient.GetLatestReleaseAsync(cancellationToken);
+        if (release is null || !TryParseVersion(release.TagName, out var latest, out _))
         {
-            using var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.github.com/repos/{GitHubRepository.OwnerAndName}/releases/latest");
-            request.Headers.UserAgent.ParseAdd("FZScout");
-            using var response = await httpClient.SendAsync(request, cancellationToken);
-            if (!response.IsSuccessStatusCode)
-            {
-                return;
-            }
-
-            var release = await response.Content.ReadFromJsonAsync<ReleaseDto>(cancellationToken);
-            if (release is null || !TryParseVersion(release.TagName, out var latest, out _))
-            {
-                return;
-            }
-
-            // A prerelease of N comes before release N.
-            var isNewer = isPrerelease ? latest >= current : latest > current;
-            if (isNewer)
-            {
-                log.Success($"v{latest} is available: {release.HtmlUrl}");
-            }
+            return;
         }
-        catch (Exception exception) when (exception is HttpRequestException or TaskCanceledException or System.Text.Json.JsonException && !cancellationToken.IsCancellationRequested)
+
+        // A prerelease of N comes before release N.
+        var isNewer = isPrerelease ? latest >= current : latest > current;
+        if (isNewer)
         {
-            // Not being able to check is not worth bothering anyone about.
+            log.Success($"v{latest} is available: {release.HtmlUrl}");
         }
     }
 
@@ -60,8 +43,4 @@ class UpdateChecker(ConsoleLog log, HttpClient httpClient)
         isPrerelease = parts.Length > 1;
         return int.TryParse(parts[0], out number);
     }
-
-    record ReleaseDto(
-        [property: JsonPropertyName("tag_name")] string TagName,
-        [property: JsonPropertyName("html_url")] string HtmlUrl);
 }
