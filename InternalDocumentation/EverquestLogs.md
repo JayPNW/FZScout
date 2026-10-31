@@ -33,6 +33,7 @@ A little while after entering a zone one of the following messages may appear in
 This land is saturated with unstable magic, enhancing the benefits of offerings for all who venture here.
 This land is saturated with unstable magic, enhancing the potency of any offerings made here.
 This land is saturated with unstable magic, improving the experience tied to abilities for all who venture here.
+This land is saturated with unstable magic, improving the experience tied to items for all who venture here.
 This land is saturated with unstable magic, improving the experiences of all who venture here.
 This land is saturated with unstable magic, improving the rate at which proficiency is gained while adventuring here.
 This land is saturated with unstable magic, magnifying the recognition one may receive from their adventures here.

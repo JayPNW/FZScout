@@ -4,6 +4,7 @@
 | ------------------------------------------------------------------------- | ------------ |
 | improving the experiences of all who venture here.                        | `experience` |
 | improving the experience tied to abilities for all who venture here.      | `aa`         |
+| improving the experience tied to items for all who venture here.          | `item-exp`   |
 | multiplying the loot that may be found here.                              | `loot`       |
 | multiplying the coin that may be found here.                              | `coin`       |
 | which has drawn many creatures of exceptional rarity here.                | `rare`       |
