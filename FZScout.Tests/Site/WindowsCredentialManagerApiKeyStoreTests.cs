@@ -1,4 +1,4 @@
-using FZScout.Site;
+﻿using FZScout.Site;
 
 namespace FZScout.Tests.Site;
 

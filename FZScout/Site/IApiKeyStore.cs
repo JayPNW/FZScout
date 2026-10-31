@@ -1,4 +1,4 @@
-namespace FZScout.Site;
+﻿namespace FZScout.Site;
 
 interface IApiKeyStore
 {
