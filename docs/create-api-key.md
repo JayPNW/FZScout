@@ -15,3 +15,5 @@
 1. Click **Copy**. The site shows the full key only this once.
 
    ![Copy button](assets/api-key-copy.png)
+
+Note that one key works on both Fangbreaker and Frostreaver sites, so you can use either to create your API key.

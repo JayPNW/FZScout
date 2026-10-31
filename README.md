@@ -8,10 +8,10 @@ A console app that watches your EverQuest logs for Resource Hunter zone bonuses 
 1. [Download](https://github.com/JayPNW/FZScout/releases/latest) and run FZScout.
     - If Windows says it protected your PC, click **More info**, then **Run anyway**. This only happens on the first install.
     - If this doesn't work for you, please report a bug to this project.
-1. [Create an API key](docs/create-api-key.md). One key works on both sites.
-1. Give the key to the app. It is stored in Windows Credential Manager.
+1. [Create an API key](docs/create-api-key.md).
+1. Paste the API key into the app when prompted.
 
-When it starts, the app prints its version, whether your API key is working, rejected, or missing, and which EverQuest log files it is watching. Only the Fangbreaker and Frostreaver servers are reported. Leave it running while you play.
+Leave it running while you play. It will publish zone bonuses to the sites automatically.
 
 # Thanks
 
