@@ -1,11 +1,11 @@
-# Resource Hunter Bonus Scout
+# FZScout
 
 A console app that watches your EverQuest logs for Resource Hunter zone bonuses and reports them to [fangbreaker.zone](https://fangbreaker.zone) and [frostreaver.zone](https://frostreaver.zone) as you travel. Every player who runs it helps fill in the day's bonus map for everyone.
 
 # Getting Started
 
 1. In EverQuest enable logging by typing `/log on`.
-1. [Download](https://github.com/JayPNW/FZScout/releases/latest) and run Resource Hunter Bonus Scout.
+1. [Download](https://github.com/JayPNW/FZScout/releases/latest) and run FZScout.
     - If Windows says it protected your PC, click **More info**, then **Run anyway**. This only happens on the first install.
     - If this doesn't work for you, please report a bug to this project.
 1. [Create an API key](docs/create-api-key.md). One key works on both sites.

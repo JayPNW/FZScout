@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>FZScout</RootNamespace>
-    <Product>Resource Hunter Bonus Scout</Product>
+    <Product>FZScout</Product>
     <!-- The release being worked on: a strictly incrementing integer. The release workflow publishes it, then bumps it. -->
     <Version>2</Version>
   </PropertyGroup>

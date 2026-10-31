@@ -15,14 +15,14 @@ static class Program
         using var mutex = new Mutex(true, "FZScout", out var isOnlyInstance);
         if (!isOnlyInstance)
         {
-            log.Error("Resource Hunter Bonus Scout is already running.");
+            log.Error("FZScout is already running.");
             log.Info("Press any key to exit.");
             Console.ReadKey(intercept: true);
             return;
         }
 
         var version = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
-        log.Info($"Resource Hunter Bonus Scout v{version}");
+        log.Info($"FZScout v{version}");
 
         using var httpClientHandler = new HttpClientHandler();
         using var httpClient = new HttpClient(httpClientHandler, disposeHandler: false) { Timeout = TimeSpan.FromSeconds(30) };
