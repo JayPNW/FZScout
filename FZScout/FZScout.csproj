@@ -8,7 +8,7 @@
     <RootNamespace>FZScout</RootNamespace>
     <Product>FZScout</Product>
     <!-- The release being worked on: a strictly incrementing integer. The release workflow publishes it, then bumps it. -->
-    <Version>6</Version>
+    <Version>7</Version>
   </PropertyGroup>
 
   <!-- Published as a self-contained, single-file x64 exe. Only when publishing, so the tests can reference this project. -->
