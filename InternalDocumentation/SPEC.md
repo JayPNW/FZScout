@@ -56,7 +56,7 @@ Strip the timestamp (`[Mon Sep 14 16:10:29 2026] `) from each line.
 
 ### Bonus message
 
-A bonus message applies to the current zone. If the current zone is not recognized, log it as an error and invite the user to report it. Ignore it if its key isn't in the server's `types` list.
+A bonus message applies to the current zone. If the current zone is not recognized, log it as an error and invite the user to report it. If the bonus key isn't in the server's `types` list, log it as an error, invite the user to report it, and don't report anything for this zone. If no bonus message appears, `none` is reported instead; see Timing.
 
 ### Reset message
 

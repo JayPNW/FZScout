@@ -149,7 +149,8 @@ class CharacterScout(Character character)
 
         if (lists is not null && !lists.Types.Contains(bonus))
         {
-            return [];
+            MarkAlreadyReportedThisZone();
+            return [new LogErrorAction($"{character} saw a '{bonus}' bonus in '{zone.SiteName}', which isn't on the {character.Server} bonus types list. Please report it at {ReportIssuesUrl}")];
         }
 
         MarkAlreadyReportedThisZone();

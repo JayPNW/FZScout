@@ -230,11 +230,24 @@ public class CharacterScoutTests
     }
 
     [Fact]
-    public void BonusTypeNotOnTheServersListIsIgnored()
+    public void BonusTypeNotOnTheServersListIsAnError()
     {
         Log(0, Befallen);
 
-        Assert.Empty(Log(10, Tribute));
+        Assert.Equal(
+            [new LogErrorAction($"Bob (Frostreaver) saw a 'tribute' bonus in 'Befallen', which isn't on the Frostreaver bonus types list. Please report it at {CharacterScout.ReportIssuesUrl}")],
+            Log(10, Tribute));
+    }
+
+    [Fact]
+    public void BonusTypeNotOnTheServersListMeansNoneIsntReported()
+    {
+        Log(0, Befallen);
+        Log(20, Kill);
+        Log(21, Tribute);
+
+        Assert.Empty(Tick(25));
+        Assert.Empty(Tick(300));
     }
 
     [Fact]
