@@ -50,13 +50,13 @@ Strip the timestamp (`[Mon Sep 14 16:10:29 2026] `) from each line.
 
 - `You have entered {zone}.` changes the current zone, except lines that start with `You have entered an area` (like `You have entered an area where levitation effects do not function.`).
 - Some zone names differ between site and log. See @Zones.md for the full mapping.
-- If it's still not on the list, the current zone is unknown. Log it as an error and invite the user to report it.
-- Otherwise log `{character} entered {zone}.` (the zone as written in the EQ log).
+- If it's still not on the list, the current zone is unknown. Many of these never get a bonus, like The Plane of Knowledge, so that alone isn't an error.
+- Log `{character} entered {zone}.` (the zone as written in the EQ log).
 
 
 ### Bonus message
 
-A bonus message applies to the current zone. Ignore it if the current zone is unknown, or if its key isn't in the server's `types` list.
+A bonus message applies to the current zone. If the current zone is not recognized, log it as an error and invite the user to report it. Ignore it if its key isn't in the server's `types` list.
 
 ### Reset message
 

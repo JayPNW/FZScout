@@ -87,18 +87,12 @@ class CharacterScout(Character character)
         }
 
         CurrentZone = ZoneNames.Resolve(unresolved.LogName, lists.Zones);
-        if (CurrentZone is KnownZone)
+        if (CurrentZone is not KnownZone)
         {
-            return [];
+            MarkAlreadyReportedThisZone();
         }
 
-        MarkAlreadyReportedThisZone();
-        return [UnknownZoneError(unresolved.LogName)];
-    }
-
-    LogErrorAction UnknownZoneError(string logZone)
-    {
-        return new($"{character} entered '{logZone}', which isn't on the {character.Server} zones list. Please report it at {ReportIssuesUrl}");
+        return [];
     }
 
     IReadOnlyList<ScoutAction> OnZoneEntered(string logZone, DateTimeOffset now, ServerLists? lists)
@@ -109,11 +103,6 @@ class CharacterScout(Character character)
         this._idleTimeLeftWhileCampingPaused = null;
         this._idleDeadline = null;
         this._isCamping = false;
-
-        if (CurrentZone is UnknownZone)
-        {
-            return [UnknownZoneError(logZone)];
-        }
 
         if (IsReportable(CurrentZone))
         {
@@ -144,6 +133,11 @@ class CharacterScout(Character character)
         if (CurrentZone is NeverBonusZone noBonusZone)
         {
             return [new LogErrorAction($"{character} saw a '{bonus}' bonus in '{noBonusZone.Name}', which never has a bonus. Please report it at {ReportIssuesUrl}")];
+        }
+
+        if (CurrentZone is UnknownZone unknown)
+        {
+            return [new LogErrorAction($"{character} saw a '{bonus}' bonus in '{unknown.LogName}', which isn't on the {character.Server} zones list. Please report it at {ReportIssuesUrl}")];
         }
 
         if (CurrentZone is UnresolvedZone unresolved)

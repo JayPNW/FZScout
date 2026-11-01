@@ -238,23 +238,23 @@ public class CharacterScoutTests
     }
 
     [Fact]
-    public void UnknownZoneIsAnError()
+    public void UnknownZoneWithNoBonusIsNotAnError()
     {
-        var actions = Log(0, "You have entered The Halls of Honor.");
-
         Assert.Equal(
-            [new LogErrorAction($"Bob (Frostreaver) entered 'The Halls of Honor', which isn't on the Frostreaver zones list. Please report it at {CharacterScout.ReportIssuesUrl}")],
-            actions);
+            [new LogInfoAction("Bob (Frostreaver) entered The Halls of Honor.")],
+            Log(0, "You have entered The Halls of Honor."));
+        Assert.Empty(Log(10, Kill));
+        Assert.Empty(Tick(1000));
     }
 
     [Fact]
-    public void UnknownZoneIsNeverReported()
+    public void BonusInAnUnknownZoneIsAnError()
     {
         Log(0, "You have entered The Halls of Honor.");
 
-        Assert.Empty(Log(10, Experience));
-        Assert.Empty(Log(20, Kill));
-        Assert.Empty(Tick(1000));
+        Assert.Equal(
+            [new LogErrorAction($"Bob (Frostreaver) saw a 'experience' bonus in 'The Halls of Honor', which isn't on the Frostreaver zones list. Please report it at {CharacterScout.ReportIssuesUrl}")],
+            Log(10, Experience));
     }
 
     [Fact]
@@ -277,13 +277,12 @@ public class CharacterScoutTests
     }
 
     [Fact]
-    public void ZoneEnteredWithoutListsThatTurnsOutUnknownIsAnError()
+    public void ZoneEnteredWithoutListsThatTurnsOutUnknownStopsWaiting()
     {
         LogWithoutLists(0, "You have entered The Halls of Honor.");
 
-        Assert.Equal(
-            [new LogErrorAction($"Bob (Frostreaver) entered 'The Halls of Honor', which isn't on the Frostreaver zones list. Please report it at {CharacterScout.ReportIssuesUrl}")],
-            Tick(60));
+        Assert.Empty(Tick(60));
+        Assert.Equal(new UnknownZone("The Halls of Honor"), this._scout.CurrentZone);
         Assert.Empty(Tick(1000));
     }
 
