@@ -20,7 +20,7 @@ public class AppTests : IDisposable
     readonly FakeTimeProvider _time = new(new DateTimeOffset(2026, 10, 29, 12, 0, 0, TimeSpan.Zero));
     readonly StringWriter _output = new();
     readonly FakeSite _site = new();
-    readonly InMemoryUserInput _userInput = new(Cancel, TypedApiKey.Value);
+    readonly InMemoryUserInput _userInput = new(Cancel, TypedApiKey);
     readonly InMemorySingleInstance _singleInstance = new();
     readonly InMemoryApiKeyStore _apiKeyStore = new();
     readonly string _log;

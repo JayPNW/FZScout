@@ -1,3 +1,5 @@
+using FZScout.Site;
+
 namespace FZScout;
 
 /// <summary>The real keyboard. Ctrl+C asks the app to exit, so it can stop cleanly instead of being killed.</summary>
@@ -27,7 +29,18 @@ class ConsoleUserInput : IUserInput
     }
 
     /// <summary>Reads on a background thread so the caller can keep working while the user types.</summary>
-    public Task<string> ReadApiKeyAsync(CancellationToken cancellationToken) => Task.Run(ReadLineHidden, cancellationToken);
+    public Task<ApiKey?> ReadApiKeyAsync(CancellationToken cancellationToken) => Task.Run(ReadApiKey, cancellationToken);
+
+    static ApiKey? ReadApiKey()
+    {
+        var text = ReadLineHidden().Trim();
+        if (text.Length == 0)
+        {
+            return null;
+        }
+
+        return new ApiKey(text);
+    }
 
     /// <summary>Reads a line, echoing * for each character so the API key doesn't end up on screen.</summary>
     static string ReadLineHidden()

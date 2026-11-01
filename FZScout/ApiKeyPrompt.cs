@@ -12,11 +12,11 @@ class ApiKeyPrompt
     readonly BonusReporter _reporter;
     readonly IApiKeyStore _apiKeyStore;
     readonly ConsoleReporter _log;
-    readonly Func<CancellationToken, Task<string>> _readApiKeyAsync;
+    readonly Func<CancellationToken, Task<ApiKey?>> _readApiKeyAsync;
     bool _needed;
-    Task<string>? _answer;
+    Task<ApiKey?>? _answer;
 
-    public ApiKeyPrompt(BonusReporter bonusReporter, IApiKeyStore apiKeyStore, ConsoleReporter log, Func<CancellationToken, Task<string>> readApiKeyAsync)
+    public ApiKeyPrompt(BonusReporter bonusReporter, IApiKeyStore apiKeyStore, ConsoleReporter log, Func<CancellationToken, Task<ApiKey?>> readApiKeyAsync)
     {
         this._reporter = bonusReporter;
         this._apiKeyStore = apiKeyStore;
@@ -40,14 +40,13 @@ class ApiKeyPrompt
             return;
         }
 
-        var text = (await this._answer).Trim();
+        var answer = await this._answer;
         this._answer = null;
-        if (text.Length == 0)
+        if (answer is not { } apiKey)
         {
             this._log.Warning("No API key entered, so nothing will be reported. Restart the app to enter one.");
             return;
         }
-        var apiKey = new ApiKey(text);
 
         try
         {
