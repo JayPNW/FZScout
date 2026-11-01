@@ -1,4 +1,4 @@
-namespace FZScout;
+﻿namespace FZScout;
 
 /// <summary>Keeps two copies of FZScout from running at once, which would report everything twice.</summary>
 static class SingleInstance

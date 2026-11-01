@@ -1,4 +1,4 @@
-namespace FZScout.Tests;
+﻿namespace FZScout.Tests;
 
 /// <summary>Like <see cref="SingleInstance"/>, but only among the apps in this test that share it.</summary>
 class InMemorySingleInstance

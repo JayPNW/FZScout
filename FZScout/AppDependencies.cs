@@ -1,4 +1,4 @@
-using FZScout.Logs;
+﻿using FZScout.Logs;
 using FZScout.Site;
 
 namespace FZScout;

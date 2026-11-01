@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using FZScout.Logs;
 using FZScout.Site;
 using FZScout.Tests.Logs;

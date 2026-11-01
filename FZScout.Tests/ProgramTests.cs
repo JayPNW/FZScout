@@ -1,4 +1,4 @@
-namespace FZScout.Tests;
+﻿namespace FZScout.Tests;
 
 public class ProgramTests
 {

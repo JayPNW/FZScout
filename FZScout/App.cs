@@ -1,4 +1,4 @@
-using FZScout.Logs;
+﻿using FZScout.Logs;
 using FZScout.Reporting;
 
 namespace FZScout;
@@ -18,7 +18,7 @@ class App
 
     public App(AppDependencies dependencies)
     {
-        this.Dependencies = dependencies;
+        Dependencies = dependencies;
         var log = dependencies.Log;
         var serverListCache = new ServerListCache(dependencies.FangbreakerZoneClient, log);
         this._bonusReporter = new BonusReporter(dependencies.FangbreakerZoneClient, serverListCache, log);
@@ -32,41 +32,41 @@ class App
     /// <summary>Unless FZScout is already running, starts, then ticks every <see cref="TickInterval"/> until the user asks to exit.</summary>
     public async Task RunAsync()
     {
-        using var singleInstanceClaim = this.Dependencies.TryClaimSingleInstance();
+        using var singleInstanceClaim = Dependencies.TryClaimSingleInstance();
         if (singleInstanceClaim is null)
         {
-            this.Dependencies.UserInput.InformUserAppIsAlreadyRunning();
+            Dependencies.UserInput.InformUserAppIsAlreadyRunning();
             return;
         }
 
         await StartAsync();
 
-        using var timer = new PeriodicTimer(TickInterval, this.Dependencies.TimeProvider);
+        using var timer = new PeriodicTimer(TickInterval, Dependencies.TimeProvider);
         try
         {
-            while (await timer.WaitForNextTickAsync(this.Dependencies.UserInput.ExitRequested))
+            while (await timer.WaitForNextTickAsync(Dependencies.UserInput.ExitRequested))
             {
                 await TickAsync();
             }
         }
-        catch (OperationCanceledException) when (this.Dependencies.UserInput.ExitRequested.IsCancellationRequested)
+        catch (OperationCanceledException) when (Dependencies.UserInput.ExitRequested.IsCancellationRequested)
         {
         }
     }
 
     public async Task StartAsync()
     {
-        this.Dependencies.Log.Info($"FZScout v{this.Dependencies.GetVersion()}");
-        await this.Dependencies.GitHubUpdateChecker.CheckAsync(this.Dependencies.GetVersion(), this.Dependencies.Log, this.Dependencies.UserInput.ExitRequested);
-        await this._bonusReporter.ChangeApiKeyAsync(this.Dependencies.ApiKeyStore.Load(), this.Dependencies.UserInput.ExitRequested);
+        Dependencies.Log.Info($"FZScout v{Dependencies.GetVersion()}");
+        await Dependencies.GitHubUpdateChecker.CheckAsync(Dependencies.GetVersion(), Dependencies.Log, Dependencies.UserInput.ExitRequested);
+        await this._bonusReporter.ChangeApiKeyAsync(Dependencies.ApiKeyStore.Load(), Dependencies.UserInput.ExitRequested);
         await TickScoutAsync();
         PrintWatchedLogs();
-        this.Dependencies.Log.Info("Press Ctrl+C to exit.");
+        Dependencies.Log.Info("Press Ctrl+C to exit.");
     }
 
     public async Task TickAsync()
     {
-        await this._apiKeyPrompt.TickAsync(this.Dependencies.UserInput.ExitRequested);
+        await this._apiKeyPrompt.TickAsync(Dependencies.UserInput.ExitRequested);
         await TickScoutAsync();
     }
 
@@ -75,11 +75,11 @@ class App
     {
         try
         {
-            await this._scout.TickAsync(this.Dependencies.TimeProvider.GetUtcNow(), this.Dependencies.UserInput.ExitRequested);
+            await this._scout.TickAsync(Dependencies.TimeProvider.GetUtcNow(), Dependencies.UserInput.ExitRequested);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            this.Dependencies.Log.Error($"Unexpected problem: {exception}");
+            Dependencies.Log.Error($"Unexpected problem: {exception}");
         }
     }
 
@@ -87,13 +87,13 @@ class App
     {
         if (this._logWatcher.WatchedLogs.Count == 0)
         {
-            this.Dependencies.Log.Info("No EverQuest logs found yet. Looking every 30 seconds while EverQuest runs.");
+            Dependencies.Log.Info("No EverQuest logs found yet. Looking every 30 seconds while EverQuest runs.");
             return;
         }
 
         foreach (var folder in this._logWatcher.WatchedLogs.Select(Path.GetDirectoryName).Distinct())
         {
-            this.Dependencies.Log.Info($"EverQuest logs found in {folder}");
+            Dependencies.Log.Info($"EverQuest logs found in {folder}");
         }
     }
 }
