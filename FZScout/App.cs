@@ -35,9 +35,7 @@ class App
         using var singleInstanceClaim = this.Dependencies.TryClaimSingleInstance();
         if (singleInstanceClaim is null)
         {
-            this.Dependencies.Log.Error("FZScout is already running.");
-            this.Dependencies.Log.Info("Press any key to exit.");
-            this.Dependencies.UserInput.WaitForAnyKey();
+            this.Dependencies.UserInput.InformUserAppIsAlreadyRunning();
             return;
         }
 

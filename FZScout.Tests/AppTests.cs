@@ -53,15 +53,14 @@ public class AppTests : IDisposable
     public void Dispose() => this._everQuest.Dispose();
 
     [Fact]
-    public async Task WaitsForAKeyAndExitsWhenAlreadyRunning()
+    public async Task InformsUserAndExitsWhenAlreadyRunning()
     {
         this._apiKeyStore.Save(StoredApiKey);
         using var otherInstance = this._singleInstance.TryClaim();
 
         await this._app.RunAsync();
 
-        Assert.Contains("ERROR: FZScout is already running.", Output);
-        Assert.Equal(1, this._userInput.TimesWaitedForAnyKey);
+        Assert.Equal(1, this._userInput.TimesInformedAppIsAlreadyRunning);
         Assert.Empty(this._site.Requests);
     }
 
