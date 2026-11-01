@@ -6,11 +6,9 @@ namespace FZScout;
 class ConsoleUserInput : IUserInput
 {
     readonly CancellationTokenSource _exitRequested = new();
-    readonly ConsoleReporter _reporter;
 
-    public ConsoleUserInput(ConsoleReporter reporter)
+    public ConsoleUserInput()
     {
-        this._reporter = reporter;
         Console.CancelKeyPress += (_, e) =>
         {
             e.Cancel = true;
@@ -23,8 +21,10 @@ class ConsoleUserInput : IUserInput
     /// <summary>Waits for a key so the window doesn't close before the user can read why.</summary>
     public void InformUserAppIsAlreadyRunning()
     {
-        this._reporter.Error("FZScout is already running.");
-        this._reporter.Info("Press any key to exit.");
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("FZScout is already running.");
+        Console.ResetColor();
+        Console.WriteLine("Press any key to exit.");
         Console.ReadKey(intercept: true);
     }
 

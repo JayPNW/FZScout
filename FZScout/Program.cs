@@ -15,10 +15,9 @@ static class Program
     internal static App CreateAppWithRealDependencies()
     {
         var timeProvider = TimeProvider.System;
-        var reporter = new ConsoleReporter(timeProvider);
         return new App(new AppDependencies(
-            new ConsoleUserInput(reporter),
-            reporter,
+            new ConsoleUserInput(),
+            new ConsoleReporter(timeProvider),
             GetVersion: GetVersion,
             timeProvider,
             TryClaimSingleInstance: SingleInstance.TryClaim,
