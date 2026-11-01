@@ -8,11 +8,11 @@ static class Program
 {
     static async Task Main()
     {
-        var app = CreateAppWithRealDependencies();
+        var app = CreateApp();
         await app.RunAsync();
     }
 
-    internal static App CreateAppWithRealDependencies()
+    internal static App CreateApp()
     {
         var timeProvider = TimeProvider.System;
         return new App(new AppDependencies(
