@@ -3,16 +3,6 @@
 /// <summary>Turns the zone name in the log into the site's zone name. See InternalDocumentation/Zones.md.</summary>
 static class ZoneNames
 {
-
-    static readonly HashSet<string> NeverHaveABonus =
-    [
-        "The Plane of Tranquility",
-        "The Plane of Knowledge",
-        "Guild Lobby",
-        "Guild Hall",
-        "The Arena",
-    ];
-
     public static readonly Dictionary<string, string> LogToSite = new()
     {
         ["Cabilis East"] = "Cabilis",
@@ -70,11 +60,6 @@ static class ZoneNames
     /// <param name="siteZones">The server's zones list, or null if it couldn't be loaded.</param>
     public static Zone Resolve(string logZone, IReadOnlySet<string>? siteZones)
     {
-        if (NeverHaveABonus.Contains(logZone))
-        {
-            return new NeverBonusZone(logZone);
-        }
-
         if (siteZones is null)
         {
             return new UnresolvedZone(logZone);

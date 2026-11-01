@@ -241,8 +241,8 @@ public class CharacterScoutTests
     public void UnknownZoneWithNoBonusIsNotAnError()
     {
         Assert.Equal(
-            [new LogInfoAction("Bob (Frostreaver) entered The Halls of Honor.")],
-            Log(0, "You have entered The Halls of Honor."));
+            [new LogInfoAction("Bob (Frostreaver) entered The Plane of Knowledge.")],
+            Log(0, "You have entered The Plane of Knowledge."));
         Assert.Empty(Log(10, Kill));
         Assert.Empty(Tick(1000));
     }
@@ -311,24 +311,6 @@ public class CharacterScoutTests
     public void DailyResetDropsPendingReports()
     {
         Assert.Equal([new DropPendingReportsAction(Bob)], Log(0, DailyReset));
-    }
-
-    [Fact]
-    public void ZoneThatNeverHasABonusWaitsForNothing()
-    {
-        Log(0, "You have entered The Plane of Knowledge.");
-        Assert.Empty(Log(10, Kill));
-        Assert.Empty(Tick(1000));
-    }
-
-    [Fact]
-    public void BonusInAZoneThatNeverHasOneIsAnError()
-    {
-        Log(0, "You have entered The Plane of Knowledge.");
-
-        Assert.Equal(
-            [new LogErrorAction($"Bob (Frostreaver) saw a 'experience' bonus in 'The Plane of Knowledge', which never has a bonus. Please report it at {CharacterScout.ReportIssuesUrl}")],
-            Log(10, Experience));
     }
 
     [Fact]

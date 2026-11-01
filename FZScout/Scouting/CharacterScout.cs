@@ -130,11 +130,7 @@ class CharacterScout(Character character)
 
     IReadOnlyList<ScoutAction> OnBonus(BonusKey bonus, ServerLists? lists)
     {
-        if (CurrentZone is NeverBonusZone noBonusZone)
-        {
-            return [new LogErrorAction($"{character} saw a '{bonus}' bonus in '{noBonusZone.Name}', which never has a bonus. Please report it at {ReportIssuesUrl}")];
-        }
-
+        // An unknown zone that never gets a bonus, like The Plane of Knowledge, is fine. One that does needs adding.
         if (CurrentZone is UnknownZone unknown)
         {
             return [new LogErrorAction($"{character} saw a '{bonus}' bonus in '{unknown.LogName}', which isn't on the {character.Server} zones list. Please report it at {ReportIssuesUrl}")];

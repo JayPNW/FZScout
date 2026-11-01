@@ -1,13 +1,5 @@
 # Zones
 
-## Zones that never get a bonus
-
-- The Plane of Tranquility
-- The Plane of Knowledge
-- Guild Lobby
-- Guild Hall
-- The Arena
-
 ## Instanced zones
 
 Some zones are instances of another, for example `Lavaspinner's Lair: Lavaspinner's Locals` and `Lavaspinner's Lair: The Drake Menace` are instances of `Lavaspinner's Lair`.
