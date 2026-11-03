@@ -13,7 +13,7 @@ A console app that monitors Everquest logs for zone bonuses and posts them to th
 - When the app launches it prints out:
   - The app version.
   - The status of the API key (working, rejected, or missing). To check it, POST `none` for `The Nexus` on Fangbreaker.
-- When the key is missing or rejected, ask for one at the console. Keep watching logs while waiting for the answer.
+- When the key is missing or rejected, ask for one at the console. Don't watch logs until a key is accepted. Entering nothing exits.
 - Errors are red. Successful uploads are yellow.
 
 ## Finding logs
@@ -83,4 +83,4 @@ Every failure is logged as an error.
 | 404 zone not found  | Reload the zones list. Don't retry.                                           |
 | 500, other, network | Don't retry.                                                                  |
 
-If loading `types` or `zones` fails, retry once after 1 minute. If that fails too, try again the next time the list is needed.
+Each server's `types` and `zones` lists are loaded the first time they're needed. If loading fails, try again the next time they're needed.
