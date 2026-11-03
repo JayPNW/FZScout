@@ -31,7 +31,7 @@ class ApiKeyPrompt
         if (this._needed && this._answer is null)
         {
             this._needed = false;
-            this._log.Info("Paste your API key. (For help see https://jaypnw.github.io/FZScout/create-api-key.html):");
+            this._log.Info("Get an API key from https://fangbreaker.zone/account and paste it here. (For help see https://jaypnw.github.io/FZScout/create-api-key.html):");
             this._answer = this._readApiKeyAsync(cancellationToken);
         }
 
