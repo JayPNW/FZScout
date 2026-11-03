@@ -11,6 +11,7 @@ class FakeSite : HttpMessageHandler
 {
     readonly Dictionary<string, HttpStatusCode> _failures = [];
     readonly Dictionary<string, string> _today = [];
+    readonly HashSet<ApiKey> _rejectedApiKeys = [];
 
     /// <summary>Each request as <c>GET /path</c> or <c>POST /path {body}</c>.</summary>
     public List<string> Requests { get; } = [];
@@ -24,6 +25,8 @@ class FakeSite : HttpMessageHandler
 
     public void SetToday(string zone, string bonus) => this._today[zone] = bonus;
 
+    public void RejectApiKey(ApiKey apiKey) => this._rejectedApiKeys.Add(apiKey);
+
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         var route = $"{request.Method} {request.RequestUri!.AbsolutePath}";
@@ -34,6 +37,11 @@ class FakeSite : HttpMessageHandler
         }
 
         Requests.Add($"{route}{body}");
+
+        if (request.Headers.TryGetValues("X-API-Key", out var apiKeys) && this._rejectedApiKeys.Contains(new ApiKey(apiKeys.Single())))
+        {
+            return new HttpResponseMessage(HttpStatusCode.Unauthorized) { Content = new StringContent("""{"ok":false,"error":"Nope"}""") };
+        }
 
         if (this._failures.TryGetValue(route, out var httpStatusCode))
         {

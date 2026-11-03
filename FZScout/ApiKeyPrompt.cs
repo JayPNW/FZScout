@@ -3,61 +3,38 @@ using FZScout.Site;
 
 namespace FZScout;
 
-/// <summary>
-/// Asks the user for an API key whenever the reporter needs one: at launch if there's none, or whenever the site rejects it.
-/// Waits for the answer in the background so the app keeps watching logs meanwhile.
-/// </summary>
-class ApiKeyPrompt
+/// <summary>Asks the user for an API key until the site accepts one or the user enters nothing.</summary>
+class ApiKeyPrompt(BonusReporter bonusReporter, IApiKeyStore apiKeyStore, ConsoleReporter log, Func<CancellationToken, Task<ApiKey?>> readApiKeyAsync)
 {
-    readonly BonusReporter _reporter;
-    readonly IApiKeyStore _apiKeyStore;
-    readonly ConsoleReporter _log;
-    readonly Func<CancellationToken, Task<ApiKey?>> _readApiKeyAsync;
-    bool _needed;
-    Task<ApiKey?>? _answer;
-
-    public ApiKeyPrompt(BonusReporter bonusReporter, IApiKeyStore apiKeyStore, ConsoleReporter log, Func<CancellationToken, Task<ApiKey?>> readApiKeyAsync)
+    public async Task AskUntilAcceptedAsync(CancellationToken cancellationToken)
     {
-        this._reporter = bonusReporter;
-        this._apiKeyStore = apiKeyStore;
-        this._log = log;
-        this._readApiKeyAsync = readApiKeyAsync;
-        bonusReporter.ApiKeyNeeded += () => this._needed = true;
+        while (!bonusReporter.HasApiKey)
+        {
+            log.Info("Get an API key from https://fangbreaker.zone/account and paste it here. (For help see https://jaypnw.github.io/FZScout/create-api-key.html):");
+            var answer = await readApiKeyAsync(cancellationToken);
+            if (answer is not { } apiKey)
+            {
+                log.Error("No API key entered. Exiting.");
+                return;
+            }
+
+            Save(apiKey);
+            await bonusReporter.ChangeApiKeyAsync(apiKey, cancellationToken);
+        }
     }
 
-    /// <summary>Call every tick. Asks if needed, and uses the answer once it comes.</summary>
-    public async Task TickAsync(CancellationToken cancellationToken)
+    void Save(ApiKey apiKey)
     {
-        if (this._needed && this._answer is null)
-        {
-            this._needed = false;
-            this._log.Info("Get an API key from https://fangbreaker.zone/account and paste it here. (For help see https://jaypnw.github.io/FZScout/create-api-key.html):");
-            this._answer = this._readApiKeyAsync(cancellationToken);
-        }
-
-        if (this._answer is not { IsCompleted: true })
-        {
-            return;
-        }
-
-        var answer = await this._answer;
-        this._answer = null;
-        if (answer is not { } apiKey)
-        {
-            this._log.Warning("No API key entered, so nothing will be reported. Restart the app to enter one.");
-            return;
-        }
-
         try
         {
-            this._apiKeyStore.Save(apiKey);
+            apiKeyStore.Save(apiKey);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            this._log.Error($"Couldn't save the API key, so it will only be used until the app closes: {exception.Message}");
+            log.Error($"Couldn't save the API key, so it will only be used until the app closes: {exception.Message}");
+            return;
         }
-        this._log.Info($"API key saved to {this._apiKeyStore.StorageLocationForDisplay}.");
 
-        await this._reporter.ChangeApiKeyAsync(apiKey, cancellationToken);
+        log.Info($"API key saved to {apiKeyStore.StorageLocationForDisplay}.");
     }
 }

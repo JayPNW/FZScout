@@ -28,8 +28,8 @@ class ConsoleUserInput : IUserInput
         Console.ReadKey(intercept: true);
     }
 
-    /// <summary>Reads on a background thread so the caller can keep working while the user types.</summary>
-    public Task<ApiKey?> ReadApiKeyAsync(CancellationToken cancellationToken) => Task.Run(ReadApiKey, cancellationToken);
+    /// <summary>The console read can't be interrupted, so on cancellation this stops waiting for it instead.</summary>
+    public Task<ApiKey?> ReadApiKeyAsync(CancellationToken cancellationToken) => Task.Run(ReadApiKey, cancellationToken).WaitAsync(cancellationToken);
 
     static ApiKey? ReadApiKey()
     {

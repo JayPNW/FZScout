@@ -127,7 +127,7 @@ public class BonusReporterTests
     {
         this._site.Fail(Post, HttpStatusCode.Unauthorized);
         await Execute(0, Bonus(Bob, "Befallen", "loot"));
-        Assert.Contains("ERROR: API key: rejected. Reporting is stopped until the key changes.", Output());
+        Assert.Contains("ERROR: API key rejected.", Output());
 
         this._site.Succeed(Post);
         await Execute(10, Bonus(Ann, "Befallen", "loot"));
@@ -139,42 +139,25 @@ public class BonusReporterTests
     }
 
     [Fact]
-    public async Task RejectedKeyAsksForANewOne()
-    {
-        var asked = 0;
-        this._reporter.ApiKeyNeeded += () => asked++;
-        this._site.Fail(Post, HttpStatusCode.Unauthorized);
-
-        await Execute(0, Bonus(Bob, "Befallen", "loot"));
-
-        Assert.Equal(1, asked);
-    }
-
-    [Fact]
     public async Task RejectedKeyIsReportedAtCheck()
     {
-        var asked = 0;
-        this._reporter.ApiKeyNeeded += () => asked++;
         this._site.Fail(Post, HttpStatusCode.Unauthorized);
 
         await this._reporter.ChangeApiKeyAsync(new ApiKey("fz_live_bad"), Cancel);
         this._site.Succeed(Post);
         await Execute(0, Bonus(Bob, "Befallen", "loot"));
 
-        Assert.Equal(1, asked);
+        Assert.False(this._reporter.HasApiKey);
         Assert.Single(this._site.Requests);
-        Assert.StartsWith("12:00:00 ERROR: API key: rejected. Reporting is stopped until the key changes.", Output());
+        Assert.StartsWith("12:00:00 ERROR: API key rejected.", Output());
     }
 
     [Fact]
-    public async Task MissingKeyAsksForOne()
+    public async Task MissingKeyIsReportedAtCheck()
     {
-        var asked = 0;
-        this._reporter.ApiKeyNeeded += () => asked++;
-
         await this._reporter.ChangeApiKeyAsync(null, Cancel);
 
-        Assert.Equal(1, asked);
+        Assert.False(this._reporter.HasApiKey);
         Assert.Empty(this._site.Requests);
         Assert.Equal("12:00:00 API key missing. Nothing will be reported.", Output());
     }

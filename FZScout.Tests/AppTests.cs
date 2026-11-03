@@ -1,5 +1,4 @@
-﻿using System.Net;
-using FZScout.Site;
+﻿using FZScout.Site;
 using FZScout.Tests.Reporting;
 using Microsoft.Extensions.Time.Testing;
 
@@ -65,9 +64,6 @@ public class AppTests
     public async Task AsksForAnApiKeyWhenNoneIsStored()
     {
         await this._app.StartAsync();
-        Assert.Empty(this._site.Requests);
-
-        await Tick();
 
         Assert.Equal(1, this._userInput.TimesAskedForApiKey);
         Assert.Equal(TypedApiKey, this._apiKeyStore.Load());
@@ -79,21 +75,25 @@ public class AppTests
     public async Task AsksForANewApiKeyWhenTheSiteRejectsTheStoredOne()
     {
         this._apiKeyStore.Save(StoredApiKey);
-        this._site.Fail("POST /api/client/bonuses", HttpStatusCode.Unauthorized);
+        this._site.RejectApiKey(StoredApiKey);
+
         await this._app.StartAsync();
-        Assert.Contains("API key: rejected.", Output);
 
-        this._site.Succeed("POST /api/client/bonuses");
-        await Tick();
-
+        Assert.Contains("ERROR: API key rejected.", Output);
         Assert.Equal(1, this._userInput.TimesAskedForApiKey);
         Assert.Equal(TypedApiKey, this._apiKeyStore.Load());
         Assert.Contains("API key verified.", Output);
     }
 
-    Task Tick()
+    [Fact]
+    public async Task ExitsWhenNoApiKeyIsEntered()
     {
-        this._time.Advance(App.TickInterval);
-        return this._app.TickAsync();
+        this._userInput.TypedApiKey = null;
+
+        await this._app.RunAsync();
+
+        Assert.Equal(1, this._userInput.TimesAskedForApiKey);
+        Assert.Empty(this._site.Requests);
+        Assert.Contains("No API key entered. Exiting.", Output);
     }
 }

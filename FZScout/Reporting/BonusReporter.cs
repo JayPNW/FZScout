@@ -16,8 +16,8 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache
     ApiKey? _apiKey;
     bool _keyRejected;
 
-    /// <summary>Raised when there's no key or the site rejected it, so the user should be asked for one.</summary>
-    public event Action ApiKeyNeeded = delegate { };
+    /// <summary>True once a key has been set and hasn't been rejected by the site.</summary>
+    public bool HasApiKey => this._apiKey is not null && !this._keyRejected;
 
     /// <summary>Changing the key resumes reporting after the old one was rejected.</summary>
     public void SetApiKey(ApiKey? apiKey)
@@ -33,7 +33,6 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache
         if (apiKey is null)
         {
             log.Info("API key missing. Nothing will be reported.");
-            ApiKeyNeeded();
             return;
         }
 
@@ -179,8 +178,7 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache
     Task StopUntilKeyChanges()
     {
         this._keyRejected = true;
-        log.Error("API key: rejected. Reporting is stopped until the key changes.");
-        ApiKeyNeeded();
+        log.Error("API key rejected.");
         return Task.CompletedTask;
     }
 

@@ -36,18 +36,37 @@ class App
             return;
         }
 
-        await StartAsync();
-
-        var watchingLogs = WatchLogsAsync(Dependencies.UserInput.ExitRequested);
-        using var timer = new PeriodicTimer(TickInterval, Dependencies.TimeProvider);
         try
         {
-            while (await timer.WaitForNextTickAsync(Dependencies.UserInput.ExitRequested))
-            {
-                await TickAsync();
-            }
+            await StartAsync();
         }
         catch (OperationCanceledException) when (Dependencies.UserInput.ExitRequested.IsCancellationRequested)
+        {
+            return;
+        }
+
+        if (!this._bonusReporter.HasApiKey)
+        {
+            return;
+        }
+
+        using var timer = new PeriodicTimer(TickInterval, Dependencies.TimeProvider);
+        using var runCancellation = CancellationTokenSource.CreateLinkedTokenSource(Dependencies.UserInput.ExitRequested);
+        var watchingLogs = WatchLogsAsync(runCancellation.Token);
+        try
+        {
+            while (await timer.WaitForNextTickAsync(runCancellation.Token))
+            {
+                await TickAsync();
+                if (!this._bonusReporter.HasApiKey)
+                {
+                    Dependencies.Log.Info("Exiting.");
+                    runCancellation.Cancel();
+                    break;
+                }
+            }
+        }
+        catch (OperationCanceledException) when (runCancellation.IsCancellationRequested)
         {
         }
 
@@ -59,18 +78,18 @@ class App
         Dependencies.Log.Info($"FZScout v{Dependencies.GetVersion()}");
 
         await this._bonusReporter.ChangeApiKeyAsync(Dependencies.ApiKeyStore.Load(), Dependencies.UserInput.ExitRequested);
-        await TickScoutAsync();
+        await this._apiKeyPrompt.AskUntilAcceptedAsync(Dependencies.UserInput.ExitRequested);
+        if (!this._bonusReporter.HasApiKey)
+        {
+            return;
+        }
+
+        await TickAsync();
         Dependencies.Log.Info("Press Ctrl+C to exit.");
     }
 
-    public async Task TickAsync()
-    {
-        await this._apiKeyPrompt.TickAsync(Dependencies.UserInput.ExitRequested);
-        await TickScoutAsync();
-    }
-
     /// <summary>One bad tick is logged, not fatal: the next one gets a fresh start.</summary>
-    async Task TickScoutAsync()
+    async Task TickAsync()
     {
         try
         {
