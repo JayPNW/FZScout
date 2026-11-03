@@ -1,37 +1,54 @@
-﻿using System.Net;
-using FZScout.Tests.Site;
+﻿using Velopack;
+using Velopack.Locators;
+using Velopack.Logging;
 
 namespace FZScout.Tests;
 
 public class GitHubUpdateCheckerTests
 {
     [Theory]
-    [InlineData("2", "3", true)]
-    [InlineData("3", "3", false)]
-    [InlineData("4", "3", false)]
-    [InlineData("3-ci.99", "3", true)]
-    [InlineData("3-ci.99", "4", true)]
-    [InlineData("3-ci.99+abc123", "3", true)]
-    [InlineData("3-ci.99", "2", false)]
-    public async Task AnnouncesNewerRelease(string current, string latest, bool announced)
+    [InlineData("2.0.0", "3.0.0", true)]
+    [InlineData("3.0.0", "3.0.0", false)]
+    [InlineData("4.0.0", "3.0.0", false)]
+    [InlineData("3.0.0-ci.99", "3.0.0", true)]
+    [InlineData("3.0.0-ci.99", "4.0.0", true)]
+    [InlineData("3.0.0-ci.99", "2.0.0", false)]
+    public async Task DownloadsNewerRelease(string current, string latest, bool downloaded)
     {
-        var output = new StringWriter();
-        var handler = new StubHttpHandler(HttpStatusCode.OK, $$"""{"tag_name":"v{{latest}}","html_url":"https://example.test/r"}""");
-        var checker = new GitHubUpdateChecker(handler);
+        var feed = new VelopackAssetFeed
+        {
+            Assets =
+            [
+                new VelopackAsset
+                {
+                    PackageId = "FZScout",
+                    Version = SemanticVersion.Parse(latest),
+                    Type = VelopackAssetType.Full,
+                    FileName = "FZScout-win-Full.nupkg",
+                    // The fake download below writes an empty file, so these must be the hashes of zero bytes.
+                    SHA1 = "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709",
+                    SHA256 = "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+                },
+            ],
+        };
+        using var installDir = new TempDirectory();
+        var locator = new TestVelopackLocator("FZScout", current, installDir.Path, NullVelopackLogger.Instance);
+        var checker = new GitHubUpdateChecker(new FakeUpdateSource(feed), locator);
 
-        await checker.CheckAsync(current, new ConsoleReporter(output, TimeProvider.System), TestContext.Current.CancellationToken);
+        var downloadedVersion = await checker.CheckAsync(TestContext.Current.CancellationToken);
 
-        Assert.Equal(announced, output.ToString().Contains("https://example.test/r"));
+        Assert.Equal(downloaded, downloadedVersion == latest);
     }
 
     [Fact]
     public async Task StaysQuietWhenGitHubIsUnreachable()
     {
-        var output = new StringWriter();
-        var checker = new GitHubUpdateChecker(new StubHttpHandler(new HttpRequestException()));
+        using var installDir = new TempDirectory();
+        var locator = new TestVelopackLocator("FZScout", "1.0.0", installDir.Path, NullVelopackLogger.Instance);
+        var checker = new GitHubUpdateChecker(new FakeUpdateSource(new VelopackAssetFeed(), new HttpRequestException()), locator);
 
-        await checker.CheckAsync("1", new ConsoleReporter(output, TimeProvider.System), TestContext.Current.CancellationToken);
+        var downloadedVersion = await checker.CheckAsync(TestContext.Current.CancellationToken);
 
-        Assert.Equal(string.Empty, output.ToString());
+        Assert.Null(downloadedVersion);
     }
 }

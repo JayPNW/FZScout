@@ -56,8 +56,17 @@ class App
 
     public async Task StartAsync()
     {
-        Dependencies.Log.Info($"FZScout v{Dependencies.GetVersion()}");
-        await Dependencies.GitHubUpdateChecker.CheckAsync(Dependencies.GetVersion(), Dependencies.Log, Dependencies.UserInput.ExitRequested);
+        var downloadedUpdateVersion = await Dependencies.GitHubUpdateChecker.CheckAsync(Dependencies.UserInput.ExitRequested);
+        var versionLine = $"FZScout v{Dependencies.GetVersion()}";
+        if (downloadedUpdateVersion is not null)
+        {
+            Dependencies.Log.Success($"{versionLine} (v{downloadedUpdateVersion} downloaded, applies on restart).");
+        }
+        else
+        {
+            Dependencies.Log.Info(versionLine);
+        }
+
         await this._bonusReporter.ChangeApiKeyAsync(Dependencies.ApiKeyStore.Load(), Dependencies.UserInput.ExitRequested);
         await TickScoutAsync();
         Dependencies.Log.Info("Press Ctrl+C to exit.");

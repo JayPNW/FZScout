@@ -11,11 +11,10 @@
     <Version>7</Version>
   </PropertyGroup>
 
-  <!-- Published as a self-contained, single-file x64 exe. Only when publishing, so the tests can reference this project. -->
+  <!-- Published as a self-contained x64 app for Velopack to pack. Only when publishing, so the tests can reference this project. -->
   <PropertyGroup Condition="'$(_IsPublishing)' == 'true'">
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <SelfContained>true</SelfContained>
-    <PublishSingleFile>true</PublishSingleFile>
     <!-- Nothing next to the exe: symbols go inside it, and the XML docs exist only for the analyzers. -->
     <DebugType>embedded</DebugType>
     <PublishDocumentationFile>false</PublishDocumentationFile>
@@ -27,6 +26,7 @@
 
   <ItemGroup>
     <PackageReference Include="EverQuestLogWatcher" />
+    <PackageReference Include="Velopack" />
   </ItemGroup>
 
 </Project>

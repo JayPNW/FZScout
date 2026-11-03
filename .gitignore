@@ -189,6 +189,9 @@ DocProject/Help/html
 # Click-Once directory
 publish/
 
+# scripts/release.ps1's vpk pack output
+releases/
+
 # Publish Web Output
 *.[Pp]ublish.xml
 *.azurePubxml

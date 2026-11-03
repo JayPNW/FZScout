@@ -17,6 +17,8 @@ jobs:
         with:
           global-json-file: global.json
       - run: ./build-and-test.cmd
+      - run: dotnet tool install -g vpk
+        if: github.event_name == 'push'
       - name: Publish prerelease
         if: github.event_name == 'push'
         run: ./scripts/release.ps1 -Prerelease ci.${{ github.run_number }} -GitHubToken ${{ secrets.GITHUB_TOKEN }}
