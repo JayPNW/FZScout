@@ -324,9 +324,9 @@ public class CharacterScoutTests
         Assert.Equal([ReportNone("Befallen")], Tick(300));
     }
 
-    static ReportBonusAction Report(string zone, string bonus) => new(Bob, new BonusReport(Server.Frostreaver, zone, new BonusKey(bonus)));
+    static ReportBonusAction Report(string zone, string bonus) => new(new BonusReport(Server.Frostreaver, zone, new BonusKey(bonus)));
 
-    static ReportNoBonusAction ReportNone(string zone) => new(Bob, zone);
+    static ReportNoBonusAction ReportNone(string zone) => new(Server.Frostreaver, zone);
 
     IReadOnlyList<ScoutAction> Log(int seconds, string message) => this._scout.Handle(Parser.Parse($"[Thu Oct 29 12:00:00 2026] {message}"), Start.AddSeconds(seconds), Lists);
 

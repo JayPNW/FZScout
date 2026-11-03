@@ -58,7 +58,7 @@ class CharacterScout(Character character)
         }
 
         MarkAlreadyReportedThisZone();
-        return [new ReportNoBonusAction(character, zone.SiteName)];
+        return [new ReportNoBonusAction(character.Server, zone.SiteName)];
     }
 
     static bool IsDue(DateTimeOffset? deadline, DateTimeOffset now) => deadline is not null && deadline <= now;
@@ -151,7 +151,7 @@ class CharacterScout(Character character)
         }
 
         MarkAlreadyReportedThisZone();
-        return [new ReportBonusAction(character, new BonusReport(character.Server, zone.SiteName, bonus))];
+        return [new ReportBonusAction(new BonusReport(character.Server, zone.SiteName, bonus))];
     }
 
     IReadOnlyList<ScoutAction> OnDailyReset(DateTimeOffset now)
