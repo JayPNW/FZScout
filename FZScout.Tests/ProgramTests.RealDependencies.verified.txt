@@ -2,7 +2,6 @@
   ApiKeyStore: WindowsCredentialManagerApiKeyStore,
   FangbreakerZoneClient: FangbreakerZoneClient,
   GetVersion: Program.GetVersion,
-  GitHubUpdateChecker: GitHubUpdateChecker,
   Log: ConsoleReporter,
   TimeProvider: SystemTimeProvider,
   TryClaimSingleInstance: SingleInstance.TryClaim,

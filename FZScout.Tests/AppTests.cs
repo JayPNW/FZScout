@@ -2,7 +2,6 @@
 using FZScout.Site;
 using FZScout.Tests.Reporting;
 using Microsoft.Extensions.Time.Testing;
-using Velopack;
 
 namespace FZScout.Tests;
 
@@ -31,8 +30,7 @@ public class AppTests
             this._time,
             TryClaimSingleInstance: this._singleInstance.TryClaim,
             this._apiKeyStore,
-            this._site.Client,
-            new GitHubUpdateChecker(new FakeUpdateSource(new VelopackAssetFeed()))));
+            this._site.Client));
     }
 
     static CancellationToken Cancel => TestContext.Current.CancellationToken;

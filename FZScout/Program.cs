@@ -8,9 +8,8 @@ static class Program
 {
     static async Task Main()
     {
-        // Must run before anything else. vpk's packaging-time check for this flags it as misplaced because
-        // Main is compiled into an async state machine, but it genuinely does run first.
         VelopackApp.Build().Run();
+        using var pendingUpdate = await new GitHubUpdateChecker().DownloadLatestAndApplyOnDispose();
 
         var app = CreateApp();
         await app.RunAsync();
@@ -26,8 +25,7 @@ static class Program
             timeProvider,
             TryClaimSingleInstance: SingleInstance.TryClaim,
             ApiKeyStore: new WindowsCredentialManagerApiKeyStore(),
-            new FangbreakerZoneClient(),
-            new GitHubUpdateChecker()));
+            new FangbreakerZoneClient()));
     }
 
     static string? GetVersion() => Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;

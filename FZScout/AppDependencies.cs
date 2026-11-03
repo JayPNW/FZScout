@@ -9,5 +9,4 @@ record AppDependencies(
     TimeProvider TimeProvider,
     Func<IDisposable?> TryClaimSingleInstance,
     IApiKeyStore ApiKeyStore,
-    FangbreakerZoneClient FangbreakerZoneClient,
-    GitHubUpdateChecker GitHubUpdateChecker);
+    FangbreakerZoneClient FangbreakerZoneClient);

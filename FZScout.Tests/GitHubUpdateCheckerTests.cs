@@ -35,9 +35,9 @@ public class GitHubUpdateCheckerTests
         var locator = new TestVelopackLocator("FZScout", current, installDir.Path, NullVelopackLogger.Instance);
         var checker = new GitHubUpdateChecker(new FakeUpdateSource(feed), locator);
 
-        var downloadedVersion = await checker.CheckAsync(TestContext.Current.CancellationToken);
+        var pendingUpdate = await checker.DownloadLatestAndApplyOnDispose(TestContext.Current.CancellationToken);
 
-        Assert.Equal(downloaded, downloadedVersion == latest);
+        Assert.Equal(downloaded, pendingUpdate is not null);
     }
 
     [Fact]
@@ -47,8 +47,8 @@ public class GitHubUpdateCheckerTests
         var locator = new TestVelopackLocator("FZScout", "1.0.0", installDir.Path, NullVelopackLogger.Instance);
         var checker = new GitHubUpdateChecker(new FakeUpdateSource(new VelopackAssetFeed(), new HttpRequestException()), locator);
 
-        var downloadedVersion = await checker.CheckAsync(TestContext.Current.CancellationToken);
+        var pendingUpdate = await checker.DownloadLatestAndApplyOnDispose(TestContext.Current.CancellationToken);
 
-        Assert.Null(downloadedVersion);
+        Assert.Null(pendingUpdate);
     }
 }
