@@ -25,7 +25,7 @@ public class ServerListCacheTests
     [Fact]
     public async Task LoadsTypesAndZones()
     {
-        var lists = await this._cache.GetAsync(Server.Fangbreaker, Start, Cancel);
+        var lists = await this._cache.GetAsync(Server.Fangbreaker, Cancel);
 
         Assert.Equal(["experience", "loot", "none"], lists!.Types.Select(t => t.Value).Order());
         Assert.Equal(["Befallen", "Crushbone"], lists.Zones.Order());
@@ -34,8 +34,8 @@ public class ServerListCacheTests
     [Fact]
     public async Task LoadsOnlyOnce()
     {
-        await this._cache.GetAsync(Server.Fangbreaker, Start, Cancel);
-        await this._cache.GetAsync(Server.Fangbreaker, Start.AddHours(1), Cancel);
+        await this._cache.GetAsync(Server.Fangbreaker, Cancel);
+        await this._cache.GetAsync(Server.Fangbreaker, Cancel);
 
         Assert.Equal([Types, Zones], this._site.Requests);
     }
@@ -43,8 +43,8 @@ public class ServerListCacheTests
     [Fact]
     public async Task EachServerHasItsOwnLists()
     {
-        await this._cache.GetAsync(Server.Fangbreaker, Start, Cancel);
-        await this._cache.GetAsync(Server.Frostreaver, Start, Cancel);
+        await this._cache.GetAsync(Server.Fangbreaker, Cancel);
+        await this._cache.GetAsync(Server.Frostreaver, Cancel);
 
         Assert.Equal(
             [Types, Zones, "GET /api/servers/frostreaver/bonuses/types", "GET /api/servers/frostreaver/bonuses/zones"],
@@ -52,11 +52,11 @@ public class ServerListCacheTests
     }
 
     [Fact]
-    public async Task FailureIsLoggedAndRetriedOnceAfterAMinute()
+    public async Task FailureIsLogged()
     {
         this._site.Fail(Zones, HttpStatusCode.InternalServerError);
 
-        Assert.Null(await this._cache.GetAsync(Server.Fangbreaker, Start, Cancel));
+        Assert.Null(await this._cache.GetAsync(Server.Fangbreaker, Cancel));
         Assert.Equal(
             """
             12:00:00 ERROR: Couldn't load the Fangbreaker zones list. GET https://fangbreaker.zone/api/servers/fangbreaker/bonuses/zones returned 500: {"ok":false,"error":"Nope"}
@@ -64,35 +64,25 @@ public class ServerListCacheTests
             """,
             this._output.ToString(),
             ignoreLineEndingDifferences: true);
-
-        this._site.Succeed(Zones);
-        Assert.Null(await this._cache.GetAsync(Server.Fangbreaker, Start.AddSeconds(30), Cancel));
-        await this._cache.TickAsync(Start.AddSeconds(59), Cancel);
-        Assert.Equal(2, this._site.Requests.Count);
-
-        await this._cache.TickAsync(Start.AddSeconds(60), Cancel);
-        Assert.NotNull(await this._cache.GetAsync(Server.Fangbreaker, Start.AddSeconds(61), Cancel));
-        Assert.Equal(4, this._site.Requests.Count);
     }
 
     [Fact]
-    public async Task AfterTheRetryFailsItTriesAgainWhenNextNeeded()
+    public async Task AfterAFailureItTriesAgainWhenNextNeeded()
     {
         this._site.Fail(Types, HttpStatusCode.InternalServerError);
-        await this._cache.GetAsync(Server.Fangbreaker, Start, Cancel);
-        await this._cache.TickAsync(Start.AddMinutes(1), Cancel);
-        await this._cache.TickAsync(Start.AddMinutes(5), Cancel);
-        Assert.Equal([Types, Types], this._site.Requests);
+        await this._cache.GetAsync(Server.Fangbreaker, Cancel);
+        Assert.Equal([Types], this._site.Requests);
 
         this._site.Succeed(Types);
-        Assert.NotNull(await this._cache.GetAsync(Server.Fangbreaker, Start.AddMinutes(10), Cancel));
+        Assert.NotNull(await this._cache.GetAsync(Server.Fangbreaker, Cancel));
+        Assert.Equal([Types, Types, Zones], this._site.Requests);
     }
 
     [Fact]
     public async Task ReloadLoadsAgain()
     {
-        await this._cache.GetAsync(Server.Fangbreaker, Start, Cancel);
-        await this._cache.ReloadAsync(Server.Fangbreaker, Start, Cancel);
+        await this._cache.GetAsync(Server.Fangbreaker, Cancel);
+        await this._cache.ReloadAsync(Server.Fangbreaker, Cancel);
 
         Assert.Equal([Types, Zones, Types, Zones], this._site.Requests);
     }

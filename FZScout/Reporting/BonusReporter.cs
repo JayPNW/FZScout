@@ -143,7 +143,7 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache
     {
         ApiOutcome.KeyRejected => StopUntilKeyChanges(),
         ApiOutcome.Banned => StopReportingTo(action.Report.Server),
-        ApiOutcome.NotFound => serverListCache.ReloadAsync(action.Report.Server, now, cancellationToken),
+        ApiOutcome.NotFound => serverListCache.ReloadAsync(action.Report.Server, cancellationToken),
         _ => Task.CompletedTask,
     };
 
