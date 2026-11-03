@@ -26,17 +26,18 @@ class CharacterScout(Character character)
 
     public Zone? CurrentZone { get; private set; }
 
+    /// <summary>Ticks first, so a timer that ran out before this message arrived gets its report.</summary>
     /// <param name="lists">The server's lists, or null if they couldn't be loaded.</param>
     public IReadOnlyList<ScoutAction> Handle(EverQuestLogWatcher.EverQuestLogEvent logEvent, DateTimeOffset now, ServerLists? lists)
     {
-        return [.. ResolveZone(lists), .. DispatchLogEvent(logEvent, now, lists)];
+        return [.. Tick(now, lists), .. DispatchLogEvent(logEvent, now, lists)];
     }
 
     /// <summary>
-    /// Call right before handling the character's next log event. Reports <c>none</c> if a timer ran out before that next message arrived.
+    /// Reports <c>none</c> if a timer ran out. <see cref="Handle"/> calls this as each of the character's messages arrives.
     /// There's no independent clock: a character who stops logging in before any further message arrives never gets a false <c>none</c>.
     /// </summary>
-    /// <param name="lists">The server's lists if they're loaded. Ticking never loads them.</param>
+    /// <param name="lists">The server's lists, or null if they couldn't be loaded.</param>
     public IReadOnlyList<ScoutAction> Tick(DateTimeOffset now, ServerLists? lists)
     {
         var resolved = ResolveZone(lists);

@@ -23,8 +23,7 @@ class Scout(ServerListCache serverListCache, BonusReporter bonusReporter)
         var character = new Character(logEvent.Character.Name, server);
         var serverLists = await serverListCache.GetAsync(character.Server, cancellationToken);
         var scout = ScoutFor(character);
-        IReadOnlyList<ScoutAction> actions = [.. scout.Tick(now, serverLists), .. scout.Handle(logEvent, now, serverLists)];
-        await ExecuteAsync(actions, cancellationToken);
+        await ExecuteAsync(scout.Handle(logEvent, now, serverLists), cancellationToken);
     }
 
     CharacterScout ScoutFor(Character character)
