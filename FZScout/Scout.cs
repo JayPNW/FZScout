@@ -10,10 +10,13 @@ class Scout(ServerListCache serverListCache, BonusReporter bonusReporter)
 
     /// <summary>
     /// Call for every event the EverQuestLogWatcher library reports. Servers we don't report, and events that don't matter to scouting, are ignored.
-    /// A character whose bonus/none timer ran out before this message arrived gets that report too, folded into the same call.
+    /// A character whose bonus/none timer ran out before this message arrived gets that report too, folded into the same call,
+    /// as do retries that came due.
     /// </summary>
     public async Task HandleAsync(EverQuestLogWatcher.EverQuestLogEvent logEvent, DateTimeOffset now, CancellationToken cancellationToken = default)
     {
+        await RetryDueWorkAsync(now, cancellationToken);
+
         var server = Server.FromSlug(logEvent.Character.Server);
         if (server is null)
         {
@@ -27,8 +30,7 @@ class Scout(ServerListCache serverListCache, BonusReporter bonusReporter)
         await ExecuteAsync(actions, now, cancellationToken);
     }
 
-    /// <summary>Call about once a second: retries pending work that doesn't depend on a new log event.</summary>
-    public async Task TickAsync(DateTimeOffset now, CancellationToken cancellationToken = default)
+    async Task RetryDueWorkAsync(DateTimeOffset now, CancellationToken cancellationToken = default)
     {
         await serverListCache.TickAsync(now, cancellationToken);
         await bonusReporter.TickAsync(now, cancellationToken);

@@ -8,8 +8,6 @@ namespace FZScout;
 /// </summary>
 class App
 {
-    public static readonly TimeSpan TickInterval = TimeSpan.FromSeconds(1);
-
     readonly BonusReporter _bonusReporter;
     readonly ApiKeyPrompt _apiKeyPrompt;
     readonly Scout _scout;
@@ -26,7 +24,6 @@ class App
 
     public AppDependencies Dependencies { get; }
 
-    /// <summary>Unless FZScout is already running, starts, then ticks every <see cref="TickInterval"/> until the user asks to exit.</summary>
     public async Task RunAsync()
     {
         using var singleInstanceClaim = Dependencies.TryClaimSingleInstance();
@@ -43,27 +40,7 @@ class App
         }
         Dependencies.Log.Info("Press Ctrl+C to exit.");
 
-        using var timer = new PeriodicTimer(TickInterval, Dependencies.TimeProvider);
-        using var runCancellation = CancellationTokenSource.CreateLinkedTokenSource(Dependencies.UserInput.ExitRequested);
-        var watchingLogs = WatchLogsAsync(runCancellation.Token);
-        try
-        {
-            while (await timer.WaitForNextTickAsync(runCancellation.Token))
-            {
-                await TickAsync();
-                if (!this._bonusReporter.HasApiKey)
-                {
-                    Dependencies.Log.Info("Exiting.");
-                    runCancellation.Cancel();
-                    break;
-                }
-            }
-        }
-        catch (OperationCanceledException) when (runCancellation.IsCancellationRequested)
-        {
-        }
-
-        await watchingLogs;
+        await WatchLogsAsync(Dependencies.UserInput.ExitRequested);
     }
 
     public async Task<bool> EnsureHaveApiKey()
@@ -81,20 +58,10 @@ class App
         return this._bonusReporter.HasApiKey;
     }
 
-    /// <summary>One bad tick is logged, not fatal: the next one gets a fresh start.</summary>
-    async Task TickAsync()
-    {
-        try
-        {
-            await this._scout.TickAsync(Dependencies.TimeProvider.GetUtcNow(), Dependencies.UserInput.ExitRequested);
-        }
-        catch (Exception exception) when (exception is not OperationCanceledException)
-        {
-            Dependencies.Log.Error($"Unexpected problem: {exception}");
-        }
-    }
-
-    /// <summary>Runs for the life of the app: feeds every event EverQuestLogWatcher finds to the scout. One bad event is logged, not fatal.</summary>
+    /// <summary>
+    /// Runs for the life of the app: feeds every event EverQuestLogWatcher finds to the scout. One bad event is logged, not fatal.
+    /// Stops if the site rejects the API key.
+    /// </summary>
     async Task WatchLogsAsync(CancellationToken cancellationToken)
     {
         try
@@ -108,6 +75,12 @@ class App
                 catch (Exception exception) when (exception is not OperationCanceledException)
                 {
                     Dependencies.Log.Error($"Unexpected problem: {exception}");
+                }
+
+                if (!this._bonusReporter.HasApiKey)
+                {
+                    Dependencies.Log.Info("Exiting.");
+                    return;
                 }
             }
         }
