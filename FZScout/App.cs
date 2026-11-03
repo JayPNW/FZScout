@@ -36,19 +36,12 @@ class App
             return;
         }
 
-        try
-        {
-            await StartAsync();
-        }
-        catch (OperationCanceledException) when (Dependencies.UserInput.ExitRequested.IsCancellationRequested)
+        Dependencies.Log.Info($"FZScout v{Dependencies.GetVersion()}");
+        if (!await EnsureHaveApiKey())
         {
             return;
         }
-
-        if (!this._bonusReporter.HasApiKey)
-        {
-            return;
-        }
+        Dependencies.Log.Info("Press Ctrl+C to exit.");
 
         using var timer = new PeriodicTimer(TickInterval, Dependencies.TimeProvider);
         using var runCancellation = CancellationTokenSource.CreateLinkedTokenSource(Dependencies.UserInput.ExitRequested);
@@ -73,18 +66,19 @@ class App
         await watchingLogs;
     }
 
-    public async Task StartAsync()
+    public async Task<bool> EnsureHaveApiKey()
     {
-        Dependencies.Log.Info($"FZScout v{Dependencies.GetVersion()}");
-
-        await this._bonusReporter.ChangeApiKeyAsync(Dependencies.ApiKeyStore.Load(), Dependencies.UserInput.ExitRequested);
-        await this._apiKeyPrompt.AskUntilAcceptedAsync(Dependencies.UserInput.ExitRequested);
-        if (!this._bonusReporter.HasApiKey)
+        try
         {
-            return;
+            await this._bonusReporter.ChangeApiKeyAsync(Dependencies.ApiKeyStore.Load(), Dependencies.UserInput.ExitRequested);
+            await this._apiKeyPrompt.AskUntilAcceptedAsync(Dependencies.UserInput.ExitRequested);
+        }
+        catch (OperationCanceledException) when (Dependencies.UserInput.ExitRequested.IsCancellationRequested)
+        {
+            return false;
         }
 
-        Dependencies.Log.Info("Press Ctrl+C to exit.");
+        return this._bonusReporter.HasApiKey;
     }
 
     /// <summary>One bad tick is logged, not fatal: the next one gets a fresh start.</summary>

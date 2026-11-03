@@ -53,7 +53,7 @@ public class AppTests
     {
         this._apiKeyStore.Save(StoredApiKey);
 
-        await this._app.StartAsync();
+        await this._app.EnsureHaveApiKey();
 
         Assert.Equal([KeyCheckRequest], this._site.Requests);
         Assert.Contains("API key verified.", Output);
@@ -63,7 +63,7 @@ public class AppTests
     [Fact]
     public async Task AsksForAnApiKeyWhenNoneIsStored()
     {
-        await this._app.StartAsync();
+        await this._app.EnsureHaveApiKey();
 
         Assert.Equal(1, this._userInput.TimesAskedForApiKey);
         Assert.Equal(TypedApiKey, this._apiKeyStore.Load());
@@ -77,7 +77,7 @@ public class AppTests
         this._apiKeyStore.Save(StoredApiKey);
         this._site.RejectApiKey(StoredApiKey);
 
-        await this._app.StartAsync();
+        await this._app.EnsureHaveApiKey();
 
         Assert.Contains("ERROR: API key rejected.", Output);
         Assert.Equal(1, this._userInput.TimesAskedForApiKey);
