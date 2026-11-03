@@ -1,1 +1,1 @@
-@dotnet run --project FZScout
+@dotnet run --project FZScout --verbosity quiet --nologo
