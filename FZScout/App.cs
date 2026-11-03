@@ -40,7 +40,7 @@ class App
         }
         Dependencies.Log.Info("Press Ctrl+C to exit.");
 
-        await WatchLogsAsync(Dependencies.UserInput.ExitRequested);
+        await WatchLogsAndReportBonusesAsync(Dependencies.UserInput.ExitRequested);
     }
 
     public async Task<bool> EnsureHaveApiKey()
@@ -62,7 +62,7 @@ class App
     /// Runs for the life of the app: feeds every event EverQuestLogWatcher finds to the scout. One bad event is logged, not fatal.
     /// Stops if the site rejects the API key.
     /// </summary>
-    async Task WatchLogsAsync(CancellationToken cancellationToken)
+    async Task WatchLogsAndReportBonusesAsync(CancellationToken cancellationToken)
     {
         try
         {
