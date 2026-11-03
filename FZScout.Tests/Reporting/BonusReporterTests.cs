@@ -13,7 +13,6 @@ public class BonusReporterTests
 
     static readonly DateTimeOffset Start = new(2026, 10, 29, 12, 0, 0, TimeSpan.Zero);
     static readonly Character Bob = new("Bob", Server.Fangbreaker);
-    static readonly Character Ann = new("Ann", Server.Frostreaver);
 
     readonly FakeSite _site = new();
     readonly StringWriter _output = new();
@@ -23,8 +22,7 @@ public class BonusReporterTests
     {
         var log = new ConsoleReporter(this._output, new FakeTimeProvider(Start));
         var fangbreakerZoneClient = this._site.Client;
-        this._reporter = new BonusReporter(fangbreakerZoneClient, log);
-        this._reporter.SetApiKey(new ApiKey("fz_live_test"));
+        this._reporter = new BonusReporter(fangbreakerZoneClient, new ApiKey("fz_live_test"), log);
     }
 
     static CancellationToken Cancel => TestContext.Current.CancellationToken;
@@ -97,17 +95,6 @@ public class BonusReporterTests
     }
 
     [Fact]
-    public async Task WithoutAKeyNothingIsSent()
-    {
-        this._reporter.SetApiKey(null);
-
-        await Execute(Bonus(Bob, "Befallen", "loot"));
-
-        Assert.Empty(this._site.Requests);
-        Assert.Equal("12:00:00 WARNING: No API key, so Fangbreaker 'Befallen' is 'loot' wasn't reported.", Output());
-    }
-
-    [Fact]
     public async Task BadPayloadIsNotRetried()
     {
         this._site.Fail(Post, HttpStatusCode.BadRequest);
@@ -121,57 +108,12 @@ public class BonusReporterTests
     }
 
     [Fact]
-    public async Task RejectedKeyStopsReportingUntilTheKeyChanges()
-    {
-        this._site.Fail(Post, HttpStatusCode.Unauthorized);
-        await Execute(Bonus(Bob, "Befallen", "loot"));
-        Assert.Contains("ERROR: API key rejected.", Output());
-
-        this._site.Succeed(Post);
-        await Execute(Bonus(Ann, "Befallen", "loot"));
-        Assert.Single(this._site.Requests);
-
-        this._reporter.SetApiKey(new ApiKey("fz_live_new"));
-        await Execute(Bonus(Ann, "Befallen", "loot"));
-        Assert.Equal(2, this._site.Requests.Count);
-    }
-
-    [Fact]
-    public async Task RejectedKeyIsReportedAtCheck()
+    public async Task RejectedKeyStopsTheApp()
     {
         this._site.Fail(Post, HttpStatusCode.Unauthorized);
 
-        await this._reporter.ChangeApiKeyAsync(new ApiKey("fz_live_bad"), Cancel);
-        this._site.Succeed(Post);
-        await Execute(Bonus(Bob, "Befallen", "loot"));
-
-        Assert.False(this._reporter.HasApiKey);
-        Assert.Single(this._site.Requests);
-        Assert.StartsWith("12:00:00 Checking the API key with fangbreaker.zone.", Output());
-        Assert.Contains("""ERROR: POST https://fangbreaker.zone/api/client/bonuses returned 401: {"ok":false,"error":"Nope"}""", Output());
-        Assert.Contains("ERROR: API key rejected.", Output());
-    }
-
-    [Fact]
-    public async Task MissingKeyIsReportedAtCheck()
-    {
-        await this._reporter.ChangeApiKeyAsync(null, Cancel);
-
-        Assert.False(this._reporter.HasApiKey);
-        Assert.Empty(this._site.Requests);
-        Assert.Equal("12:00:00 API key missing. Nothing will be reported.", Output());
-    }
-
-    [Fact]
-    public async Task KeyThatCantBeCheckedIsUsed()
-    {
-        this._site.Fail(Post, HttpStatusCode.InternalServerError);
-        await this._reporter.ChangeApiKeyAsync(new ApiKey("fz_live_new"), Cancel);
-        Assert.Contains("12:00:00 WARNING: API key: couldn't check it, so it will be used as is.", Output());
-
-        this._site.Succeed(Post);
-        await Execute(Bonus(Bob, "Befallen", "loot"));
-        Assert.Equal(2, this._site.Requests.Count);
+        await Assert.ThrowsAsync<ApiKeyRejectedException>(() => Execute(Bonus(Bob, "Befallen", "loot")));
+        Assert.StartsWith("12:00:00 ERROR: Couldn't report Fangbreaker 'Befallen' is 'loot'.", Output());
     }
 
     [Fact]

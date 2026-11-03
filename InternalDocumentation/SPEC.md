@@ -12,7 +12,7 @@ A console app that monitors Everquest logs for zone bonuses and posts them to th
 - **API key:** one key works on both sites. Store it in Windows Credential Manager. Never write it to a file or to the log.
 - When the app launches it prints out:
   - The app version.
-  - The status of the API key (working, rejected, or missing). To check it, POST `none` for `The Nexus` on Fangbreaker.
+  - The status of the API key (working, rejected, or couldn't be checked). To check it, POST `none` for `The Nexus` on Fangbreaker.
 - When the key is missing or rejected, ask for one at the console. Don't watch logs until a key is accepted. Entering nothing exits.
 - Errors are red. Successful uploads are yellow.
 

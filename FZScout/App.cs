@@ -1,4 +1,5 @@
 ﻿using FZScout.Reporting;
+using FZScout.Site;
 
 namespace FZScout;
 
@@ -8,18 +9,12 @@ namespace FZScout;
 /// </summary>
 class App
 {
-    readonly BonusReporter _bonusReporter;
     readonly ApiKeyPrompt _apiKeyPrompt;
-    readonly Scout _scout;
 
     public App(AppDependencies dependencies)
     {
         Dependencies = dependencies;
-        var log = dependencies.Log;
-        var serverListCache = new ServerListCache(dependencies.FangbreakerZoneClient, log);
-        this._bonusReporter = new BonusReporter(dependencies.FangbreakerZoneClient, log);
-        this._apiKeyPrompt = new ApiKeyPrompt(this._bonusReporter, dependencies.ApiKeyStore, log, dependencies.UserInput.ReadApiKeyAsync);
-        this._scout = new Scout(serverListCache, this._bonusReporter);
+        this._apiKeyPrompt = new ApiKeyPrompt(dependencies.FangbreakerZoneClient, dependencies.ApiKeyStore, dependencies.Log, dependencies.UserInput.ReadApiKeyAsync);
     }
 
     public AppDependencies Dependencies { get; }
@@ -34,35 +29,35 @@ class App
         }
 
         Dependencies.Log.Info($"FZScout v{Dependencies.GetVersion()}");
-        if (!await EnsureHaveApiKey())
+        if (await GetAcceptedApiKeyAsync() is not { } apiKey)
         {
             return;
         }
         Dependencies.Log.Info("Press Ctrl+C to exit.");
 
-        await WatchLogsAndReportBonusesAsync(Dependencies.UserInput.ExitRequested);
+        var client = Dependencies.FangbreakerZoneClient;
+        var scout = new Scout(new ServerListCache(client, Dependencies.Log), new BonusReporter(client, apiKey, Dependencies.Log));
+        await WatchLogsAndReportBonusesAsync(scout, Dependencies.UserInput.ExitRequested);
     }
 
-    public async Task<bool> EnsureHaveApiKey()
+    /// <returns>Null if the user entered no key or asked to exit.</returns>
+    public async Task<ApiKey?> GetAcceptedApiKeyAsync()
     {
         try
         {
-            await this._bonusReporter.ChangeApiKeyAsync(Dependencies.ApiKeyStore.Load(), Dependencies.UserInput.ExitRequested);
-            await this._apiKeyPrompt.AskUntilAcceptedAsync(Dependencies.UserInput.ExitRequested);
+            return await this._apiKeyPrompt.GetAcceptedApiKeyAsync(Dependencies.UserInput.ExitRequested);
         }
         catch (OperationCanceledException) when (Dependencies.UserInput.ExitRequested.IsCancellationRequested)
         {
-            return false;
+            return null;
         }
-
-        return this._bonusReporter.HasApiKey;
     }
 
     /// <summary>
     /// Runs for the life of the app: feeds every event EverQuestLogWatcher finds to the scout. One bad event is logged, not fatal.
     /// Stops if the site rejects the API key.
     /// </summary>
-    async Task WatchLogsAndReportBonusesAsync(CancellationToken cancellationToken)
+    async Task WatchLogsAndReportBonusesAsync(Scout scout, CancellationToken cancellationToken)
     {
         try
         {
@@ -70,22 +65,20 @@ class App
             {
                 try
                 {
-                    await this._scout.HandleAsync(logEvent, Dependencies.TimeProvider.GetUtcNow(), cancellationToken);
+                    await scout.HandleAsync(logEvent, Dependencies.TimeProvider.GetUtcNow(), cancellationToken);
                 }
-                catch (Exception exception) when (exception is not OperationCanceledException)
+                catch (Exception exception) when (exception is not OperationCanceledException and not ApiKeyRejectedException)
                 {
                     Dependencies.Log.Error($"Unexpected problem: {exception}");
-                }
-
-                if (!this._bonusReporter.HasApiKey)
-                {
-                    Dependencies.Log.Info("Exiting.");
-                    return;
                 }
             }
         }
         catch (OperationCanceledException)
         {
+        }
+        catch (ApiKeyRejectedException)
+        {
+            Dependencies.Log.Error("API key rejected. Exiting.");
         }
     }
 }

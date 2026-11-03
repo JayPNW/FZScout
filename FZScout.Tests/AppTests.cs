@@ -53,7 +53,7 @@ public class AppTests
     {
         this._apiKeyStore.Save(StoredApiKey);
 
-        await this._app.EnsureHaveApiKey();
+        await this._app.GetAcceptedApiKeyAsync();
 
         Assert.Equal([KeyCheckRequest], this._site.Requests);
         Assert.Contains("API key verified.", Output);
@@ -63,7 +63,7 @@ public class AppTests
     [Fact]
     public async Task AsksForAnApiKeyWhenNoneIsStored()
     {
-        await this._app.EnsureHaveApiKey();
+        await this._app.GetAcceptedApiKeyAsync();
 
         Assert.Equal(1, this._userInput.TimesAskedForApiKey);
         Assert.Equal(TypedApiKey, this._apiKeyStore.Load());
@@ -77,12 +77,34 @@ public class AppTests
         this._apiKeyStore.Save(StoredApiKey);
         this._site.RejectApiKey(StoredApiKey);
 
-        await this._app.EnsureHaveApiKey();
+        await this._app.GetAcceptedApiKeyAsync();
 
         Assert.Contains("ERROR: API key rejected.", Output);
         Assert.Equal(1, this._userInput.TimesAskedForApiKey);
         Assert.Equal(TypedApiKey, this._apiKeyStore.Load());
         Assert.Contains("API key verified.", Output);
+    }
+
+    [Fact]
+    public async Task ShowsWhyTheSiteRejectedTheKey()
+    {
+        this._apiKeyStore.Save(StoredApiKey);
+        this._site.RejectApiKey(StoredApiKey);
+
+        await this._app.GetAcceptedApiKeyAsync();
+
+        Assert.Contains("""ERROR: POST https://fangbreaker.zone/api/client/bonuses returned 401: {"ok":false,"error":"Nope"}""", Output);
+    }
+
+    [Fact]
+    public async Task UsesAStoredKeyThatCantBeChecked()
+    {
+        this._apiKeyStore.Save(StoredApiKey);
+        this._site.Fail("POST /api/client/bonuses", System.Net.HttpStatusCode.InternalServerError);
+
+        Assert.Equal(StoredApiKey, await this._app.GetAcceptedApiKeyAsync());
+        Assert.Contains("WARNING: API key: couldn't check it, so it will be used as is.", Output);
+        Assert.Equal(0, this._userInput.TimesAskedForApiKey);
     }
 
     [Fact]
