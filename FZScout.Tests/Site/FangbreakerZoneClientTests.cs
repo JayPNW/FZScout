@@ -87,12 +87,12 @@ public class FangbreakerZoneClientTests
     }
 
     [Theory]
-    [InlineData(HttpStatusCode.BadRequest, ApiOutcome.BadPayload)]
+    [InlineData(HttpStatusCode.BadRequest, ApiOutcome.Failed)]
     [InlineData(HttpStatusCode.Unauthorized, ApiOutcome.KeyRejected)]
-    [InlineData(HttpStatusCode.Forbidden, ApiOutcome.Banned)]
-    [InlineData(HttpStatusCode.NotFound, ApiOutcome.NotFound)]
-    [InlineData(HttpStatusCode.InternalServerError, ApiOutcome.Unavailable)]
-    [InlineData(HttpStatusCode.BadGateway, ApiOutcome.Unavailable)]
+    [InlineData(HttpStatusCode.Forbidden, ApiOutcome.Failed)]
+    [InlineData(HttpStatusCode.NotFound, ApiOutcome.Failed)]
+    [InlineData(HttpStatusCode.InternalServerError, ApiOutcome.Failed)]
+    [InlineData(HttpStatusCode.BadGateway, ApiOutcome.Failed)]
     public async Task FailedStatus(HttpStatusCode httpStatusCode, ApiOutcome expected)
     {
         var (fangbreakerZoneClient, _) = Create(httpStatusCode, """{"ok":false,"error":"Server not found"}""");
@@ -107,27 +107,27 @@ public class FangbreakerZoneClientTests
     }
 
     [Fact]
-    public async Task NetworkFailureIsUnavailable()
+    public async Task NetworkFailureFails()
     {
         var handler = new StubHttpHandler(new HttpRequestException("No such host is known."));
         var fangbreakerZoneClient = new FangbreakerZoneClient(handler);
 
         var result = await fangbreakerZoneClient.GetBonusTypesAsync(Server.Fangbreaker, TestContext.Current.CancellationToken);
 
-        Assert.Equal(ApiOutcome.Unavailable, result.Outcome);
+        Assert.Equal(ApiOutcome.Failed, result.Outcome);
         Assert.Equal("GET https://fangbreaker.zone/api/servers/fangbreaker/bonuses/types failed: No such host is known.", result.Error);
     }
 
     [Theory]
     [InlineData("<html>Bad gateway</html>")]
     [InlineData("""{"ok":false}""")]
-    public async Task UnreadableBodyIsUnavailable(string body)
+    public async Task UnreadableBodyFails(string body)
     {
         var (fangbreakerZoneClient, _) = Create(HttpStatusCode.OK, body);
 
         var result = await fangbreakerZoneClient.GetBonusTypesAsync(Server.Fangbreaker, TestContext.Current.CancellationToken);
 
-        Assert.Equal(ApiOutcome.Unavailable, result.Outcome);
+        Assert.Equal(ApiOutcome.Failed, result.Outcome);
     }
 
     [Fact]

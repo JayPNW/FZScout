@@ -66,24 +66,21 @@ class FangbreakerZoneClient(HttpMessageHandler httpMessageHandler)
             var envelope = JsonSerializer.Deserialize<EnvelopeDto<T>>(body, Json);
             if (envelope is not { Ok: true, Data: not null })
             {
-                return ApiResult<T>.Failure(ApiOutcome.Unavailable, $"{description} returned an unexpected body: {body}");
+                return ApiResult<T>.Failure(ApiOutcome.Failed, $"{description} returned an unexpected body: {body}");
             }
 
             return ApiResult<T>.Success(envelope.Data);
         }
         catch (Exception exception) when (exception is HttpRequestException or JsonException or TaskCanceledException && !cancellationToken.IsCancellationRequested)
         {
-            return ApiResult<T>.Failure(ApiOutcome.Unavailable, $"{description} failed: {exception.Message}");
+            return ApiResult<T>.Failure(ApiOutcome.Failed, $"{description} failed: {exception.Message}");
         }
     }
 
     static ApiOutcome OutcomeFor(HttpStatusCode httpStatusCode) => httpStatusCode switch
     {
-        HttpStatusCode.BadRequest => ApiOutcome.BadPayload,
         HttpStatusCode.Unauthorized => ApiOutcome.KeyRejected,
-        HttpStatusCode.Forbidden => ApiOutcome.Banned,
-        HttpStatusCode.NotFound => ApiOutcome.NotFound,
-        _ => ApiOutcome.Unavailable,
+        _ => ApiOutcome.Failed,
     };
 
     static ApiResult<TOut> Map<TIn, TOut>(ApiResult<TIn> result, Func<TIn, TOut> map)
