@@ -81,8 +81,6 @@ Every failure is logged as an error.
 | 401 bad key         | Log "API key rejected". At startup, ask for a new key. Later, exit.           |
 | 403 banned          | Log it. Stop reporting to that site until restart.                            |
 | 404 zone not found  | Reload the zones list. Don't retry.                                           |
-| 500, other, network | Retry once after 1 minute, then drop.                                         |
-
-A waiting retry is replaced by a newer report for the same character and zone. Waiting retries are lost on exit.
+| 500, other, network | Don't retry.                                                                  |
 
 If loading `types` or `zones` fails, retry once after 1 minute. If that fails too, try again the next time the list is needed.

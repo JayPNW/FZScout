@@ -162,17 +162,15 @@ class CharacterScout(Character character)
 
     IReadOnlyList<ScoutAction> OnDailyReset(DateTimeOffset now)
     {
-        // Yesterday's reports still waiting to retry would now be wrong.
-        var drop = new DropPendingReportsAction(character);
         if (!IsReportable(CurrentZone))
         {
-            return [drop];
+            return [];
         }
 
         this._alreadyReported = false;
         this._killDeadline = null;
         StartIdleTimer(now);
-        return [drop, .. IdleTimerStarted()];
+        return IdleTimerStarted();
     }
 
     IReadOnlyList<ScoutAction> OnCamping(DateTimeOffset now)

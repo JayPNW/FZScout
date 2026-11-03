@@ -75,7 +75,6 @@ public class BonusReporterTests
         this._site.Fail(Today, HttpStatusCode.InternalServerError);
 
         await Execute(0, new ReportNoBonusAction(Bob, "Befallen"));
-        await Tick(120);
 
         Assert.Equal([Today], this._site.Requests);
         Assert.StartsWith("12:00:00 ERROR: Couldn't check today's bonuses, so Fangbreaker 'Befallen' is 'none' wasn't reported.", Output());
@@ -114,7 +113,6 @@ public class BonusReporterTests
         this._site.Fail(Post, HttpStatusCode.BadRequest);
 
         await Execute(0, Bonus(Bob, "Befallen", "loot"));
-        await Tick(120);
 
         Assert.Single(this._site.Requests);
         Assert.Equal(
@@ -198,99 +196,10 @@ public class BonusReporterTests
         this._site.Fail(Post, HttpStatusCode.NotFound);
 
         await Execute(0, Bonus(Bob, "Befallen", "loot"));
-        await Tick(120);
 
         Assert.Equal(
             [PostBody("Fangbreaker", "Befallen", "loot"), "GET /api/servers/fangbreaker/bonuses/types", "GET /api/servers/fangbreaker/bonuses/zones"],
             this._site.Requests);
-    }
-
-    [Fact]
-    public async Task ServerErrorIsRetriedOnceAfterAMinute()
-    {
-        this._site.Fail(Post, HttpStatusCode.InternalServerError);
-
-        await Execute(0, Bonus(Bob, "Befallen", "loot"));
-        await Tick(59);
-        Assert.Single(this._site.Requests);
-
-        await Tick(60);
-        Assert.Equal(2, this._site.Requests.Count);
-
-        await Tick(600);
-        Assert.Equal(2, this._site.Requests.Count);
-        Assert.EndsWith("ERROR: Gave up reporting Fangbreaker 'Befallen' is 'loot'.", Output());
-    }
-
-    [Fact]
-    public async Task RetrySucceeds()
-    {
-        this._site.Fail(Post, HttpStatusCode.InternalServerError);
-        await Execute(0, Bonus(Bob, "Befallen", "loot"));
-
-        this._site.Succeed(Post);
-        await Tick(60);
-
-        Assert.EndsWith("Reported Fangbreaker 'Befallen' is 'loot'.", Output());
-    }
-
-    [Fact]
-    public async Task RetryOfNoneChecksTodayAgain()
-    {
-        this._site.Fail(Post, HttpStatusCode.InternalServerError);
-        await Execute(0, new ReportNoBonusAction(Bob, "Befallen"));
-
-        this._site.SetToday("Befallen", "experience");
-        await Tick(60);
-
-        Assert.Equal([Today, PostBody("Fangbreaker", "Befallen", "none"), Today], this._site.Requests);
-    }
-
-    [Fact]
-    public async Task NewerReportReplacesAWaitingRetry()
-    {
-        this._site.Fail(Post, HttpStatusCode.InternalServerError);
-        await Execute(0, Bonus(Bob, "Befallen", "loot"));
-
-        this._site.Succeed(Post);
-        await Execute(30, Bonus(Bob, "Befallen", "experience"));
-        await Tick(600);
-
-        Assert.Equal(
-            [PostBody("Fangbreaker", "Befallen", "loot"), PostBody("Fangbreaker", "Befallen", "experience")],
-            this._site.Requests);
-    }
-
-    [Fact]
-    public async Task DailyResetDropsThatCharactersRetries()
-    {
-        this._site.Fail(Post, HttpStatusCode.InternalServerError);
-        await Execute(0, Bonus(Bob, "Befallen", "loot"));
-        await Execute(0, Bonus(Ann, "Befallen", "loot"));
-
-        await Execute(30, new DropPendingReportsAction(Bob));
-        await Tick(60);
-
-        Assert.Equal(
-            [
-                PostBody("Fangbreaker", "Befallen", "loot"),
-                PostBody("Frostreaver", "Befallen", "loot"),
-                PostBody("Frostreaver", "Befallen", "loot"),
-            ],
-            this._site.Requests);
-    }
-
-    [Fact]
-    public async Task RetriesForOtherZonesAreKept()
-    {
-        this._site.Fail(Post, HttpStatusCode.InternalServerError);
-        await Execute(0, Bonus(Bob, "Befallen", "loot"));
-
-        this._site.Succeed(Post);
-        await Execute(30, Bonus(Bob, "Crushbone", "experience"));
-        await Tick(60);
-
-        Assert.Equal(3, this._site.Requests.Count);
     }
 
     static ReportBonusAction Bonus(Character character, string zone, string bonus)
@@ -304,8 +213,6 @@ public class BonusReporterTests
     }
 
     Task Execute(int seconds, ScoutAction action) => this._reporter.ExecuteAsync(action, Start.AddSeconds(seconds), Cancel);
-
-    Task Tick(int seconds) => this._reporter.TickAsync(Start.AddSeconds(seconds), Cancel);
 
     string Output() => this._output.ToString().TrimEnd();
 }

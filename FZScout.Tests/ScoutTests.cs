@@ -59,7 +59,7 @@ public class ScoutTests
     }
 
     [Fact]
-    public async Task RetryWaitsForTheNextMessageAfterTheRetryDelay()
+    public async Task ServerErrorIsNotRetried()
     {
         const string Report = """POST /api/client/bonuses {"serverName":"Fangbreaker","zoneName":"Crushbone","bonusKey":"loot"}""";
         this._site.Fail("POST /api/client/bonuses", System.Net.HttpStatusCode.InternalServerError);
@@ -67,11 +67,9 @@ public class ScoutTests
         await Handle(1, new EverQuestLogWatcher.AreaIsSaturatedWithUnstableMagic(Bob, Start.UtcDateTime, "", "multiplying the loot that may be found here"));
         this._site.Succeed("POST /api/client/bonuses");
 
-        await Handle(60, new EverQuestLogWatcher.SayChatMessageFromYou(Bob, Start.UtcDateTime, ""));
-        Assert.Single(this._site.Requests, Report);
+        await Handle(600, new EverQuestLogWatcher.SayChatMessageFromYou(Bob, Start.UtcDateTime, ""));
 
-        await Handle(61, new EverQuestLogWatcher.SayChatMessageFromYou(Bob, Start.UtcDateTime, ""));
-        Assert.Equal(2, this._site.Requests.Count(r => r == Report));
+        Assert.Single(this._site.Requests, Report);
     }
 
     [Fact]

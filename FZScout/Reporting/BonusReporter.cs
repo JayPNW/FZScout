@@ -6,13 +6,10 @@ namespace FZScout.Reporting;
 /// <summary>Carries out what the scouts decide, following the Reporting section of InternalDocumentation/SPEC.md.</summary>
 class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache serverListCache, ConsoleReporter log)
 {
-    public static readonly TimeSpan RetryDelay = TimeSpan.FromMinutes(1);
-
     /// <summary>Checks a key by posting 'none' for a zone that never has a bonus.</summary>
     public static readonly BonusReport KeyCheck = new(Server.Fangbreaker, "The Nexus", BonusKey.None);
 
     readonly HashSet<Server> _banned = [];
-    readonly Dictionary<(Character Character, string Zone), PendingRetry> _retries = [];
     ApiKey? _apiKey;
     bool _keyRejected;
 
@@ -58,31 +55,9 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache
     {
         LogErrorAction a => LogErrorAsync(a.Message),
         LogInfoAction a => LogInfoAsync(a.Message),
-        DropPendingReportsAction a => DropRetriesAsync(a.Character),
-        ReportAction a => AttemptAsync(a, now, isRetry: false, cancellationToken),
+        ReportAction a => AttemptAsync(a, now, cancellationToken),
         _ => throw new ArgumentOutOfRangeException(nameof(action), action, null),
     };
-
-    /// <summary>Call regularly. Sends retries that are due.</summary>
-    public async Task TickAsync(DateTimeOffset now, CancellationToken cancellationToken = default)
-    {
-        var due = this._retries.Where(r => r.Value.At <= now).ToList();
-        foreach (var (key, retry) in due)
-        {
-            this._retries.Remove(key);
-            await AttemptAsync(retry.Action, now, isRetry: true, cancellationToken);
-        }
-    }
-
-    Task DropRetriesAsync(Character character)
-    {
-        foreach (var key in this._retries.Keys.Where(k => k.Character == character).ToList())
-        {
-            this._retries.Remove(key);
-        }
-
-        return Task.CompletedTask;
-    }
 
     Task LogInfoAsync(string message)
     {
@@ -96,13 +71,9 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache
         return Task.CompletedTask;
     }
 
-    async Task AttemptAsync(ReportAction action, DateTimeOffset now, bool isRetry, CancellationToken cancellationToken)
+    async Task AttemptAsync(ReportAction action, DateTimeOffset now, CancellationToken cancellationToken)
     {
         var report = action.Report;
-
-        // A newer report for the same character and zone replaces one waiting to retry.
-        this._retries.Remove((action.Character, report.Zone));
-
         if (!CanReport(report))
         {
             return;
@@ -122,7 +93,7 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache
         }
 
         log.Error($"Couldn't report {report}. {result.Error}");
-        await HandleFailureAsync(result.Outcome, action, now, isRetry, cancellationToken);
+        await HandleFailureAsync(result.Outcome, action, now, cancellationToken);
     }
 
     bool CanReport(BonusReport report)
@@ -168,12 +139,11 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache
         return true;
     }
 
-    Task HandleFailureAsync(ApiOutcome outcome, ReportAction action, DateTimeOffset now, bool isRetry, CancellationToken cancellationToken) => outcome switch
+    Task HandleFailureAsync(ApiOutcome outcome, ReportAction action, DateTimeOffset now, CancellationToken cancellationToken) => outcome switch
     {
         ApiOutcome.KeyRejected => StopUntilKeyChanges(),
         ApiOutcome.Banned => StopReportingTo(action.Report.Server),
         ApiOutcome.NotFound => serverListCache.ReloadAsync(action.Report.Server, now, cancellationToken),
-        ApiOutcome.Unavailable => RetryOnce(action, now, isRetry),
         _ => Task.CompletedTask,
     };
 
@@ -190,20 +160,4 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache
         log.Error($"{server.Site} has banned or timed out this account. Reporting to it is stopped until restart.");
         return Task.CompletedTask;
     }
-
-    Task RetryOnce(ReportAction action, DateTimeOffset now, bool isRetry)
-    {
-        if (isRetry)
-        {
-            log.Error($"Gave up reporting {action.Report}.");
-        }
-        else
-        {
-            this._retries[(action.Character, action.Report.Zone)] = new PendingRetry(action, now + RetryDelay);
-        }
-
-        return Task.CompletedTask;
-    }
-
-    record PendingRetry(ReportAction Action, DateTimeOffset At);
 }

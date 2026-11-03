@@ -322,12 +322,6 @@ public class CharacterScoutTests
     }
 
     [Fact]
-    public void DailyResetDropsPendingReports()
-    {
-        Assert.Equal([new DropPendingReportsAction(Bob)], Log(0, DailyReset));
-    }
-
-    [Fact]
     public void AreasInsideAZoneDontChangeIt()
     {
         Log(0, Befallen);
