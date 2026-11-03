@@ -36,6 +36,7 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache
             return;
         }
 
+        log.Info($"Checking the API key with {KeyCheck.Server.Site.Host}.");
         var result = await fangbreakerZoneClient.ReportBonusAsync(KeyCheck, apiKey.Value, cancellationToken);
         if (result.IsSuccess)
         {
@@ -45,6 +46,7 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache
 
         if (result.Outcome == ApiOutcome.KeyRejected)
         {
+            log.Error(result.Error!);
             await StopUntilKeyChanges();
             return;
         }

@@ -149,7 +149,9 @@ public class BonusReporterTests
 
         Assert.False(this._reporter.HasApiKey);
         Assert.Single(this._site.Requests);
-        Assert.StartsWith("12:00:00 ERROR: API key rejected.", Output());
+        Assert.StartsWith("12:00:00 Checking the API key with fangbreaker.zone.", Output());
+        Assert.Contains("""ERROR: POST https://fangbreaker.zone/api/client/bonuses returned 401: {"ok":false,"error":"Nope"}""", Output());
+        Assert.Contains("ERROR: API key rejected.", Output());
     }
 
     [Fact]
@@ -167,7 +169,7 @@ public class BonusReporterTests
     {
         this._site.Fail(Post, HttpStatusCode.InternalServerError);
         await this._reporter.ChangeApiKeyAsync(new ApiKey("fz_live_new"), Cancel);
-        Assert.StartsWith("12:00:00 WARNING: API key: couldn't check it, so it will be used as is.", Output());
+        Assert.Contains("12:00:00 WARNING: API key: couldn't check it, so it will be used as is.", Output());
 
         this._site.Succeed(Post);
         await Execute(0, Bonus(Bob, "Befallen", "loot"));
