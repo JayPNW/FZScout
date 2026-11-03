@@ -22,9 +22,6 @@ class ServerListCache(FangbreakerZoneClient fangbreakerZoneClient, ConsoleReport
         return this._lists.GetValueOrDefault(server);
     }
 
-    /// <summary>The lists if they're already loaded. Never loads them.</summary>
-    public ServerLists? Peek(Server server) => this._lists.GetValueOrDefault(server);
-
     /// <summary>Forgets the lists and loads them again, as when the site says a zone wasn't found.</summary>
     public async Task ReloadAsync(Server server, CancellationToken cancellationToken = default)
     {
