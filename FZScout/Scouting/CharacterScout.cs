@@ -1,5 +1,4 @@
-﻿using FZScout.Logs;
-using FZScout.Site;
+﻿using FZScout.Site;
 
 namespace FZScout.Scouting;
 
@@ -32,12 +31,15 @@ class CharacterScout(Character character)
     public Zone? CurrentZone { get; private set; }
 
     /// <param name="lists">The server's lists, or null if they couldn't be loaded.</param>
-    public IReadOnlyList<ScoutAction> Handle(LogEvent logEvent, DateTimeOffset now, ServerLists? lists)
+    public IReadOnlyList<ScoutAction> Handle(EverQuestLogWatcher.EverQuestLogEvent logEvent, DateTimeOffset now, ServerLists? lists)
     {
         return [.. ResolveZone(lists), .. DispatchLogEvent(logEvent, now, lists)];
     }
 
-    /// <summary>Call regularly. Reports <c>none</c> when a timer runs out without a bonus message.</summary>
+    /// <summary>
+    /// Call right before handling the character's next log event. Reports <c>none</c> if a timer ran out before that next message arrived.
+    /// There's no independent clock: a character who stops logging in before any further message arrives never gets a false <c>none</c>.
+    /// </summary>
     /// <param name="lists">The server's lists if they're loaded. Ticking never loads them.</param>
     public IReadOnlyList<ScoutAction> Tick(DateTimeOffset now, ServerLists? lists)
     {
@@ -66,15 +68,16 @@ class CharacterScout(Character character)
 
     static bool IsReportable(Zone? zone) => zone is KnownZone or UnresolvedZone;
 
-    IReadOnlyList<ScoutAction> DispatchLogEvent(LogEvent logEvent, DateTimeOffset now, ServerLists? lists) => logEvent switch
+    IReadOnlyList<ScoutAction> DispatchLogEvent(EverQuestLogWatcher.EverQuestLogEvent logEvent, DateTimeOffset now, ServerLists? lists) => logEvent switch
     {
-        ZoneEnteredLogEvent e => OnZoneEntered(e.Zone, now, lists),
-        KillLogEvent => OnKill(now),
-        PetKillLogEvent e when e.OwnerName == character.Name => OnKill(now),
-        BonusReportLogEvent e => OnBonus(e.BonusKey, lists),
-        DailyResetLogEvent => OnDailyReset(now),
-        PlayerIsCampingLogEvent => OnCamping(now),
-        CampAbandonedLogEvent => OnCampAbandoned(now),
+        EverQuestLogWatcher.ZoneEntered e => OnZoneEntered(e.ZoneName, now, lists),
+        EverQuestLogWatcher.MobSlainByYou => OnKill(now),
+        EverQuestLogWatcher.SlainByPet e when e.OwnerName == character.Name => OnKill(now),
+        EverQuestLogWatcher.SlainByWarder e when e.OwnerName == character.Name => OnKill(now),
+        EverQuestLogWatcher.AreaIsSaturatedWithUnstableMagic e => BonusKey.FromAnnouncementText(e.Bonus) is { } bonus ? OnBonus(bonus, lists) : [],
+        EverQuestLogWatcher.DailyResetLogEvent => OnDailyReset(now),
+        EverQuestLogWatcher.CampingCountdownProgressed => OnCamping(now),
+        EverQuestLogWatcher.CampAbandonedLogEvent => OnCampAbandoned(now),
         _ => [],
     };
 

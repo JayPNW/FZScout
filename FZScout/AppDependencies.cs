@@ -1,5 +1,4 @@
-﻿using FZScout.Logs;
-using FZScout.Site;
+﻿using FZScout.Site;
 
 namespace FZScout;
 
@@ -11,5 +10,4 @@ record AppDependencies(
     Func<IDisposable?> TryClaimSingleInstance,
     IApiKeyStore ApiKeyStore,
     FangbreakerZoneClient FangbreakerZoneClient,
-    GitHubUpdateChecker GitHubUpdateChecker,
-    Func<IReadOnlyCollection<EqProcess>> FindEqProcesses);
+    GitHubUpdateChecker GitHubUpdateChecker);

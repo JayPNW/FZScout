@@ -1,5 +1,4 @@
-﻿using FZScout.Logs;
-using FZScout.Scouting;
+﻿using FZScout.Scouting;
 using FZScout.Site;
 
 namespace FZScout.Tests.Scouting;
@@ -22,6 +21,8 @@ public class CharacterScoutTests
     static readonly ServerLists Lists = new(
         new HashSet<BonusKey> { new("experience"), new("aa"), new("loot"), BonusKey.None },
         new HashSet<string> { "Befallen", "Crushbone", "Greater Faydark" });
+
+    static readonly EverQuestLogWatcher.EverQuestLogLineParser Parser = new(new EverQuestLogWatcher.Character(Bob.Name, Bob.Server.Slug));
 
     readonly CharacterScout _scout = new(Bob);
 
@@ -348,21 +349,9 @@ public class CharacterScoutTests
 
     static ReportNoBonusAction ReportNone(string zone) => new(Bob, zone);
 
-    IReadOnlyList<ScoutAction> Log(int seconds, string message)
-    {
-        var logEvent = LogEvent.Parse($"[Thu Oct 29 12:00:00 2026] {message}");
-        if (logEvent is null)
-        {
-            return [];
-        }
-
-        return this._scout.Handle(logEvent, Start.AddSeconds(seconds), Lists);
-    }
+    IReadOnlyList<ScoutAction> Log(int seconds, string message) => this._scout.Handle(Parser.Parse($"[Thu Oct 29 12:00:00 2026] {message}"), Start.AddSeconds(seconds), Lists);
 
     IReadOnlyList<ScoutAction> Tick(int seconds) => this._scout.Tick(Start.AddSeconds(seconds), Lists);
 
-    IReadOnlyList<ScoutAction> LogWithoutLists(int seconds, string message)
-    {
-        return this._scout.Handle(LogEvent.Parse(message)!, Start.AddSeconds(seconds), null);
-    }
+    IReadOnlyList<ScoutAction> LogWithoutLists(int seconds, string message) => this._scout.Handle(Parser.Parse($"[Thu Oct 29 12:00:00 2026] {message}"), Start.AddSeconds(seconds), null);
 }

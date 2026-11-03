@@ -15,20 +15,15 @@ A console app that monitors Everquest logs for zone bonuses and posts them to th
   - The status of the API key (working, rejected, or missing). To check it, POST `none` for `The Nexus` on Fangbreaker.
 - When the key is missing or rejected, ask for one at the console. Keep watching logs while waiting for the answer.
 - Errors are red. Successful uploads are yellow.
-  - List of EQ Log files it is watching.
-
-
-## Logging hint
-
-If an EQ process has run for 5 minutes and no `eqlog_*.txt` in its `Logs` folder has grown:
-    "No EverQuest log is growing. Type `/log on` in EverQuest." Show it once per EQ process. This includes logs for other servers, because any growing log means logging is on.
 
 ## Finding logs
 
-- Every 30 seconds, look for `eqgame.exe` processes.
-  - Get each exe path with `QueryFullProcessImageName`, which works even when EQ runs elevated.
-- In the `Logs` folder next to the exe, a file `eqlog_{CharacterName}_{server}.txt` is active when it grows while EQ is running from that folder.
-- Tail each active log once, even if several EQ processes share the folder. Start at the end of the file. Stop when no EQ process from that folder is running.
+Finding `eqgame.exe` processes, finding each one's `Logs\eqlog_{CharacterName}_{server}.txt`, and tailing it, is delegated to the [EverQuestLogWatcher](https://github.com/JayPNW/EverQuestLogWatcher) NuGet package (`EverQuestLogWatcher().WatchAsync(...)`).
+
+Known limitations inherited from the library, accepted for now:
+- It finds each process's exe path with `Process.MainModule.FileName`, which fails when EQ runs elevated. (An earlier FZScout-only implementation worked around this with `QueryFullProcessImageName`.)
+- There's no hint when EQ is running but no log is growing (`/log on` is off).
+- There's no signal when EQ exits, so a log keeps being tailed even after the character logs out. See Timing for how FZScout avoids a false `none` report because of this.
 
 ## Servers
 
@@ -44,11 +39,11 @@ The `{server}` in the log file name picks the site, ignoring case. Other servers
 
 See @EverquestLogs.md for details.
 
-Strip the timestamp (`[Mon Sep 14 16:10:29 2026] `) from each line.
+Recognizing a message (stripping the timestamp, matching it against known patterns, and excluding lines like `You have entered an area where levitation effects do not function.` from being a real zone change) is delegated to the EverQuestLogWatcher library's `EverQuestLogLineParser`. `CharacterScout` dispatches directly on the library's event types; the only FZScout-specific translation left is turning a bonus announcement's free text into a `BonusKey` (`BonusKey.FromAnnouncementText`).
 
 ### Zone
 
-- `You have entered {zone}.` changes the current zone, except lines that start with `You have entered an area` (like `You have entered an area where levitation effects do not function.`).
+- `You have entered {zone}.` changes the current zone.
 - Some zone names differ between site and log. See @Zones.md for the full mapping.
 - If it's still not on the list, the current zone is unknown. Many of these never get a bonus, like The Plane of Knowledge, so that alone isn't an error.
 - Log `{character} entered {zone}.` (the zone as written in the EQ log).
@@ -62,16 +57,13 @@ A bonus message applies to the current zone. If the current zone is not recogniz
 
 Once a day all zone bonuses reset. Watch for new bonus messages indicating the updated bonuses.
 
-### Implementation notes
-
-Each type of log message should become a LogEvent, e.g. `KillLogEvent` or `BonusReportLogEvent` following the strategy pattern.
-
 ## Timing
 
 - When a zone is entered, start the 5-minute idle timer for reporting `none` if no bonus message appears.
 - When a kill occurs, start a 5-second timer to watch for a bonus message. If no bonus message appears within 5 seconds, report `none`.
 - When a daily reset message appears, restart the 5-minute idle timer for the current zone.
 - When the camp message appears, disable the idle timer. Resume it when the player abandons their camp preparations.
+- A timer firing isn't driven by a clock: it's checked only when the character's next log message arrives, right before handling that message. A character who stops playing before another message arrives never gets a false `none`.
 
 ## Reporting
 

@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using FZScout.Logs;
 using FZScout.Site;
 
 namespace FZScout;
@@ -23,8 +22,7 @@ static class Program
             TryClaimSingleInstance: SingleInstance.TryClaim,
             ApiKeyStore: new WindowsCredentialManagerApiKeyStore(),
             new FangbreakerZoneClient(),
-            new GitHubUpdateChecker(),
-            FindEqProcesses: EqProcesses.Find));
+            new GitHubUpdateChecker()));
     }
 
     static string? GetVersion() => Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;

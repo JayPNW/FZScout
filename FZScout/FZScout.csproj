@@ -25,4 +25,8 @@
     <InternalsVisibleTo Include="FZScout.Tests" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="EverQuestLogWatcher" />
+  </ItemGroup>
+
 </Project>

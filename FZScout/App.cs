@@ -1,5 +1,4 @@
-﻿using FZScout.Logs;
-using FZScout.Reporting;
+﻿using FZScout.Reporting;
 
 namespace FZScout;
 
@@ -13,7 +12,6 @@ class App
 
     readonly BonusReporter _bonusReporter;
     readonly ApiKeyPrompt _apiKeyPrompt;
-    readonly LogWatcher _logWatcher;
     readonly Scout _scout;
 
     public App(AppDependencies dependencies)
@@ -23,8 +21,7 @@ class App
         var serverListCache = new ServerListCache(dependencies.FangbreakerZoneClient, log);
         this._bonusReporter = new BonusReporter(dependencies.FangbreakerZoneClient, serverListCache, log);
         this._apiKeyPrompt = new ApiKeyPrompt(this._bonusReporter, dependencies.ApiKeyStore, log, dependencies.UserInput.ReadApiKeyAsync);
-        this._logWatcher = new LogWatcher(log);
-        this._scout = new Scout(this._logWatcher, serverListCache, this._bonusReporter, dependencies.FindEqProcesses);
+        this._scout = new Scout(serverListCache, this._bonusReporter);
     }
 
     public AppDependencies Dependencies { get; }
@@ -41,6 +38,7 @@ class App
 
         await StartAsync();
 
+        var watchingLogs = WatchLogsAsync(Dependencies.UserInput.ExitRequested);
         using var timer = new PeriodicTimer(TickInterval, Dependencies.TimeProvider);
         try
         {
@@ -52,6 +50,8 @@ class App
         catch (OperationCanceledException) when (Dependencies.UserInput.ExitRequested.IsCancellationRequested)
         {
         }
+
+        await watchingLogs;
     }
 
     public async Task StartAsync()
@@ -60,7 +60,6 @@ class App
         await Dependencies.GitHubUpdateChecker.CheckAsync(Dependencies.GetVersion(), Dependencies.Log, Dependencies.UserInput.ExitRequested);
         await this._bonusReporter.ChangeApiKeyAsync(Dependencies.ApiKeyStore.Load(), Dependencies.UserInput.ExitRequested);
         await TickScoutAsync();
-        PrintWatchedLogs();
         Dependencies.Log.Info("Press Ctrl+C to exit.");
     }
 
@@ -83,17 +82,25 @@ class App
         }
     }
 
-    void PrintWatchedLogs()
+    /// <summary>Runs for the life of the app: feeds every event EverQuestLogWatcher finds to the scout. One bad event is logged, not fatal.</summary>
+    async Task WatchLogsAsync(CancellationToken cancellationToken)
     {
-        if (this._logWatcher.WatchedLogs.Count == 0)
+        try
         {
-            Dependencies.Log.Info("No EverQuest logs found yet. Looking every 30 seconds while EverQuest runs.");
-            return;
+            await foreach (var logEvent in new EverQuestLogWatcher.EverQuestLogWatcher().WatchAsync(cancellationToken: cancellationToken))
+            {
+                try
+                {
+                    await this._scout.HandleAsync(logEvent, Dependencies.TimeProvider.GetUtcNow(), cancellationToken);
+                }
+                catch (Exception exception) when (exception is not OperationCanceledException)
+                {
+                    Dependencies.Log.Error($"Unexpected problem: {exception}");
+                }
+            }
         }
-
-        foreach (var folder in this._logWatcher.WatchedLogs.Select(Path.GetDirectoryName).Distinct())
+        catch (OperationCanceledException)
         {
-            Dependencies.Log.Info($"EverQuest logs found in {folder}");
         }
     }
 }

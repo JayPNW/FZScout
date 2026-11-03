@@ -1,7 +1,6 @@
 ﻿{
   ApiKeyStore: WindowsCredentialManagerApiKeyStore,
   FangbreakerZoneClient: FangbreakerZoneClient,
-  FindEqProcesses: EqProcesses.Find,
   GetVersion: Program.GetVersion,
   GitHubUpdateChecker: GitHubUpdateChecker,
   Log: ConsoleReporter,

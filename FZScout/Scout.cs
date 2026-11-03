@@ -1,41 +1,35 @@
-﻿using FZScout.Logs;
-using FZScout.Reporting;
+﻿using FZScout.Reporting;
 using FZScout.Scouting;
 
 namespace FZScout;
 
 /// <summary>Connects the pieces: log events go to each character's scout, and what the scouts decide goes to the reporter.</summary>
-class Scout(LogWatcher logWatcher, ServerListCache serverListCache, BonusReporter bonusReporter, Func<IReadOnlyCollection<EqProcess>> findEqProcesses)
+class Scout(ServerListCache serverListCache, BonusReporter bonusReporter)
 {
     readonly Dictionary<Character, CharacterScout> _characters = [];
-    DateTimeOffset? _nextScan;
 
-    /// <summary>Call about once a second.</summary>
+    /// <summary>
+    /// Call for every event the EverQuestLogWatcher library reports. Servers we don't report, and events that don't matter to scouting, are ignored.
+    /// A character whose bonus/none timer ran out before this message arrived gets that report too, folded into the same call.
+    /// </summary>
+    public async Task HandleAsync(EverQuestLogWatcher.EverQuestLogEvent logEvent, DateTimeOffset now, CancellationToken cancellationToken = default)
+    {
+        var server = Server.FromSlug(logEvent.Character.Server);
+        if (server is null)
+        {
+            return;
+        }
+
+        var character = new Character(logEvent.Character.Name, server);
+        var serverLists = await serverListCache.GetAsync(character.Server, now, cancellationToken);
+        var scout = ScoutFor(character);
+        IReadOnlyList<ScoutAction> actions = [.. scout.Tick(now, serverLists), .. scout.Handle(logEvent, now, serverLists)];
+        await ExecuteAsync(actions, now, cancellationToken);
+    }
+
+    /// <summary>Call about once a second: retries pending work that doesn't depend on a new log event.</summary>
     public async Task TickAsync(DateTimeOffset now, CancellationToken cancellationToken = default)
     {
-        if (this._nextScan is null || now >= this._nextScan)
-        {
-            foreach (var character in logWatcher.Scan(findEqProcesses(), now))
-            {
-                // EverQuest stopped, so the character can't see a bonus message; don't let a timer report a false 'none'.
-                this._characters.Remove(character);
-            }
-
-            this._nextScan = now + LogWatcher.ScanInterval;
-        }
-
-        foreach (var logEvent in logWatcher.Poll())
-        {
-            var serverLists = await serverListCache.GetAsync(logEvent.Character.Server, now, cancellationToken);
-            var actions = ScoutFor(logEvent.Character).Handle(logEvent.Event, now, serverLists);
-            await ExecuteAsync(actions, now, cancellationToken);
-        }
-
-        foreach (var scout in this._characters.Values)
-        {
-            await ExecuteAsync(scout.Tick(now, serverListCache.Peek(scout.Character.Server)), now, cancellationToken);
-        }
-
         await serverListCache.TickAsync(now, cancellationToken);
         await bonusReporter.TickAsync(now, cancellationToken);
     }
