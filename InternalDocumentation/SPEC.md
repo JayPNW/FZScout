@@ -21,7 +21,6 @@ A console app that monitors Everquest logs for zone bonuses and posts them to th
 Finding `eqgame.exe` processes, finding each one's `Logs\eqlog_{CharacterName}_{server}.txt`, and tailing it, is delegated to the [EverQuestLogWatcher](https://github.com/JayPNW/EverQuestLogWatcher) NuGet package (`EverQuestLogWatcher().WatchAsync(...)`).
 
 Known limitations inherited from the library, accepted for now:
-- It finds each process's exe path with `Process.MainModule.FileName`, which fails when EQ runs elevated. (An earlier FZScout-only implementation worked around this with `QueryFullProcessImageName`.)
 - There's no hint when EQ is running but no log is growing (`/log on` is off).
 - There's no signal when EQ exits, so a log keeps being tailed even after the character logs out. See Timing for how FZScout avoids a false `none` report because of this.
 
