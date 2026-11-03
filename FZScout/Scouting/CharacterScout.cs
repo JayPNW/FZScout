@@ -20,10 +20,6 @@ class CharacterScout(Character character)
 
     DateTimeOffset? _idleDeadline;
 
-    TimeSpan? _idleTimeLeftWhileCampingPaused;
-
-    bool _isCamping;
-
     DateTimeOffset? _killDeadline;
 
     public Character Character => character;
@@ -76,8 +72,7 @@ class CharacterScout(Character character)
         EverQuestLogWatcher.SlainByWarder e when e.OwnerName == character.Name => OnKill(now),
         EverQuestLogWatcher.AreaIsSaturatedWithUnstableMagic e => BonusKey.FromAnnouncementText(e.Bonus) is { } bonus ? OnBonus(bonus, lists) : [],
         EverQuestLogWatcher.DailyResetLogEvent => OnDailyReset(now),
-        EverQuestLogWatcher.CampingCountdownProgressed => OnCamping(now),
-        EverQuestLogWatcher.CampAbandonedLogEvent => OnCampAbandoned(now),
+        EverQuestLogWatcher.CampingCountdownProgressed => OnCamping(),
         _ => [],
     };
 
@@ -103,9 +98,7 @@ class CharacterScout(Character character)
         CurrentZone = ZoneNames.Resolve(logZone, lists?.Zones);
         this._alreadyReported = false;
         this._killDeadline = null;
-        this._idleTimeLeftWhileCampingPaused = null;
         this._idleDeadline = null;
-        this._isCamping = false;
 
         if (IsReportable(CurrentZone))
         {
@@ -170,31 +163,13 @@ class CharacterScout(Character character)
         this._alreadyReported = false;
         this._killDeadline = null;
         StartIdleTimer(now);
-        return IdleTimerStarted();
+        return [WaitingUntil(character, this._idleDeadline!.Value)];
     }
 
-    IReadOnlyList<ScoutAction> OnCamping(DateTimeOffset now)
+    /// <summary>The character is probably logging out, and the next message may be from much later, so stop waiting for a bonus.</summary>
+    IReadOnlyList<ScoutAction> OnCamping()
     {
-        this._isCamping = true;
-        if (this._idleDeadline is { } deadline)
-        {
-            this._idleTimeLeftWhileCampingPaused = deadline - now;
-            this._idleDeadline = null;
-        }
-
-        return [];
-    }
-
-    IReadOnlyList<ScoutAction> OnCampAbandoned(DateTimeOffset now)
-    {
-        this._isCamping = false;
-        if (this._idleTimeLeftWhileCampingPaused is { } remaining)
-        {
-            this._idleDeadline = now + remaining;
-            this._idleTimeLeftWhileCampingPaused = null;
-            return IdleTimerStarted();
-        }
-
+        this._idleDeadline = null;
         return [];
     }
 
@@ -203,21 +178,9 @@ class CharacterScout(Character character)
         return new($"{character} waiting until {deadline.ToLocalTime():HH:mm:ss} for a bonus message.");
     }
 
-    IReadOnlyList<ScoutAction> IdleTimerStarted()
-    {
-        return this._idleDeadline is { } deadline ? [WaitingUntil(character, deadline)] : [];
-    }
-
     void StartIdleTimer(DateTimeOffset now)
     {
-        if (this._isCamping)
-        {
-            this._idleTimeLeftWhileCampingPaused = IdleTimeout;
-        }
-        else
-        {
-            this._idleDeadline = now + IdleTimeout;
-        }
+        this._idleDeadline = now + IdleTimeout;
     }
 
     void MarkAlreadyReportedThisZone()
@@ -225,6 +188,5 @@ class CharacterScout(Character character)
         this._alreadyReported = true;
         this._killDeadline = null;
         this._idleDeadline = null;
-        this._idleTimeLeftWhileCampingPaused = null;
     }
 }

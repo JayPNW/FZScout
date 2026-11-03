@@ -183,7 +183,7 @@ public class CharacterScoutTests
     }
 
     [Fact]
-    public void CampingPausesTheIdleTimer()
+    public void CampingStopsTheIdleTimer()
     {
         Log(0, Befallen);
         Log(200, Camping);
@@ -193,28 +193,13 @@ public class CharacterScoutTests
     }
 
     [Fact]
-    public void AbandoningCampResumesTheIdleTimerWhereItLeftOff()
+    public void AbandoningCampDoesNotRestartTheIdleTimer()
     {
         Log(0, Befallen);
         Log(200, Camping);
-        Log(205, Camping);
         Log(210, CampAbandoned);
 
-        Assert.Empty(Tick(309));
-        Assert.Equal([ReportNone("Befallen")], Tick(310));
-    }
-
-    [Fact]
-    public void DailyResetWhileCampingWaitsForTheCampToBeAbandoned()
-    {
-        Log(0, Befallen);
-        Log(10, Experience);
-        Log(100, Camping);
-        Log(101, DailyReset);
-
-        Assert.Empty(Tick(1000));
-        Log(1000, CampAbandoned);
-        Assert.Equal([ReportNone("Befallen")], Tick(1300));
+        Assert.Empty(Tick(10_000));
     }
 
     [Fact]

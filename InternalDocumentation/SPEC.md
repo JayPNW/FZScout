@@ -61,7 +61,7 @@ Once a day all zone bonuses reset. Watch for new bonus messages indicating the u
 - When a zone is entered, start the 5-minute idle timer for reporting `none` if no bonus message appears.
 - When a kill occurs, start a 5-second timer to watch for a bonus message. If no bonus message appears within 5 seconds, report `none`.
 - When a daily reset message appears, restart the 5-minute idle timer for the current zone.
-- When the camp message appears, disable the idle timer. Resume it when the player abandons their camp preparations.
+- When the camp message appears, stop the idle timer. Abandoning the camp doesn't restart it.
 - A timer firing isn't driven by a clock: it's checked only when the character's next log message arrives, right before handling that message. A character who stops playing before another message arrives never gets a false `none`.
 
 ## Reporting
