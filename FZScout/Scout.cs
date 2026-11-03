@@ -24,7 +24,7 @@ class Scout(ServerListCache serverListCache, BonusReporter bonusReporter)
         var serverLists = await serverListCache.GetAsync(character.Server, cancellationToken);
         var scout = ScoutFor(character);
         IReadOnlyList<ScoutAction> actions = [.. scout.Tick(now, serverLists), .. scout.Handle(logEvent, now, serverLists)];
-        await ExecuteAsync(actions, now, cancellationToken);
+        await ExecuteAsync(actions, cancellationToken);
     }
 
     CharacterScout ScoutFor(Character character)
@@ -38,11 +38,11 @@ class Scout(ServerListCache serverListCache, BonusReporter bonusReporter)
         return scout;
     }
 
-    async Task ExecuteAsync(IReadOnlyList<ScoutAction> actions, DateTimeOffset now, CancellationToken cancellationToken)
+    async Task ExecuteAsync(IReadOnlyList<ScoutAction> actions, CancellationToken cancellationToken)
     {
         foreach (var action in actions)
         {
-            await bonusReporter.ExecuteAsync(action, now, cancellationToken);
+            await bonusReporter.ExecuteAsync(action, cancellationToken);
         }
     }
 }

@@ -51,11 +51,11 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache
         log.Warning($"API key: couldn't check it, so it will be used as is. {result.Error}");
     }
 
-    public Task ExecuteAsync(ScoutAction action, DateTimeOffset now, CancellationToken cancellationToken = default) => action switch
+    public Task ExecuteAsync(ScoutAction action, CancellationToken cancellationToken = default) => action switch
     {
         LogErrorAction a => LogErrorAsync(a.Message),
         LogInfoAction a => LogInfoAsync(a.Message),
-        ReportAction a => AttemptAsync(a, now, cancellationToken),
+        ReportAction a => AttemptAsync(a, cancellationToken),
         _ => throw new ArgumentOutOfRangeException(nameof(action), action, null),
     };
 
@@ -71,7 +71,7 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache
         return Task.CompletedTask;
     }
 
-    async Task AttemptAsync(ReportAction action, DateTimeOffset now, CancellationToken cancellationToken)
+    async Task AttemptAsync(ReportAction action, CancellationToken cancellationToken)
     {
         var report = action.Report;
         if (!CanReport(report))
@@ -93,7 +93,7 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache
         }
 
         log.Error($"Couldn't report {report}. {result.Error}");
-        await HandleFailureAsync(result.Outcome, action, now, cancellationToken);
+        await HandleFailureAsync(result.Outcome, action, cancellationToken);
     }
 
     bool CanReport(BonusReport report)
@@ -139,7 +139,7 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache
         return true;
     }
 
-    Task HandleFailureAsync(ApiOutcome outcome, ReportAction action, DateTimeOffset now, CancellationToken cancellationToken) => outcome switch
+    Task HandleFailureAsync(ApiOutcome outcome, ReportAction action, CancellationToken cancellationToken) => outcome switch
     {
         ApiOutcome.KeyRejected => StopUntilKeyChanges(),
         ApiOutcome.Banned => StopReportingTo(action.Report.Server),
