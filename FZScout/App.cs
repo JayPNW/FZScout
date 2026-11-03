@@ -84,7 +84,6 @@ class App
             return;
         }
 
-        await TickAsync();
         Dependencies.Log.Info("Press Ctrl+C to exit.");
     }
 
