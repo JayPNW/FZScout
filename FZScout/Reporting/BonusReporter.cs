@@ -4,7 +4,7 @@ using FZScout.Site;
 namespace FZScout.Reporting;
 
 /// <summary>Carries out what the scouts decide, following the Reporting section of InternalDocumentation/SPEC.md.</summary>
-class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache serverListCache, ConsoleReporter log)
+class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ConsoleReporter log)
 {
     /// <summary>Checks a key by posting 'none' for a zone that never has a bonus.</summary>
     public static readonly BonusReport KeyCheck = new(Server.Fangbreaker, "The Nexus", BonusKey.None);
@@ -93,7 +93,7 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache
         }
 
         log.Error($"Couldn't report {report}. {result.Error}");
-        await HandleFailureAsync(result.Outcome, action, cancellationToken);
+        await HandleFailureAsync(result.Outcome, action);
     }
 
     bool CanReport(BonusReport report)
@@ -139,11 +139,10 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ServerListCache
         return true;
     }
 
-    Task HandleFailureAsync(ApiOutcome outcome, ReportAction action, CancellationToken cancellationToken) => outcome switch
+    Task HandleFailureAsync(ApiOutcome outcome, ReportAction action) => outcome switch
     {
         ApiOutcome.KeyRejected => StopUntilKeyChanges(),
         ApiOutcome.Banned => StopReportingTo(action.Report.Server),
-        ApiOutcome.NotFound => serverListCache.ReloadAsync(action.Report.Server, cancellationToken),
         _ => Task.CompletedTask,
     };
 

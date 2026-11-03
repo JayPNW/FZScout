@@ -22,13 +22,6 @@ class ServerListCache(FangbreakerZoneClient fangbreakerZoneClient, ConsoleReport
         return this._lists.GetValueOrDefault(server);
     }
 
-    /// <summary>Forgets the lists and loads them again, as when the site says a zone wasn't found.</summary>
-    public async Task ReloadAsync(Server server, CancellationToken cancellationToken = default)
-    {
-        this._lists.Remove(server);
-        await LoadAsync(server, cancellationToken);
-    }
-
     async Task LoadAsync(Server server, CancellationToken cancellationToken)
     {
         var types = await fangbreakerZoneClient.GetBonusTypesAsync(server, cancellationToken);

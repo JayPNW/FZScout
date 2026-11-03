@@ -77,13 +77,4 @@ public class ServerListCacheTests
         Assert.NotNull(await this._cache.GetAsync(Server.Fangbreaker, Cancel));
         Assert.Equal([Types, Types, Zones], this._site.Requests);
     }
-
-    [Fact]
-    public async Task ReloadLoadsAgain()
-    {
-        await this._cache.GetAsync(Server.Fangbreaker, Cancel);
-        await this._cache.ReloadAsync(Server.Fangbreaker, Cancel);
-
-        Assert.Equal([Types, Zones, Types, Zones], this._site.Requests);
-    }
 }

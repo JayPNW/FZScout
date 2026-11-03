@@ -17,7 +17,7 @@ class App
         Dependencies = dependencies;
         var log = dependencies.Log;
         var serverListCache = new ServerListCache(dependencies.FangbreakerZoneClient, log);
-        this._bonusReporter = new BonusReporter(dependencies.FangbreakerZoneClient, serverListCache, log);
+        this._bonusReporter = new BonusReporter(dependencies.FangbreakerZoneClient, log);
         this._apiKeyPrompt = new ApiKeyPrompt(this._bonusReporter, dependencies.ApiKeyStore, log, dependencies.UserInput.ReadApiKeyAsync);
         this._scout = new Scout(serverListCache, this._bonusReporter);
     }

@@ -23,7 +23,7 @@ public class BonusReporterTests
     {
         var log = new ConsoleReporter(this._output, new FakeTimeProvider(Start));
         var fangbreakerZoneClient = this._site.Client;
-        this._reporter = new BonusReporter(fangbreakerZoneClient, new ServerListCache(fangbreakerZoneClient, log), log);
+        this._reporter = new BonusReporter(fangbreakerZoneClient, log);
         this._reporter.SetApiKey(new ApiKey("fz_live_test"));
     }
 
@@ -191,15 +191,14 @@ public class BonusReporterTests
     }
 
     [Fact]
-    public async Task ZoneNotFoundReloadsTheZonesList()
+    public async Task ZoneNotFoundIsOnlyLogged()
     {
         this._site.Fail(Post, HttpStatusCode.NotFound);
 
         await Execute(Bonus(Bob, "Befallen", "loot"));
 
-        Assert.Equal(
-            [PostBody("Fangbreaker", "Befallen", "loot"), "GET /api/servers/fangbreaker/bonuses/types", "GET /api/servers/fangbreaker/bonuses/zones"],
-            this._site.Requests);
+        Assert.Equal([PostBody("Fangbreaker", "Befallen", "loot")], this._site.Requests);
+        Assert.StartsWith("12:00:00 ERROR: Couldn't report Fangbreaker 'Befallen' is 'loot'.", Output());
     }
 
     static ReportBonusAction Bonus(Character character, string zone, string bonus)

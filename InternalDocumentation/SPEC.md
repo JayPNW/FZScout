@@ -80,7 +80,7 @@ Every failure is logged as an error.
 | 400 bad payload     | Don't retry.                                                                  |
 | 401 bad key         | Log "API key rejected". At startup, ask for a new key. Later, exit.           |
 | 403 banned          | Log it. Stop reporting to that site until restart.                            |
-| 404 zone not found  | Reload the zones list. Don't retry.                                           |
+| 404 zone not found  | Don't retry.                                                                  |
 | 500, other, network | Don't retry.                                                                  |
 
 Each server's `types` and `zones` lists are loaded the first time they're needed. If loading fails, try again the next time they're needed.
