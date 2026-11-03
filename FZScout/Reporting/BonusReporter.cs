@@ -9,7 +9,6 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ConsoleReporter
     /// <summary>Checks a key by posting 'none' for a zone that never has a bonus.</summary>
     public static readonly BonusReport KeyCheck = new(Server.Fangbreaker, "The Nexus", BonusKey.None);
 
-    readonly HashSet<Server> _banned = [];
     ApiKey? _apiKey;
     bool _keyRejected;
 
@@ -44,7 +43,7 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ConsoleReporter
         if (result.Outcome == ApiOutcome.KeyRejected)
         {
             log.Error(result.Error!);
-            await StopUntilKeyChanges();
+            StopUntilKeyChanges();
             return;
         }
 
@@ -93,7 +92,10 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ConsoleReporter
         }
 
         log.Error($"Couldn't report {report}. {result.Error}");
-        await HandleFailureAsync(result.Outcome, action);
+        if (result.Outcome == ApiOutcome.KeyRejected)
+        {
+            StopUntilKeyChanges();
+        }
     }
 
     bool CanReport(BonusReport report)
@@ -107,12 +109,6 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ConsoleReporter
         if (this._keyRejected)
         {
             log.Warning($"The API key was rejected, so {report} wasn't reported.");
-            return false;
-        }
-
-        if (this._banned.Contains(report.Server))
-        {
-            log.Warning($"{report.Server.Site} has banned this account, so {report} wasn't reported.");
             return false;
         }
 
@@ -139,24 +135,9 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ConsoleReporter
         return true;
     }
 
-    Task HandleFailureAsync(ApiOutcome outcome, ReportAction action) => outcome switch
-    {
-        ApiOutcome.KeyRejected => StopUntilKeyChanges(),
-        ApiOutcome.Banned => StopReportingTo(action.Report.Server),
-        _ => Task.CompletedTask,
-    };
-
-    Task StopUntilKeyChanges()
+    void StopUntilKeyChanges()
     {
         this._keyRejected = true;
         log.Error("API key rejected.");
-        return Task.CompletedTask;
-    }
-
-    Task StopReportingTo(Server server)
-    {
-        this._banned.Add(server);
-        log.Error($"{server.Site} has banned or timed out this account. Reporting to it is stopped until restart.");
-        return Task.CompletedTask;
     }
 }

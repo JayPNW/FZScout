@@ -175,19 +175,16 @@ public class BonusReporterTests
     }
 
     [Fact]
-    public async Task BannedStopsReportingToThatSiteOnly()
+    public async Task BannedIsOnlyLogged()
     {
         this._site.Fail(Post, HttpStatusCode.Forbidden);
         await Execute(Bonus(Bob, "Befallen", "loot"));
-        Assert.Contains("ERROR: https://fangbreaker.zone/ has banned or timed out this account. Reporting to it is stopped until restart.", Output());
-
-        this._site.Succeed(Post);
         await Execute(Bonus(Bob, "Crushbone", "loot"));
-        await Execute(Bonus(Ann, "Befallen", "loot"));
 
         Assert.Equal(
-            [PostBody("Fangbreaker", "Befallen", "loot"), PostBody("Frostreaver", "Befallen", "loot")],
+            [PostBody("Fangbreaker", "Befallen", "loot"), PostBody("Fangbreaker", "Crushbone", "loot")],
             this._site.Requests);
+        Assert.StartsWith("12:00:00 ERROR: Couldn't report Fangbreaker 'Befallen' is 'loot'.", Output());
     }
 
     [Fact]

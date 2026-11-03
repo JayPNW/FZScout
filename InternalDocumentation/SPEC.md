@@ -79,7 +79,7 @@ Every failure is logged as an error.
 | 200                 | Success.                                                                      |
 | 400 bad payload     | Don't retry.                                                                  |
 | 401 bad key         | Log "API key rejected". At startup, ask for a new key. Later, exit.           |
-| 403 banned          | Log it. Stop reporting to that site until restart.                            |
+| 403 banned          | Don't retry.                                                                  |
 | 404 zone not found  | Don't retry.                                                                  |
 | 500, other, network | Don't retry.                                                                  |
 
