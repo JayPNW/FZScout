@@ -21,7 +21,7 @@ if ($Matches.prerelease) { $packVersion = "$packVersion-$($Matches.prerelease)" 
 dotnet publish $project -c Release -o $publish -p:Version=$version -p:IncludeSourceRevisionInInformationalVersion=false
 if ($LASTEXITCODE -ne 0) { throw 'publish failed' }
 
-# No deltas: there is nothing to diff against on the first Velopack release, and this app is small enough that full packages are fine.
+# No deltas: this app is small enough that full packages are fine, so a leftover local Releases folder can't sneak a delta into a release.
 vpk pack --packId FZScout --packVersion $packVersion --packDir $publish --icon (Join-Path $project 'FZScout.ico') --runtime win-x64 --delta None
 if ($LASTEXITCODE -ne 0) { throw 'pack failed' }
 
