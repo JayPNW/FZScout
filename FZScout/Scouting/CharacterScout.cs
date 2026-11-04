@@ -22,8 +22,6 @@ class CharacterScout(Character character, Func<ScoutAction, CancellationToken, T
 
     DateTimeOffset? _killDeadline;
 
-    public Character Character => character;
-
     public Zone? CurrentZone { get; private set; }
 
     /// <param name="lists">The server's lists, or null if they couldn't be loaded.</param>
