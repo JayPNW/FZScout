@@ -49,9 +49,20 @@ class TrayApplicationContext : ApplicationContext
         app.WaitingForBonusMessageUntilChanged += waitingUntil => UpdateStatus(status => status.WaitingForBonusMessageUntil = waitingUntil);
         app.ScoutingStarted += () => UpdateStatus(StartScouting);
 
+        var trayIconReachability = new TrayIconReachability();
+        this._window.CanUserReachTrayIcon = () => trayIconReachability.CanUserReachTrayIcon(Environment.ProcessPath!);
         this._window.CreateWithoutShowing();
         this._hasExplainedHidingToTray = true;
-        this._trayIcon.ShowBalloonTip(5000, "FZScout is running", "Double-click this icon to see the log. To exit, right-click it and choose Exit.", ToolTipIcon.Info);
+        if (this._window.CanUserReachTrayIcon())
+        {
+            this._trayIcon.ShowBalloonTip(5000, "FZScout is running", "Double-click this icon to see the log. To exit, right-click it and choose Exit.", ToolTipIcon.Info);
+        }
+        else
+        {
+            this._window.ShowMinimizedOnTaskbar();
+            this._trayIcon.ShowBalloonTip(5000, "FZScout is running", "Windows is hiding its tray icon, so it stays on the taskbar. To show the icon, go to Settings > Personalization > Taskbar > Other system tray icons.", ToolTipIcon.Info);
+        }
+
         RunAppThenStop(app);
     }
 

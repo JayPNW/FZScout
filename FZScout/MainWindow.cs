@@ -34,7 +34,7 @@ class MainWindow : Form, IUserInput
         Controls.Add(this._logView);
     }
 
-    /// <summary>Raised when the user minimizes the window, or closes it while the app is still scouting, and it hides to the system tray.</summary>
+    /// <summary>Raised when the user minimizes the window, or closes it while the app is still scouting, and it hides to the system tray. Not raised when it minimizes to the taskbar instead.</summary>
     public event Action? HiddenToTray;
 
     public CancellationToken ExitRequested => this._exitRequested.Token;
@@ -42,6 +42,10 @@ class MainWindow : Form, IUserInput
     /// <summary>While true, closing the window just hides it, so the app keeps scouting from the system tray.</summary>
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public bool HidesInsteadOfClosing { get; set; } = true;
+
+    /// <summary>When the user can't reach the tray icon, hiding the window would lose it, so it minimizes to the taskbar instead.</summary>
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+    public Func<bool> CanUserReachTrayIcon { get; set; } = () => true;
 
     public void RequestExit() => this._exitRequested.Cancel();
 
@@ -64,6 +68,12 @@ class MainWindow : Form, IUserInput
     /// <summary>Lets other threads write to the window and ask for the API key before the user ever opens it.</summary>
     public void CreateWithoutShowing() => _ = Handle;
 
+    public void ShowMinimizedOnTaskbar()
+    {
+        WindowState = FormWindowState.Minimized;
+        Show();
+    }
+
     public void ShowAndActivate()
     {
         Show();
@@ -80,7 +90,7 @@ class MainWindow : Form, IUserInput
         if (e.CloseReason == CloseReason.UserClosing && HidesInsteadOfClosing)
         {
             e.Cancel = true;
-            HideToTray();
+            HideToTrayOrMinimize();
         }
 
         base.OnFormClosing(e);
@@ -89,7 +99,7 @@ class MainWindow : Form, IUserInput
     protected override void OnResize(EventArgs e)
     {
         base.OnResize(e);
-        if (WindowState == FormWindowState.Minimized && Visible)
+        if (WindowState == FormWindowState.Minimized && Visible && CanUserReachTrayIcon())
         {
             HideToTray();
         }
@@ -125,6 +135,17 @@ class MainWindow : Form, IUserInput
             settings.Dispose();
         };
         settings.ShowCenteredOver(this);
+    }
+
+    void HideToTrayOrMinimize()
+    {
+        if (CanUserReachTrayIcon())
+        {
+            HideToTray();
+            return;
+        }
+
+        WindowState = FormWindowState.Minimized;
     }
 
     void HideToTray()
