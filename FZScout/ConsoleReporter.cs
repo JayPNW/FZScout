@@ -19,9 +19,9 @@ class ConsoleReporter(Action<string, ConsoleColor?> write, TimeProvider timeProv
     public void Info(string message) => Write(message, null);
 
     /// <summary>Something worked that the user cares about, like a bonus uploaded to the site.</summary>
-    public void Success(string message) => Write(message, ConsoleColor.Yellow);
+    public void Success(string message) => Write(message, ConsoleColor.Cyan);
 
-    public void Warning(string message) => Write($"WARNING: {message}", ConsoleColor.Cyan);
+    public void Warning(string message) => Write($"WARNING: {message}", ConsoleColor.Yellow);
 
     public void Error(string message) => Write($"ERROR: {message}", ConsoleColor.Red);
 

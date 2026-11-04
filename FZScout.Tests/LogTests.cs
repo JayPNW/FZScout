@@ -21,19 +21,19 @@ public class LogTests
     }
 
     [Fact]
-    public void SuccessIsYellow()
+    public void SuccessIsCyan()
     {
         this._log.Success("Reported a bonus");
 
-        Assert.Equal([("12:00:00 Reported a bonus", ConsoleColor.Yellow)], this._lines);
+        Assert.Equal([("12:00:00 Reported a bonus", ConsoleColor.Cyan)], this._lines);
     }
 
     [Fact]
-    public void WarningIsCyan()
+    public void WarningIsYellow()
     {
         this._log.Warning("Hmm");
 
-        Assert.Equal([("12:00:00 WARNING: Hmm", ConsoleColor.Cyan)], this._lines);
+        Assert.Equal([("12:00:00 WARNING: Hmm", ConsoleColor.Yellow)], this._lines);
     }
 
     [Fact]
