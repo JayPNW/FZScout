@@ -15,6 +15,8 @@ Most behavior is best learned from the code. This file records only intent that 
 
 ## Reporting Conflicts
 
-Before reporting `none`, check what the site already shows. If it has a real bonus for the zone, assume the site is right and don't report.
+Before reporting anything, check what the site already shows. If it already shows the same bonus (including `none`), don't report it again. If that check fails, still report a real bonus.
+
+When about to report `none`, if the site has a real bonus for the zone, assume the site is right and don't report. If the check fails, don't report `none`.
 
 Otherwise, when reporting a bonus different from what is shown on the site, log a warning.

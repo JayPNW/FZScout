@@ -39,6 +39,7 @@ public class ScoutTests
             [
                 "GET /api/servers/fangbreaker/bonuses/types",
                 "GET /api/servers/fangbreaker/bonuses/zones",
+                "GET /api/servers/fangbreaker/bonuses/today",
                 """POST /api/client/bonuses {"serverName":"Fangbreaker","zoneName":"Crushbone","bonusKey":"loot"}""",
             ],
             this._site.Requests);

@@ -6,16 +6,38 @@ namespace FZScout.Reporting;
 /// <param name="loadApiKey">Called for each report, so a key the user saves in Settings takes effect right away.</param>
 class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, Func<ApiKey?> loadApiKey, Log log)
 {
-    public Task ReportBonusAsync(BonusReport report, CancellationToken cancellationToken = default)
+    public async Task ReportBonusAsync(BonusReport report, CancellationToken cancellationToken = default)
     {
-        return PostAsync(report, $"Reported {report}.", cancellationToken);
+        var shownOnSite = await GetBonusShownOnSiteAsync(report, cancellationToken);
+        if (shownOnSite.IsSuccess && shownOnSite.Value == report.Bonus)
+        {
+            LogAlreadyShown(report);
+            return;
+        }
+
+        await PostAsync(report, $"Reported {report}.", cancellationToken);
     }
 
     public async Task ReportNoBonusAsync(Server server, string zone, CancellationToken cancellationToken = default)
     {
         var report = new BonusReport(server, zone, BonusKey.None);
-        if (!await SiteHasNoBonusAsync(report, cancellationToken))
+        var shownOnSite = await GetBonusShownOnSiteAsync(report, cancellationToken);
+        if (!shownOnSite.IsSuccess)
         {
+            log.Error($"Couldn't check today's bonuses, so {report} wasn't reported. {shownOnSite.Error}");
+            return;
+        }
+
+        var shown = shownOnSite.Value;
+        if (shown == BonusKey.None)
+        {
+            LogAlreadyShown(report);
+            return;
+        }
+
+        if (shown != BonusKey.Unconfirmed)
+        {
+            log.Info($"{report.Server.Site} already shows '{shown}' for '{report.Zone}', so 'none' wasn't reported.");
             return;
         }
 
@@ -46,23 +68,20 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, Func<ApiKey?> l
         log.Error($"Couldn't report {report}. {result.Error}");
     }
 
-    /// <summary>True unless the site already shows a bonus for the zone, which we assume is right.</summary>
-    async Task<bool> SiteHasNoBonusAsync(BonusReport report, CancellationToken cancellationToken)
+    /// <summary>What the site shows today for the report's zone; <see cref="BonusKey.Unconfirmed"/> if the zone isn't listed.</summary>
+    async Task<ApiResult<BonusKey>> GetBonusShownOnSiteAsync(BonusReport report, CancellationToken cancellationToken)
     {
         var today = await fangbreakerZoneClient.GetTodayAsync(report.Server, cancellationToken);
         if (!today.IsSuccess)
         {
-            log.Error($"Couldn't check today's bonuses, so {report} wasn't reported. {today.Error}");
-            return false;
+            return ApiResult<BonusKey>.Failure(today.Outcome, today.Error!);
         }
 
-        var shown = today.Value!.GetValueOrDefault(report.Zone, BonusKey.Unconfirmed);
-        if (shown != BonusKey.None && shown != BonusKey.Unconfirmed)
-        {
-            log.Info($"{report.Server.Site} already shows '{shown}' for '{report.Zone}', so 'none' wasn't reported.");
-            return false;
-        }
+        return ApiResult<BonusKey>.Success(today.Value!.GetValueOrDefault(report.Zone, BonusKey.Unconfirmed));
+    }
 
-        return true;
+    void LogAlreadyShown(BonusReport report)
+    {
+        log.Info($"{report.Server.Site} already shows '{report.Bonus}' for '{report.Zone}', so it wasn't reported again.");
     }
 }
