@@ -24,6 +24,9 @@ class GitHubUpdateChecker(IUpdateSource updateSource, IVelopackLocator? locator 
 
     UpdateInfo? DownloadedUpdateToInstallAfterExit { get; set; }
 
+    /// <summary>Set when the user asks to restart into the update now, so it starts again once installed.</summary>
+    public bool RestartAfterInstallingAtExit { get; set; }
+
     /// <summary>Prerelease builds take prerelease updates, so testers stay on the newest build; stable builds only take stable releases.</summary>
     internal static GithubSource CreateGitHubSource(SemanticVersion? currentlyInstalledVersion)
     {
@@ -94,7 +97,7 @@ class GitHubUpdateChecker(IUpdateSource updateSource, IVelopackLocator? locator 
     {
         if (DownloadedUpdateToInstallAfterExit is { } update)
         {
-            this._updateManager.WaitExitThenApplyUpdates(update, restart: false);
+            this._updateManager.WaitExitThenApplyUpdates(update, restart: RestartAfterInstallingAtExit);
         }
     }
 }

@@ -4,17 +4,23 @@ namespace FZScout;
 
 /// <summary>
 /// Shows which version is running. Checks for a newer release every time it opens, downloading it to install when FZScout exits.
+/// Once one is downloaded, offers to restart into it right away.
 /// </summary>
 class AboutWindow : FixedSizeDialog
 {
     const string ReleasesUrl = $"https://github.com/{GitHubRepository.OwnerAndName}/releases";
 
     readonly GitHubUpdateChecker _updateChecker;
+    readonly Action _exitToInstallUpdateThenRestart;
     readonly Label _updateCheckResult;
+    readonly Button _restartToUpdateButton;
 
-    public AboutWindow(string? runningVersion, GitHubUpdateChecker updateChecker)
+    public AboutWindow(string? runningVersion, GitHubUpdateChecker updateChecker, Action exitToInstallUpdateThenRestart)
     {
         this._updateChecker = updateChecker;
+        this._exitToInstallUpdateThenRestart = exitToInstallUpdateThenRestart;
+        this._restartToUpdateButton = new Button { Text = "Restart to update", AutoSize = true, Visible = false };
+        this._restartToUpdateButton.Click += (_, _) => RestartToUpdate();
         Text = "About FZScout";
 
         var layout = new TableLayoutPanel { AutoSize = true, ColumnCount = 1, Padding = new Padding(12) };
@@ -42,7 +48,14 @@ class AboutWindow : FixedSizeDialog
 
         var buttons = new FlowLayoutPanel { FlowDirection = FlowDirection.RightToLeft, Dock = DockStyle.Fill, AutoSize = true, Margin = new Padding(0, 12, 0, 0) };
         buttons.Controls.Add(closeButton);
+        buttons.Controls.Add(this._restartToUpdateButton);
         return buttons;
+    }
+
+    void RestartToUpdate()
+    {
+        Close();
+        this._exitToInstallUpdateThenRestart();
     }
 
     /// <summary>Lets the download finish even if the window closes first, so it still gets installed when FZScout exits.</summary>
@@ -55,6 +68,7 @@ class AboutWindow : FixedSizeDialog
         }
 
         this._updateCheckResult.Text = Describe(result);
+        this._restartToUpdateButton.Visible = this._updateChecker.DownloadedVersionToInstallAfterExit is not null;
     }
 
     string Describe(UpdateCheckResult result) => result switch

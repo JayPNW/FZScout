@@ -127,10 +127,24 @@ class TrayApplicationContext : ApplicationContext
             return;
         }
 
-        var about = new AboutWindow(this._dependencies.GetVersion(), this._updateChecker);
+        var about = new AboutWindow(this._dependencies.GetVersion(), this._updateChecker, ExitToInstallUpdateThenRestart);
         about.FormClosed += (_, _) => this._openAboutWindow = null;
         this._openAboutWindow = about;
         about.ShowCenteredOver(this._window);
+    }
+
+    /// <summary>
+    /// Exits the same way as choosing Exit, so the app shuts down cleanly before the update is installed. If the app has already
+    /// stopped on its own, nothing is left to notice the exit request, so this exits directly.
+    /// </summary>
+    void ExitToInstallUpdateThenRestart()
+    {
+        this._updateChecker.RestartAfterInstallingAtExit = true;
+        this._window.RequestExit();
+        if (this._status.HasStopped)
+        {
+            ExitThread();
+        }
     }
 
     protected override void ExitThreadCore()
