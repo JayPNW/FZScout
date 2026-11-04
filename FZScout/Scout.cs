@@ -14,7 +14,7 @@ class Scout(ServerListCache serverListCache, BonusReporter bonusReporter)
     /// </summary>
     public async Task HandleAsync(EverQuestLogWatcher.EverQuestLogEvent logEvent, DateTimeOffset now, CancellationToken cancellationToken = default)
     {
-        var server = Server.FromSlug(logEvent.Character.Server);
+        var server = Server.FromName(logEvent.Character.Server);
         if (server is null)
         {
             return;

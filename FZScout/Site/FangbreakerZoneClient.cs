@@ -47,7 +47,7 @@ class FangbreakerZoneClient(HttpMessageHandler httpMessageHandler)
 
     async Task<ApiResult<T>> GetAsync<T>(Server server, string list, CancellationToken cancellationToken)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(server.Site, $"/api/servers/{server.Slug}/bonuses/{list}"));
+        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(server.Site, $"/api/servers/{server.Name.ToLowerInvariant()}/bonuses/{list}"));
         return await SendAsync<T>(request, cancellationToken);
     }
 

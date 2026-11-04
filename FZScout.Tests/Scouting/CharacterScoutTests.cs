@@ -22,7 +22,7 @@ public class CharacterScoutTests
         new HashSet<BonusKey> { new("experience"), new("aa"), new("loot"), BonusKey.None },
         new HashSet<string> { "Befallen", "Crushbone", "Greater Faydark" });
 
-    static readonly EverQuestLogWatcher.EverQuestLogLineParser Parser = new(new EverQuestLogWatcher.Character(Bob.Name, Bob.Server.Slug));
+    static readonly EverQuestLogWatcher.EverQuestLogLineParser Parser = new(new EverQuestLogWatcher.Character(Bob.Name, Bob.Server.Name));
 
     readonly CharacterScout _scout = new(Bob);
 
