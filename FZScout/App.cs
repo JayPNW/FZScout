@@ -1,4 +1,4 @@
-﻿using FZScout.Reporting;
+using FZScout.Reporting;
 using FZScout.Scouting;
 using FZScout.Site;
 
@@ -33,11 +33,17 @@ class App(AppDependencies dependencies)
         }
         Dependencies.Log.Info("To exit, right-click the FZScout icon in the system tray and choose Exit.");
 
+        var scout = CreateScoutReportingWith(apiKey);
+        ScoutingStarted?.Invoke();
+        await WatchLogsAndReportBonusesAsync(scout, Dependencies.UserInput.ExitRequested);
+    }
+
+    Scout CreateScoutReportingWith(ApiKey apiKey)
+    {
         var client = Dependencies.FangbreakerZoneClient;
         var scout = new Scout(new ServerListCache(client, Dependencies.Log), Dependencies.Log, new BonusReporter(client, apiKey, Dependencies.Log));
         scout.WaitingForBonusMessageUntilChanged += waitingUntil => WaitingForBonusMessageUntilChanged?.Invoke(waitingUntil);
-        ScoutingStarted?.Invoke();
-        await WatchLogsAndReportBonusesAsync(scout, Dependencies.UserInput.ExitRequested);
+        return scout;
     }
 
     /// <returns>Null if the user entered no key or asked to exit.</returns>
@@ -60,14 +66,7 @@ class App(AppDependencies dependencies)
         {
             await foreach (var logEvent in new EverQuestLogWatcher.EverQuestLogWatcher().WatchAsync(cancellationToken: cancellationToken))
             {
-                try
-                {
-                    await scout.HandleAsync(logEvent, Dependencies.TimeProvider.GetUtcNow(), cancellationToken);
-                }
-                catch (Exception exception) when (exception is not OperationCanceledException and not ApiKeyRejectedException)
-                {
-                    Dependencies.Log.Error($"Unexpected problem: {exception}");
-                }
+                await HandleLogEventLoggingUnexpectedProblemsAsync(scout, logEvent, cancellationToken);
             }
         }
         catch (OperationCanceledException)
@@ -76,6 +75,18 @@ class App(AppDependencies dependencies)
         catch (ApiKeyRejectedException)
         {
             Dependencies.Log.Error("API key rejected. Exiting.");
+        }
+    }
+
+    async Task HandleLogEventLoggingUnexpectedProblemsAsync(Scout scout, EverQuestLogWatcher.EverQuestLogEvent logEvent, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await scout.HandleAsync(logEvent, Dependencies.TimeProvider.GetUtcNow(), cancellationToken);
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException and not ApiKeyRejectedException)
+        {
+            Dependencies.Log.Error($"Unexpected problem: {exception}");
         }
     }
 }
