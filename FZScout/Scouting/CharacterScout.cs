@@ -1,4 +1,4 @@
-﻿using FZScout.Reporting;
+using FZScout.Reporting;
 using FZScout.Site;
 
 namespace FZScout.Scouting;
@@ -128,35 +128,41 @@ class CharacterScout(Character character, Log log, BonusReporter bonusReporter)
             return;
         }
 
-        // An unknown zone that never gets a bonus, like The Plane of Knowledge, is fine. One that does needs adding.
+        if (GetZoneToReportBonusInOrLogWhyItCannotBeReported(bonus) is not { } zone)
+        {
+            return;
+        }
+
+        MarkAlreadyReportedThisZone();
+        if (lists is not null && !lists.Types.Contains(bonus))
+        {
+            log.Error($"{character} saw a '{bonus}' bonus in '{zone.SiteName}', which isn't on the {character.Server} bonus types list. Please report it at {ReportIssuesUrl}");
+            return;
+        }
+
+        await bonusReporter.ReportBonusAsync(new BonusReport(character.Server, zone.SiteName, bonus), cancellationToken);
+    }
+
+    KnownZone? GetZoneToReportBonusInOrLogWhyItCannotBeReported(BonusKey bonus)
+    {
         if (CurrentZone is UnknownZone unknown)
         {
-            log.Error($"{character} saw a '{bonus}' bonus in '{unknown.LogName}', which isn't on the {character.Server} zones list. Please report it at {ReportIssuesUrl}");
-            return;
+            AskUserToReportAZoneThatGetsBonusesButIsMissingFromTheZonesList(bonus, unknown);
+            return null;
         }
 
         if (CurrentZone is UnresolvedZone unresolved)
         {
             MarkAlreadyReportedThisZone();
             log.Error($"{character} saw a '{bonus}' bonus in '{unresolved.LogName}', but the {character.Server} zones list isn't loaded, so it wasn't reported.");
-            return;
+            return null;
         }
 
-        if (CurrentZone is not KnownZone zone)
-        {
-            return;
-        }
-
-        if (lists is not null && !lists.Types.Contains(bonus))
-        {
-            MarkAlreadyReportedThisZone();
-            log.Error($"{character} saw a '{bonus}' bonus in '{zone.SiteName}', which isn't on the {character.Server} bonus types list. Please report it at {ReportIssuesUrl}");
-            return;
-        }
-
-        MarkAlreadyReportedThisZone();
-        await bonusReporter.ReportBonusAsync(new BonusReport(character.Server, zone.SiteName, bonus), cancellationToken);
+        return CurrentZone as KnownZone;
     }
+
+    void AskUserToReportAZoneThatGetsBonusesButIsMissingFromTheZonesList(BonusKey bonus, UnknownZone unknown) =>
+        log.Error($"{character} saw a '{bonus}' bonus in '{unknown.LogName}', which isn't on the {character.Server} zones list. Please report it at {ReportIssuesUrl}");
 
     Task OnDailyReset(DateTimeOffset now)
     {
