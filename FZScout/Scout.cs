@@ -3,8 +3,8 @@ using FZScout.Scouting;
 
 namespace FZScout;
 
-/// <summary>Connects the pieces: log events go to each character's scout, and what the scouts decide goes to the reporter.</summary>
-class Scout(ServerListCache serverListCache, BonusReporter bonusReporter)
+/// <summary>Connects the pieces: log events go to each character's scout, along with that server's lists.</summary>
+class Scout(ServerListCache serverListCache, ConsoleReporter log, BonusReporter bonusReporter)
 {
     readonly Dictionary<Character, CharacterScout> _characters = [];
 
@@ -22,7 +22,7 @@ class Scout(ServerListCache serverListCache, BonusReporter bonusReporter)
 
         var character = new Character(logEvent.Character.Name, server);
         var serverLists = await serverListCache.GetAsync(character.Server, cancellationToken);
-        var scout = this._characters.GetOrAdd(character, new CharacterScout(character, bonusReporter.ExecuteAsync));
+        var scout = this._characters.GetOrAdd(character, new CharacterScout(character, log, bonusReporter));
         await scout.HandleAsync(logEvent, now, serverLists, cancellationToken);
     }
 }

@@ -1,5 +1,8 @@
-﻿using FZScout.Scouting;
+﻿using FZScout.Reporting;
+using FZScout.Scouting;
 using FZScout.Site;
+using FZScout.Tests.Reporting;
+using Microsoft.Extensions.Time.Testing;
 
 namespace FZScout.Tests.Scouting;
 
@@ -25,12 +28,15 @@ public class CharacterScoutTests
 
     static readonly EverQuestLogWatcher.EverQuestLogLineParser Parser = new(new EverQuestLogWatcher.Character(Bob.Name, Bob.Server.Name));
 
-    readonly List<ScoutAction> _executedActions = [];
+    readonly FakeSite _site = new();
+    readonly StringWriter _output = new();
     readonly CharacterScout _scout;
 
     public CharacterScoutTests()
     {
-        this._scout = new(Bob, RecordExecutedAction);
+        var log = new ConsoleReporter(this._output, new FakeTimeProvider(Start));
+        var bonusReporter = new BonusReporter(this._site.Client, new ApiKey("fz_live_test"), log);
+        this._scout = new(Bob, log, bonusReporter);
     }
 
     [Fact]
@@ -212,7 +218,7 @@ public class CharacterScoutTests
     [Fact]
     public async Task EnteringAZoneIsLogged()
     {
-        Assert.Equal([new LogInfoAction($"Bob (Frostreaver) entered The Greater Faydark, waiting until {Start.AddMinutes(5).ToLocalTime():HH:mm:ss} for a bonus message.")], await Log(0, "You have entered The Greater Faydark."));
+        Assert.Equal([$"Bob (Frostreaver) entered The Greater Faydark, waiting until {Start.AddMinutes(5).ToLocalTime():HH:mm:ss} for a bonus message."], await Log(0, "You have entered The Greater Faydark."));
     }
 
     [Fact]
@@ -228,7 +234,7 @@ public class CharacterScoutTests
         await Log(0, Befallen);
 
         Assert.Equal(
-            [new LogErrorAction($"Bob (Frostreaver) saw a 'tribute' bonus in 'Befallen', which isn't on the Frostreaver bonus types list. Please report it at {CharacterScout.ReportIssuesUrl}")],
+            [$"ERROR: Bob (Frostreaver) saw a 'tribute' bonus in 'Befallen', which isn't on the Frostreaver bonus types list. Please report it at {CharacterScout.ReportIssuesUrl}"],
             await Log(10, Tribute));
     }
 
@@ -247,7 +253,7 @@ public class CharacterScoutTests
     public async Task UnknownZoneWithNoBonusIsNotAnError()
     {
         Assert.Equal(
-            [new LogInfoAction("Bob (Frostreaver) entered The Plane of Knowledge.")],
+            ["Bob (Frostreaver) entered The Plane of Knowledge."],
             await Log(0, "You have entered The Plane of Knowledge."));
         Assert.Empty(await Log(10, Kill));
         Assert.Empty(await Log(1000, Chat));
@@ -259,14 +265,14 @@ public class CharacterScoutTests
         await Log(0, "You have entered The Halls of Honor.");
 
         Assert.Equal(
-            [new LogErrorAction($"Bob (Frostreaver) saw a 'experience' bonus in 'The Halls of Honor', which isn't on the Frostreaver zones list. Please report it at {CharacterScout.ReportIssuesUrl}")],
+            [$"ERROR: Bob (Frostreaver) saw a 'experience' bonus in 'The Halls of Honor', which isn't on the Frostreaver zones list. Please report it at {CharacterScout.ReportIssuesUrl}"],
             await Log(10, Experience));
     }
 
     [Fact]
     public async Task ZoneEnteredWithoutListsIsResolvedWhenTheyLoad()
     {
-        Assert.Equal([new LogInfoAction($"Bob (Frostreaver) entered Befallen, waiting until {Start.AddMinutes(5).ToLocalTime():HH:mm:ss} for a bonus message.")], await LogWithoutLists(0, Befallen));
+        Assert.Equal([$"Bob (Frostreaver) entered Befallen, waiting until {Start.AddMinutes(5).ToLocalTime():HH:mm:ss} for a bonus message."], await LogWithoutLists(0, Befallen));
         Assert.Empty(await LogWithoutLists(60, Chat));
 
         Assert.Empty(await Log(61, Chat));
@@ -298,7 +304,7 @@ public class CharacterScoutTests
         await LogWithoutLists(0, Befallen);
 
         Assert.Equal(
-            [new LogErrorAction("Bob (Frostreaver) was in 'Befallen', but the Frostreaver zones list still isn't loaded, so 'none' wasn't reported.")],
+            ["ERROR: Bob (Frostreaver) was in 'Befallen', but the Frostreaver zones list still isn't loaded, so 'none' wasn't reported."],
             await LogWithoutLists(300, Chat));
         Assert.Empty(await LogWithoutLists(1000, Chat));
     }
@@ -309,7 +315,7 @@ public class CharacterScoutTests
         await LogWithoutLists(0, Befallen);
 
         Assert.Equal(
-            [new LogErrorAction("Bob (Frostreaver) saw a 'experience' bonus in 'Befallen', but the Frostreaver zones list isn't loaded, so it wasn't reported.")],
+            ["ERROR: Bob (Frostreaver) saw a 'experience' bonus in 'Befallen', but the Frostreaver zones list isn't loaded, so it wasn't reported."],
             await LogWithoutLists(10, Experience));
     }
 
@@ -331,24 +337,19 @@ public class CharacterScoutTests
         Assert.Equal([ReportNone("Befallen")], await Log(300, Chat));
     }
 
-    static ReportBonusAction Report(string zone, string bonus) => new(new BonusReport(Server.Frostreaver, zone, new BonusKey(bonus)));
+    static string Report(string zone, string bonus) => $"Reported Frostreaver '{zone}' is '{bonus}'.";
 
-    static ReportNoBonusAction ReportNone(string zone) => new(Server.Frostreaver, zone);
+    static string ReportNone(string zone) => $"Reported Frostreaver '{zone}' is 'none' because no bonus message arrived in time.";
 
-    Task RecordExecutedAction(ScoutAction action, CancellationToken cancellationToken)
+    Task<IReadOnlyList<string>> Log(int seconds, string message) => Handle(seconds, message, Lists);
+
+    Task<IReadOnlyList<string>> LogWithoutLists(int seconds, string message) => Handle(seconds, message, null);
+
+    /// <returns>The lines the scout logged for this message, without their timestamps.</returns>
+    async Task<IReadOnlyList<string>> Handle(int seconds, string message, ServerLists? lists)
     {
-        this._executedActions.Add(action);
-        return Task.CompletedTask;
-    }
-
-    Task<IReadOnlyList<ScoutAction>> Log(int seconds, string message) => Handle(seconds, message, Lists);
-
-    Task<IReadOnlyList<ScoutAction>> LogWithoutLists(int seconds, string message) => Handle(seconds, message, null);
-
-    async Task<IReadOnlyList<ScoutAction>> Handle(int seconds, string message, ServerLists? lists)
-    {
-        this._executedActions.Clear();
+        this._output.GetStringBuilder().Clear();
         await this._scout.HandleAsync(Parser.Parse($"[Thu Oct 29 12:00:00 2026] {message}"), Start.AddSeconds(seconds), lists, TestContext.Current.CancellationToken);
-        return [.. this._executedActions];
+        return [.. this._output.ToString().Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Select(line => line["12:00:00 ".Length..])];
     }
 }

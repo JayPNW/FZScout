@@ -23,7 +23,7 @@ public class ScoutTests
         var fangbreakerZoneClient = this._site.Client;
         var serverListCache = new ServerListCache(fangbreakerZoneClient, log);
         var bonusReporter = new BonusReporter(fangbreakerZoneClient, new ApiKey("fz_live_test"), log);
-        this._scout = new Scout(serverListCache, bonusReporter);
+        this._scout = new Scout(serverListCache, log, bonusReporter);
     }
 
     static CancellationToken Cancel => TestContext.Current.CancellationToken;

@@ -29,7 +29,7 @@ class App(AppDependencies dependencies)
         Dependencies.Log.Info("Press Ctrl+C to exit.");
 
         var client = Dependencies.FangbreakerZoneClient;
-        var scout = new Scout(new ServerListCache(client, Dependencies.Log), new BonusReporter(client, apiKey, Dependencies.Log));
+        var scout = new Scout(new ServerListCache(client, Dependencies.Log), Dependencies.Log, new BonusReporter(client, apiKey, Dependencies.Log));
         await WatchLogsAndReportBonusesAsync(scout, Dependencies.UserInput.ExitRequested);
     }
 

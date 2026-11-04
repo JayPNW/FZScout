@@ -1,4 +1,5 @@
-﻿using FZScout.Site;
+﻿using FZScout.Reporting;
+using FZScout.Site;
 
 namespace FZScout.Scouting;
 
@@ -6,7 +7,7 @@ namespace FZScout.Scouting;
 /// The business rules for one character: turns their log events and the passing of time into reports.
 /// See the Timing and Reporting sections of InternalDocumentation/SPEC.md.
 /// </summary>
-class CharacterScout(Character character, Func<ScoutAction, CancellationToken, Task> executeAsync)
+class CharacterScout(Character character, ConsoleReporter log, BonusReporter bonusReporter)
 {
     /// <summary>EverQuest announces a bonus 3 to 3.5 minutes after entry when there's no kill, so after 5 there is none.</summary>
     public static readonly TimeSpan IdleTimeout = TimeSpan.FromMinutes(5);
@@ -28,56 +29,51 @@ class CharacterScout(Character character, Func<ScoutAction, CancellationToken, T
     public async Task HandleAsync(EverQuestLogWatcher.EverQuestLogEvent logEvent, DateTimeOffset now, ServerLists? lists, CancellationToken cancellationToken = default)
     {
         ResolveZone(lists);
-        if (ReportNoneIfADeadlinePassedBeforeThisMessage(now) is { } reportNoneAction)
-        {
-            await executeAsync(reportNoneAction, cancellationToken);
-        }
-        if (DispatchLogEvent(logEvent, now, lists) is { } logEventAction)
-        {
-            await executeAsync(logEventAction, cancellationToken);
-        }
+        await ReportNoneIfADeadlinePassedBeforeThisMessageAsync(now, cancellationToken);
+        await DispatchLogEventAsync(logEvent, now, lists, cancellationToken);
     }
 
     /// <summary>
     /// There's no clock: a deadline is only noticed when the character's next message arrives.
     /// A character who stops logging in before any further message arrives never gets a false <c>none</c>.
     /// </summary>
-    ScoutAction? ReportNoneIfADeadlinePassedBeforeThisMessage(DateTimeOffset now)
+    async Task ReportNoneIfADeadlinePassedBeforeThisMessageAsync(DateTimeOffset now, CancellationToken cancellationToken)
     {
         if (!IsDue(this._killDeadline, now) && !IsDue(this._idleDeadline, now))
         {
-            return null;
+            return;
         }
 
         if (CurrentZone is UnresolvedZone unresolved)
         {
             MarkAlreadyReportedThisZone();
-            return new LogErrorAction($"{character} was in '{unresolved.LogName}', but the {character.Server} zones list still isn't loaded, so 'none' wasn't reported.");
+            log.Error($"{character} was in '{unresolved.LogName}', but the {character.Server} zones list still isn't loaded, so 'none' wasn't reported.");
+            return;
         }
 
         if (CurrentZone is not KnownZone zone)
         {
-            return null;
+            return;
         }
 
         MarkAlreadyReportedThisZone();
-        return new ReportNoBonusAction(character.Server, zone.SiteName);
+        await bonusReporter.ReportNoBonusAsync(character.Server, zone.SiteName, cancellationToken);
     }
 
     static bool IsDue(DateTimeOffset? deadline, DateTimeOffset now) => deadline is not null && deadline <= now;
 
     static bool IsReportable(Zone? zone) => zone is KnownZone or UnresolvedZone;
 
-    ScoutAction? DispatchLogEvent(EverQuestLogWatcher.EverQuestLogEvent logEvent, DateTimeOffset now, ServerLists? lists) => logEvent switch
+    Task DispatchLogEventAsync(EverQuestLogWatcher.EverQuestLogEvent logEvent, DateTimeOffset now, ServerLists? lists, CancellationToken cancellationToken) => logEvent switch
     {
         EverQuestLogWatcher.ZoneEntered e => OnZoneEntered(e.ZoneName, now, lists),
         EverQuestLogWatcher.MobSlainByYou => OnKill(now),
         EverQuestLogWatcher.SlainByPet e when e.OwnerName == character.Name => OnKill(now),
         EverQuestLogWatcher.SlainByWarder e when e.OwnerName == character.Name => OnKill(now),
-        EverQuestLogWatcher.AreaIsSaturatedWithUnstableMagic e => OnBonus(e.Bonus, lists),
+        EverQuestLogWatcher.AreaIsSaturatedWithUnstableMagic e => OnBonusAsync(e.Bonus, lists, cancellationToken),
         EverQuestLogWatcher.DailyResetLogEvent => OnDailyReset(now),
         EverQuestLogWatcher.CampingCountdownProgressed => OnCamping(),
-        _ => null,
+        _ => Task.CompletedTask,
     };
 
     /// <summary>Once the zones list loads, works out which zone an <see cref="UnresolvedZone"/> is. Its deadlines still stand.</summary>
@@ -95,7 +91,7 @@ class CharacterScout(Character character, Func<ScoutAction, CancellationToken, T
         }
     }
 
-    ScoutAction? OnZoneEntered(string logZone, DateTimeOffset now, ServerLists? lists)
+    Task OnZoneEntered(string logZone, DateTimeOffset now, ServerLists? lists)
     {
         CurrentZone = ZoneNames.Resolve(logZone, lists?.Zones);
         this._alreadyReported = false;
@@ -105,79 +101,85 @@ class CharacterScout(Character character, Func<ScoutAction, CancellationToken, T
         if (IsReportable(CurrentZone))
         {
             var deadline = SetIdleDeadline(now);
-            return new LogInfoAction($"{character} entered {logZone}, waiting until {deadline.ToLocalTime():HH:mm:ss} for a bonus message.");
+            log.Info($"{character} entered {logZone}, waiting until {deadline.ToLocalTime():HH:mm:ss} for a bonus message.");
+            return Task.CompletedTask;
         }
 
-        return new LogInfoAction($"{character} entered {logZone}.");
+        log.Info($"{character} entered {logZone}.");
+        return Task.CompletedTask;
     }
 
-    ScoutAction? OnKill(DateTimeOffset now)
+    Task OnKill(DateTimeOffset now)
     {
         if (IsReportable(CurrentZone) && !this._alreadyReported && this._killDeadline is null)
         {
             this._killDeadline = now + KillTimeout;
-            return WaitingUntil(this._killDeadline.Value);
+            LogWaitingUntil(this._killDeadline.Value);
         }
 
-        return null;
+        return Task.CompletedTask;
     }
 
-    ScoutAction? OnBonus(string announcementText, ServerLists? lists)
+    async Task OnBonusAsync(string announcementText, ServerLists? lists, CancellationToken cancellationToken)
     {
         if (BonusKey.FromAnnouncementText(announcementText) is not { } bonus)
         {
-            return null;
+            return;
         }
 
         // An unknown zone that never gets a bonus, like The Plane of Knowledge, is fine. One that does needs adding.
         if (CurrentZone is UnknownZone unknown)
         {
-            return new LogErrorAction($"{character} saw a '{bonus}' bonus in '{unknown.LogName}', which isn't on the {character.Server} zones list. Please report it at {ReportIssuesUrl}");
+            log.Error($"{character} saw a '{bonus}' bonus in '{unknown.LogName}', which isn't on the {character.Server} zones list. Please report it at {ReportIssuesUrl}");
+            return;
         }
 
         if (CurrentZone is UnresolvedZone unresolved)
         {
             MarkAlreadyReportedThisZone();
-            return new LogErrorAction($"{character} saw a '{bonus}' bonus in '{unresolved.LogName}', but the {character.Server} zones list isn't loaded, so it wasn't reported.");
+            log.Error($"{character} saw a '{bonus}' bonus in '{unresolved.LogName}', but the {character.Server} zones list isn't loaded, so it wasn't reported.");
+            return;
         }
 
         if (CurrentZone is not KnownZone zone)
         {
-            return null;
+            return;
         }
 
         if (lists is not null && !lists.Types.Contains(bonus))
         {
             MarkAlreadyReportedThisZone();
-            return new LogErrorAction($"{character} saw a '{bonus}' bonus in '{zone.SiteName}', which isn't on the {character.Server} bonus types list. Please report it at {ReportIssuesUrl}");
+            log.Error($"{character} saw a '{bonus}' bonus in '{zone.SiteName}', which isn't on the {character.Server} bonus types list. Please report it at {ReportIssuesUrl}");
+            return;
         }
 
         MarkAlreadyReportedThisZone();
-        return new ReportBonusAction(new BonusReport(character.Server, zone.SiteName, bonus));
+        await bonusReporter.ReportBonusAsync(new BonusReport(character.Server, zone.SiteName, bonus), cancellationToken);
     }
 
-    ScoutAction? OnDailyReset(DateTimeOffset now)
+    Task OnDailyReset(DateTimeOffset now)
     {
         if (!IsReportable(CurrentZone))
         {
-            return null;
+            return Task.CompletedTask;
         }
 
         this._alreadyReported = false;
         this._killDeadline = null;
-        return WaitingUntil(SetIdleDeadline(now));
+        LogWaitingUntil(SetIdleDeadline(now));
+        return Task.CompletedTask;
     }
 
     /// <summary>The character is probably logging out, and the next message may be from much later, so stop waiting for a bonus.</summary>
-    ScoutAction? OnCamping()
+    Task OnCamping()
     {
         this._idleDeadline = null;
-        return null;
+        return Task.CompletedTask;
     }
 
-    LogInfoAction WaitingUntil(DateTimeOffset deadline)
+    void LogWaitingUntil(DateTimeOffset deadline)
     {
-        return new($"{character} waiting until {deadline.ToLocalTime():HH:mm:ss} for a bonus message.");
+        log.Info($"{character} waiting until {deadline.ToLocalTime():HH:mm:ss} for a bonus message.");
     }
 
     DateTimeOffset SetIdleDeadline(DateTimeOffset now)

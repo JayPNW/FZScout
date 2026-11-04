@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using FZScout.Reporting;
-using FZScout.Scouting;
 using FZScout.Site;
 using Microsoft.Extensions.Time.Testing;
 
@@ -29,7 +28,7 @@ public class BonusReporterTests
     [Fact]
     public async Task ReportsABonus()
     {
-        await Execute(Bonus(Server.Fangbreaker, "Befallen", "loot"));
+        await ReportBonus(Server.Fangbreaker, "Befallen", "loot");
 
         Assert.Equal([PostBody("Fangbreaker", "Befallen", "loot")], this._site.Requests);
         Assert.Equal("12:00:00 Reported Fangbreaker 'Befallen' is 'loot'.", Output());
@@ -42,7 +41,7 @@ public class BonusReporterTests
     {
         this._site.SetToday("Befallen", shown);
 
-        await Execute(new ReportNoBonusAction(Server.Fangbreaker, "Befallen"));
+        await this._reporter.ReportNoBonusAsync(Server.Fangbreaker, "Befallen", Cancel);
 
         Assert.Equal([Today, PostBody("Fangbreaker", "Befallen", "none")], this._site.Requests);
     }
@@ -50,7 +49,7 @@ public class BonusReporterTests
     [Fact]
     public async Task ReportsNoneForAZoneMissingFromToday()
     {
-        await Execute(new ReportNoBonusAction(Server.Fangbreaker, "Befallen"));
+        await this._reporter.ReportNoBonusAsync(Server.Fangbreaker, "Befallen", Cancel);
 
         Assert.Equal([Today, PostBody("Fangbreaker", "Befallen", "none")], this._site.Requests);
     }
@@ -60,7 +59,7 @@ public class BonusReporterTests
     {
         this._site.SetToday("Befallen", "experience");
 
-        await Execute(new ReportNoBonusAction(Server.Fangbreaker, "Befallen"));
+        await this._reporter.ReportNoBonusAsync(Server.Fangbreaker, "Befallen", Cancel);
 
         Assert.Equal([Today], this._site.Requests);
         Assert.Equal("12:00:00 https://fangbreaker.zone/ already shows 'experience' for 'Befallen', so 'none' wasn't reported.", Output());
@@ -71,26 +70,10 @@ public class BonusReporterTests
     {
         this._site.Fail(Today, HttpStatusCode.InternalServerError);
 
-        await Execute(new ReportNoBonusAction(Server.Fangbreaker, "Befallen"));
+        await this._reporter.ReportNoBonusAsync(Server.Fangbreaker, "Befallen", Cancel);
 
         Assert.Equal([Today], this._site.Requests);
         Assert.StartsWith("12:00:00 ERROR: Couldn't check today's bonuses, so Fangbreaker 'Befallen' is 'none' wasn't reported.", Output());
-    }
-
-    [Fact]
-    public async Task LogsErrors()
-    {
-        await Execute(new LogErrorAction("Something broke."));
-
-        Assert.Equal("12:00:00 ERROR: Something broke.", Output());
-    }
-
-    [Fact]
-    public async Task LogsInfo()
-    {
-        await Execute(new LogInfoAction("Hello."));
-
-        Assert.Equal("12:00:00 Hello.", Output());
     }
 
     [Fact]
@@ -98,7 +81,7 @@ public class BonusReporterTests
     {
         this._site.Fail(Post, HttpStatusCode.BadRequest);
 
-        await Execute(Bonus(Server.Fangbreaker, "Befallen", "loot"));
+        await ReportBonus(Server.Fangbreaker, "Befallen", "loot");
 
         Assert.Single(this._site.Requests);
         Assert.Equal(
@@ -111,7 +94,7 @@ public class BonusReporterTests
     {
         this._site.Fail(Post, HttpStatusCode.Unauthorized);
 
-        await Assert.ThrowsAsync<ApiKeyRejectedException>(() => Execute(Bonus(Server.Fangbreaker, "Befallen", "loot")));
+        await Assert.ThrowsAsync<ApiKeyRejectedException>(() => ReportBonus(Server.Fangbreaker, "Befallen", "loot"));
         Assert.StartsWith("12:00:00 ERROR: Couldn't report Fangbreaker 'Befallen' is 'loot'.", Output());
     }
 
@@ -119,8 +102,8 @@ public class BonusReporterTests
     public async Task BannedIsOnlyLogged()
     {
         this._site.Fail(Post, HttpStatusCode.Forbidden);
-        await Execute(Bonus(Server.Fangbreaker, "Befallen", "loot"));
-        await Execute(Bonus(Server.Fangbreaker, "Crushbone", "loot"));
+        await ReportBonus(Server.Fangbreaker, "Befallen", "loot");
+        await ReportBonus(Server.Fangbreaker, "Crushbone", "loot");
 
         Assert.Equal(
             [PostBody("Fangbreaker", "Befallen", "loot"), PostBody("Fangbreaker", "Crushbone", "loot")],
@@ -133,23 +116,21 @@ public class BonusReporterTests
     {
         this._site.Fail(Post, HttpStatusCode.NotFound);
 
-        await Execute(Bonus(Server.Fangbreaker, "Befallen", "loot"));
+        await ReportBonus(Server.Fangbreaker, "Befallen", "loot");
 
         Assert.Equal([PostBody("Fangbreaker", "Befallen", "loot")], this._site.Requests);
         Assert.StartsWith("12:00:00 ERROR: Couldn't report Fangbreaker 'Befallen' is 'loot'.", Output());
     }
 
-    static ReportBonusAction Bonus(Server server, string zone, string bonus)
+    Task ReportBonus(Server server, string zone, string bonus)
     {
-        return new(new BonusReport(server, zone, new BonusKey(bonus)));
+        return this._reporter.ReportBonusAsync(new BonusReport(server, zone, new BonusKey(bonus)), Cancel);
     }
 
     static string PostBody(string server, string zone, string bonus)
     {
         return $$"""POST /api/client/bonuses {"serverName":"{{server}}","zoneName":"{{zone}}","bonusKey":"{{bonus}}"}""";
     }
-
-    Task Execute(ScoutAction action) => this._reporter.ExecuteAsync(action, Cancel);
 
     string Output() => this._output.ToString().TrimEnd();
 }
