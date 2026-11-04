@@ -102,7 +102,6 @@ class SettingsWindow : Form
         Close();
     }
 
-    /// <summary>Leaves it alone when it already matches the box, so it isn't rewritten for nothing.</summary>
     void SaveLaunchAtLogin()
     {
         var wantsLaunchAtLogin = this._launchAtLoginBox.Checked;

@@ -40,7 +40,6 @@ class MainWindow : Form, IUserInput
 
     public CancellationToken ExitRequested => this._exitRequested.Token;
 
-    /// <summary>While true, closing the window just hides it, so the app keeps scouting from the system tray.</summary>
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public bool HidesInsteadOfClosing { get; set; } = true;
 

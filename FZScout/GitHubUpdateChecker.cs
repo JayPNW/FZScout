@@ -18,7 +18,6 @@ class GitHubUpdateChecker(IUpdateSource updateSource, IVelopackLocator? locator 
         return new GithubSource($"https://github.com/{GitHubRepository.OwnerAndName}", accessToken: null, prerelease: acceptPrereleases);
     }
 
-    /// <summary>Downloads a newer release if one exists, returning something that applies it once disposed, or null if there was nothing newer.</summary>
     public async Task<IDisposable?> DownloadLatestAndApplyOnDispose(CancellationToken cancellationToken = default)
     {
         try

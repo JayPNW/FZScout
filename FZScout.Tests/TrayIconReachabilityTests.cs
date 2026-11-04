@@ -1,4 +1,4 @@
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 
 namespace FZScout.Tests;
 
@@ -11,7 +11,7 @@ public class TrayIconReachabilityTests : IDisposable
 
     public TrayIconReachabilityTests()
     {
-        this._reachability = new TrayIconReachability(this.NotifyIconSettingsPath, this.TrayNotifyPath);
+        this._reachability = new TrayIconReachability(NotifyIconSettingsPath, TrayNotifyPath);
     }
 
     string NotifyIconSettingsPath => $@"{this._testKeyPath}\NotifyIconSettings";
@@ -65,7 +65,7 @@ public class TrayIconReachabilityTests : IDisposable
     [Fact]
     public void ReachableWhenHiddenIconsMenuIsShown()
     {
-        using var trayNotify = Registry.CurrentUser.CreateSubKey(this.TrayNotifyPath);
+        using var trayNotify = Registry.CurrentUser.CreateSubKey(TrayNotifyPath);
         trayNotify.SetValue("SystemTrayChevronVisibility", 1);
         RecordIcon("1", ExePath, isPromoted: 0);
 
@@ -74,13 +74,13 @@ public class TrayIconReachabilityTests : IDisposable
 
     void HideHiddenIconsMenu()
     {
-        using var trayNotify = Registry.CurrentUser.CreateSubKey(this.TrayNotifyPath);
+        using var trayNotify = Registry.CurrentUser.CreateSubKey(TrayNotifyPath);
         trayNotify.SetValue("SystemTrayChevronVisibility", 0);
     }
 
     void RecordIcon(string iconName, string exePath, int? isPromoted)
     {
-        using var icon = Registry.CurrentUser.CreateSubKey($@"{this.NotifyIconSettingsPath}\{iconName}");
+        using var icon = Registry.CurrentUser.CreateSubKey($@"{NotifyIconSettingsPath}\{iconName}");
         icon.SetValue("ExecutablePath", exePath);
         if (isPromoted is { } value)
         {

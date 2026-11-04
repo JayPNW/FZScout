@@ -25,13 +25,9 @@ class CharacterScout(Character character, Log log, BonusReporter bonusReporter)
 
     public Zone? CurrentZone { get; private set; }
 
-    /// <summary>
-    /// When the character stops waiting for a bonus message, or null if they aren't waiting.
-    /// Since there's no clock, this can already have passed: the wait is only over once the character's next message arrives.
-    /// </summary>
+    /// <summary>Since there's no clock, this can already have passed: the wait is only over once the character's next message arrives.</summary>
     public DateTimeOffset? WaitingForBonusMessageUntil => new[] { this._killDeadline, this._idleDeadline }.Min();
 
-    /// <param name="lists">The server's lists, or null if they couldn't be loaded.</param>
     public async Task HandleAsync(EverQuestLogWatcher.EverQuestLogEvent logEvent, DateTimeOffset now, ServerLists? lists, CancellationToken cancellationToken = default)
     {
         ResolveZone(lists);

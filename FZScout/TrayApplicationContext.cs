@@ -12,7 +12,6 @@ class TrayApplicationContext : ApplicationContext
     readonly Dictionary<StatusIcon, Icon> _windowIcons = Enum.GetValues<StatusIcon>().ToDictionary(statusIcon => statusIcon, AppIcon.Load);
     readonly AppStatus _status;
 
-    /// <summary>Shows the status again, on the tray icon and window, when it changes just because time passes, like waiting for a bonus message ending.</summary>
     readonly System.Windows.Forms.Timer _showStatusWhenItChangesByItself = new();
 
     readonly TimeProvider _timeProvider;

@@ -7,13 +7,9 @@ class Scout(ServerListCache serverListCache, Log log, BonusReporter bonusReporte
 {
     readonly Dictionary<Character, CharacterScout> _characters = [];
 
-    /// <summary>Raised with the new <see cref="WaitingForBonusMessageUntil"/> whenever it changes.</summary>
     public event Action<DateTimeOffset?>? WaitingForBonusMessageUntilChanged;
 
-    /// <summary>
-    /// When the last character stops waiting for a bonus message, or null if none are waiting.
-    /// Like <see cref="CharacterScout.WaitingForBonusMessageUntil"/>, this can already have passed.
-    /// </summary>
+    /// <summary>Like <see cref="CharacterScout.WaitingForBonusMessageUntil"/>, this can already have passed.</summary>
     public DateTimeOffset? WaitingForBonusMessageUntil => this._characters.Values.Max(character => character.WaitingForBonusMessageUntil);
 
     public async Task HandleAsync(EverQuestLogWatcher.EverQuestLogEvent logEvent, DateTimeOffset now, CancellationToken cancellationToken = default)

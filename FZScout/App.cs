@@ -10,13 +10,9 @@ namespace FZScout;
 /// </summary>
 class App(AppDependencies dependencies)
 {
-    /// <summary>
-    /// Raised with the time the last character stops waiting for a bonus message, or null if none are waiting.
-    /// That time can already have passed, since a wait is only over once the character's next message arrives.
-    /// </summary>
+    /// <summary>The time can already have passed, since a wait is only over once the character's next message arrives.</summary>
     public event Action<DateTimeOffset?>? WaitingForBonusMessageUntilChanged;
 
-    /// <summary>Raised once there's an accepted API key and the app starts watching the logs.</summary>
     public event Action? ScoutingStarted;
 
     public AppDependencies Dependencies => dependencies;

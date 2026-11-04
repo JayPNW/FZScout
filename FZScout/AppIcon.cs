@@ -3,7 +3,6 @@
 /// <summary>FZScout's emerald gem, and the other <see cref="StatusIcon"/>s, drawn by scripts/draw-icons.ps1.</summary>
 static class AppIcon
 {
-    /// <summary>The gem, in all sizes; Windows picks the one it needs.</summary>
     public static Icon Load() => Load(StatusIcon.Gem);
 
     /// <summary>All sizes; Windows picks the one it needs.</summary>

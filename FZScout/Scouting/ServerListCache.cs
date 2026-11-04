@@ -6,7 +6,6 @@ class ServerListCache(FangbreakerZoneClient fangbreakerZoneClient, Log log)
 {
     readonly Dictionary<Server, ServerLists> _lists = [];
 
-    /// <summary>The lists, or null if they can't be loaded right now.</summary>
     public async Task<ServerLists?> GetAsync(Server server, CancellationToken cancellationToken = default)
     {
         if (!this._lists.ContainsKey(server))

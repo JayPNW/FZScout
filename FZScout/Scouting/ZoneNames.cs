@@ -57,7 +57,6 @@ static class ZoneNames
         ["Vegarlson, The Earthen Badlands"] = "Plane of Earth",
     };
 
-    /// <param name="siteZones">The server's zones list, or null if it couldn't be loaded.</param>
     public static Zone Resolve(string logZone, IReadOnlySet<string>? siteZones)
     {
         if (siteZones is null)
