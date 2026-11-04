@@ -9,24 +9,22 @@ static class Program
     [STAThread]
     static void Main()
     {
+        InstallUpdates();
+        using var updates = new WatchForNewUpdates(TimeProvider.System);
+
+        ApplicationConfiguration.Initialize();
+        using var window = new MainWindow();
+        Application.Run(new TrayApplicationContext(window, CreateApp(window)));
+    }
+
+    /// <summary>Returns without doing anything on a normal launch, when Velopack hasn't started us to handle one of these.</summary>
+    static void InstallUpdates()
+    {
         VelopackApp.Build()
             .OnAfterInstallFastCallback(_ => new LaunchAtLogin().AddToStartupApps(Environment.ProcessPath!))
             .OnAfterUpdateFastCallback(_ => new LaunchAtLogin().AddToStartupApps(Environment.ProcessPath!))
             .OnBeforeUninstallFastCallback(_ => new LaunchAtLogin().RemoveFromStartupApps())
             .Run();
-        var updateChecker = new GitHubUpdateChecker();
-        using var stopCheckingForUpdates = new CancellationTokenSource();
-        var checkingForUpdates = Task.Run(() => updateChecker.DownloadNewestReleaseNowAndDailyUntilCancelled(TimeProvider.System, stopCheckingForUpdates.Token));
-
-        ApplicationConfiguration.Initialize();
-        using (var window = new MainWindow())
-        {
-            Application.Run(new TrayApplicationContext(window, CreateApp(window)));
-        }
-
-        stopCheckingForUpdates.Cancel();
-        checkingForUpdates.GetAwaiter().GetResult();
-        updateChecker.InstallDownloadedUpdateAfterExit();
     }
 
     internal static App CreateApp(MainWindow window)
