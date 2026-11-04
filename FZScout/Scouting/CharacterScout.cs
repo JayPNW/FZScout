@@ -104,11 +104,7 @@ class CharacterScout(Character character, Func<ScoutAction, CancellationToken, T
 
         if (IsReportable(CurrentZone))
         {
-            SetIdleDeadline(now);
-        }
-
-        if (this._idleDeadline is { } deadline)
-        {
+            var deadline = SetIdleDeadline(now);
             return new LogInfoAction($"{character} entered {logZone}, waiting until {deadline.ToLocalTime():HH:mm:ss} for a bonus message.");
         }
 
@@ -120,7 +116,7 @@ class CharacterScout(Character character, Func<ScoutAction, CancellationToken, T
         if (IsReportable(CurrentZone) && !this._alreadyReported && this._killDeadline is null)
         {
             this._killDeadline = now + KillTimeout;
-            return WaitingUntil(character, this._killDeadline.Value);
+            return WaitingUntil(this._killDeadline.Value);
         }
 
         return null;
@@ -169,8 +165,7 @@ class CharacterScout(Character character, Func<ScoutAction, CancellationToken, T
 
         this._alreadyReported = false;
         this._killDeadline = null;
-        SetIdleDeadline(now);
-        return WaitingUntil(character, this._idleDeadline!.Value);
+        return WaitingUntil(SetIdleDeadline(now));
     }
 
     /// <summary>The character is probably logging out, and the next message may be from much later, so stop waiting for a bonus.</summary>
@@ -180,14 +175,16 @@ class CharacterScout(Character character, Func<ScoutAction, CancellationToken, T
         return null;
     }
 
-    static LogInfoAction WaitingUntil(Character character, DateTimeOffset deadline)
+    LogInfoAction WaitingUntil(DateTimeOffset deadline)
     {
         return new($"{character} waiting until {deadline.ToLocalTime():HH:mm:ss} for a bonus message.");
     }
 
-    void SetIdleDeadline(DateTimeOffset now)
+    DateTimeOffset SetIdleDeadline(DateTimeOffset now)
     {
-        this._idleDeadline = now + IdleTimeout;
+        var deadline = now + IdleTimeout;
+        this._idleDeadline = deadline;
+        return deadline;
     }
 
     void MarkAlreadyReportedThisZone()
