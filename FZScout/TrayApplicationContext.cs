@@ -9,9 +9,10 @@ class TrayApplicationContext : ApplicationContext
     readonly MainWindow _window;
     readonly NotifyIcon _trayIcon;
     readonly Dictionary<StatusIcon, Icon> _trayIcons = Enum.GetValues<StatusIcon>().ToDictionary(statusIcon => statusIcon, AppIcon.LoadForTray);
+    readonly Dictionary<StatusIcon, Icon> _windowIcons = Enum.GetValues<StatusIcon>().ToDictionary(statusIcon => statusIcon, AppIcon.Load);
     readonly AppStatus _status;
 
-    /// <summary>Shows the status again when it changes just because time passes, like waiting for a bonus message ending.</summary>
+    /// <summary>Shows the status again, on the tray icon and window, when it changes just because time passes, like waiting for a bonus message ending.</summary>
     readonly System.Windows.Forms.Timer _showStatusWhenItChangesByItself = new();
 
     readonly TimeProvider _timeProvider;
@@ -93,6 +94,7 @@ class TrayApplicationContext : ApplicationContext
     void ShowStatus()
     {
         this._trayIcon.Icon = this._trayIcons[this._status.Icon];
+        this._window.Icon = this._windowIcons[this._status.Icon];
         this._trayIcon.Text = this._status.Description;
         this._showStatusWhenItChangesByItself.Stop();
         if (this._status.ChangesByItselfAt is { } changesAt)
