@@ -6,7 +6,7 @@ namespace FZScout.Scouting;
 /// The business rules for one character: turns their log events and the passing of time into reports.
 /// See the Timing and Reporting sections of InternalDocumentation/SPEC.md.
 /// </summary>
-class CharacterScout(Character character)
+class CharacterScout(Character character, Func<ScoutAction, CancellationToken, Task> executeAsync)
 {
     /// <summary>EverQuest announces a bonus 3 to 3.5 minutes after entry when there's no kill, so after 5 there is none.</summary>
     public static readonly TimeSpan IdleTimeout = TimeSpan.FromMinutes(5);
@@ -27,10 +27,14 @@ class CharacterScout(Character character)
     public Zone? CurrentZone { get; private set; }
 
     /// <param name="lists">The server's lists, or null if they couldn't be loaded.</param>
-    public IReadOnlyList<ScoutAction> Handle(EverQuestLogWatcher.EverQuestLogEvent logEvent, DateTimeOffset now, ServerLists? lists)
+    public async Task HandleAsync(EverQuestLogWatcher.EverQuestLogEvent logEvent, DateTimeOffset now, ServerLists? lists, CancellationToken cancellationToken = default)
     {
         ResolveZone(lists);
-        return [.. ReportNoneIfADeadlinePassedBeforeThisMessage(now), .. DispatchLogEvent(logEvent, now, lists)];
+        IReadOnlyList<ScoutAction> actions = [.. ReportNoneIfADeadlinePassedBeforeThisMessage(now), .. DispatchLogEvent(logEvent, now, lists)];
+        foreach (var action in actions)
+        {
+            await executeAsync(action, cancellationToken);
+        }
     }
 
     /// <summary>

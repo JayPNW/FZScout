@@ -25,311 +25,330 @@ public class CharacterScoutTests
 
     static readonly EverQuestLogWatcher.EverQuestLogLineParser Parser = new(new EverQuestLogWatcher.Character(Bob.Name, Bob.Server.Name));
 
-    readonly CharacterScout _scout = new(Bob);
+    readonly List<ScoutAction> _executedActions = [];
+    readonly CharacterScout _scout;
 
-    [Fact]
-    public void BonusMessageIsReported()
+    public CharacterScoutTests()
     {
-        Log(0, Befallen);
-
-        Assert.Equal([Report("Befallen", "experience")], Log(10, Experience));
+        this._scout = new(Bob, RecordExecutedAction);
     }
 
     [Fact]
-    public void ZoneIsReportedByItsSiteName()
+    public async Task BonusMessageIsReported()
     {
-        Log(0, Crushbone);
+        await Log(0, Befallen);
 
-        Assert.Equal([Report("Crushbone", "experience")], Log(10, Experience));
+        Assert.Equal([Report("Befallen", "experience")], await Log(10, Experience));
     }
 
     [Fact]
-    public void NoBonusFiveMinutesAfterEnteringIsReportedAsNone()
+    public async Task ZoneIsReportedByItsSiteName()
     {
-        Log(0, Befallen);
+        await Log(0, Crushbone);
 
-        Assert.Empty(Log(299, Chat));
-        Assert.Equal([ReportNone("Befallen")], Log(300, Chat));
+        Assert.Equal([Report("Crushbone", "experience")], await Log(10, Experience));
     }
 
     [Fact]
-    public void NoneIsReportedOnlyOnce()
+    public async Task NoBonusFiveMinutesAfterEnteringIsReportedAsNone()
     {
-        Log(0, Befallen);
-        Log(300, Chat);
+        await Log(0, Befallen);
 
-        Assert.Empty(Log(600, Chat));
+        Assert.Empty(await Log(299, Chat));
+        Assert.Equal([ReportNone("Befallen")], await Log(300, Chat));
     }
 
     [Fact]
-    public void NoBonusFiveSecondsAfterAKillIsReportedAsNone()
+    public async Task NoneIsReportedOnlyOnce()
     {
-        Log(0, Befallen);
-        Log(20, Kill);
+        await Log(0, Befallen);
+        await Log(300, Chat);
 
-        Assert.Empty(Log(24, Chat));
-        Assert.Equal([ReportNone("Befallen")], Log(25, Chat));
-        Assert.Empty(Log(300, Chat));
+        Assert.Empty(await Log(600, Chat));
     }
 
     [Fact]
-    public void KillByOwnPetCountsAsAKill()
+    public async Task NoBonusFiveSecondsAfterAKillIsReportedAsNone()
     {
-        Log(0, Befallen);
-        Log(20, "A wolf was slain by Bob`s pet!");
+        await Log(0, Befallen);
+        await Log(20, Kill);
 
-        Assert.Equal([ReportNone("Befallen")], Log(25, Chat));
+        Assert.Empty(await Log(24, Chat));
+        Assert.Equal([ReportNone("Befallen")], await Log(25, Chat));
+        Assert.Empty(await Log(300, Chat));
     }
 
     [Fact]
-    public void KillByOwnWarderCountsAsAKill()
+    public async Task KillByOwnPetCountsAsAKill()
     {
-        Log(0, Befallen);
-        Log(20, "A gnoll pup was slain by Bob`s warder!");
+        await Log(0, Befallen);
+        await Log(20, "A wolf was slain by Bob`s pet!");
 
-        Assert.Equal([ReportNone("Befallen")], Log(25, Chat));
+        Assert.Equal([ReportNone("Befallen")], await Log(25, Chat));
     }
 
     [Fact]
-    public void KillByAnotherPlayersPetIsNotAKill()
+    public async Task KillByOwnWarderCountsAsAKill()
     {
-        Log(0, Befallen);
-        Log(20, "A wolf was slain by Alice`s pet!");
+        await Log(0, Befallen);
+        await Log(20, "A gnoll pup was slain by Bob`s warder!");
 
-        Assert.Empty(Log(25, Chat));
+        Assert.Equal([ReportNone("Befallen")], await Log(25, Chat));
     }
 
     [Fact]
-    public void LaterKillsDoNotPushTheKillTimerBack()
+    public async Task KillByAnotherPlayersPetIsNotAKill()
     {
-        Log(0, Befallen);
-        Log(20, Kill);
-        Log(23, Kill);
+        await Log(0, Befallen);
+        await Log(20, "A wolf was slain by Alice`s pet!");
 
-        Assert.Equal([ReportNone("Befallen")], Log(25, Chat));
+        Assert.Empty(await Log(25, Chat));
     }
 
     [Fact]
-    public void KillsAfterABonusDoNothing()
+    public async Task LaterKillsDoNotPushTheKillTimerBack()
     {
-        Log(0, Befallen);
-        Log(20, Kill);
-        Log(20, Experience);
-        Log(40, Kill);
+        await Log(0, Befallen);
+        await Log(20, Kill);
+        await Log(23, Kill);
 
-        Assert.Empty(Log(300, Chat));
+        Assert.Equal([ReportNone("Befallen")], await Log(25, Chat));
     }
 
     [Fact]
-    public void BonusAfterReportingNoneIsStillReported()
+    public async Task KillsAfterABonusDoNothing()
+    {
+        await Log(0, Befallen);
+        await Log(20, Kill);
+        await Log(20, Experience);
+        await Log(40, Kill);
+
+        Assert.Empty(await Log(300, Chat));
+    }
+
+    [Fact]
+    public async Task BonusAfterReportingNoneIsStillReported()
     {
         // A kill doesn't always trigger the message; sometimes it comes minutes later.
-        Log(0, Befallen);
-        Log(20, Kill);
-        Log(25, Chat);
+        await Log(0, Befallen);
+        await Log(20, Kill);
+        await Log(25, Chat);
 
-        Assert.Equal([Report("Befallen", "experience")], Log(200, Experience));
+        Assert.Equal([Report("Befallen", "experience")], await Log(200, Experience));
     }
 
     [Fact]
-    public void EnteringAnotherZoneRestartsTheIdleTimer()
+    public async Task EnteringAnotherZoneRestartsTheIdleTimer()
     {
-        Log(0, Befallen);
-        Log(100, Crushbone);
+        await Log(0, Befallen);
+        await Log(100, Crushbone);
 
-        Assert.Empty(Log(300, Chat));
-        Assert.Equal([ReportNone("Crushbone")], Log(400, Chat));
+        Assert.Empty(await Log(300, Chat));
+        Assert.Equal([ReportNone("Crushbone")], await Log(400, Chat));
     }
 
     [Fact]
-    public void EnteringAnotherZoneCancelsTheKillTimer()
+    public async Task EnteringAnotherZoneCancelsTheKillTimer()
     {
-        Log(0, Befallen);
-        Log(20, Kill);
-        Log(22, Crushbone);
+        await Log(0, Befallen);
+        await Log(20, Kill);
+        await Log(22, Crushbone);
 
-        Assert.Empty(Log(30, Chat));
+        Assert.Empty(await Log(30, Chat));
     }
 
     [Fact]
-    public void ReEnteringTheSameZoneStartsANewVisit()
+    public async Task ReEnteringTheSameZoneStartsANewVisit()
     {
-        Log(0, Befallen);
-        Log(10, Experience);
-        Log(100, Befallen);
+        await Log(0, Befallen);
+        await Log(10, Experience);
+        await Log(100, Befallen);
 
-        Assert.Equal([ReportNone("Befallen")], Log(400, Chat));
+        Assert.Equal([ReportNone("Befallen")], await Log(400, Chat));
     }
 
     [Fact]
-    public void DailyResetRestartsTheIdleTimer()
+    public async Task DailyResetRestartsTheIdleTimer()
     {
-        Log(0, Befallen);
-        Log(10, Experience);
-        Log(1000, DailyReset);
+        await Log(0, Befallen);
+        await Log(10, Experience);
+        await Log(1000, DailyReset);
 
-        Assert.Empty(Log(1299, Chat));
-        Assert.Equal([ReportNone("Befallen")], Log(1300, Chat));
+        Assert.Empty(await Log(1299, Chat));
+        Assert.Equal([ReportNone("Befallen")], await Log(1300, Chat));
     }
 
     [Fact]
-    public void DailyResetRearmsKills()
+    public async Task DailyResetRearmsKills()
     {
-        Log(0, Befallen);
-        Log(10, Experience);
-        Log(1000, DailyReset);
-        Log(1010, Kill);
+        await Log(0, Befallen);
+        await Log(10, Experience);
+        await Log(1000, DailyReset);
+        await Log(1010, Kill);
 
-        Assert.Equal([ReportNone("Befallen")], Log(1015, Chat));
+        Assert.Equal([ReportNone("Befallen")], await Log(1015, Chat));
     }
 
     [Fact]
-    public void CampingStopsTheIdleTimer()
+    public async Task CampingStopsTheIdleTimer()
     {
-        Log(0, Befallen);
-        Log(200, Camping);
-        Log(205, "It will take about 25 more seconds to prepare your camp.");
+        await Log(0, Befallen);
+        await Log(200, Camping);
+        await Log(205, "It will take about 25 more seconds to prepare your camp.");
 
-        Assert.Empty(Log(10_000, Chat));
+        Assert.Empty(await Log(10_000, Chat));
     }
 
     [Fact]
-    public void AbandoningCampDoesNotRestartTheIdleTimer()
+    public async Task AbandoningCampDoesNotRestartTheIdleTimer()
     {
-        Log(0, Befallen);
-        Log(200, Camping);
-        Log(210, CampAbandoned);
+        await Log(0, Befallen);
+        await Log(200, Camping);
+        await Log(210, CampAbandoned);
 
-        Assert.Empty(Log(10_000, Chat));
+        Assert.Empty(await Log(10_000, Chat));
     }
 
     [Fact]
-    public void EnteringAZoneIsLogged()
+    public async Task EnteringAZoneIsLogged()
     {
-        Assert.Equal([new LogInfoAction($"Bob (Frostreaver) entered The Greater Faydark, waiting until {Start.AddMinutes(5).ToLocalTime():HH:mm:ss} for a bonus message.")], Log(0, "You have entered The Greater Faydark."));
+        Assert.Equal([new LogInfoAction($"Bob (Frostreaver) entered The Greater Faydark, waiting until {Start.AddMinutes(5).ToLocalTime():HH:mm:ss} for a bonus message.")], await Log(0, "You have entered The Greater Faydark."));
     }
 
     [Fact]
-    public void BonusBeforeAnyZoneIsIgnored()
+    public async Task BonusBeforeAnyZoneIsIgnored()
     {
-        Assert.Empty(Log(0, Experience));
-        Assert.Empty(Log(1000, Chat));
+        Assert.Empty(await Log(0, Experience));
+        Assert.Empty(await Log(1000, Chat));
     }
 
     [Fact]
-    public void BonusTypeNotOnTheServersListIsAnError()
+    public async Task BonusTypeNotOnTheServersListIsAnError()
     {
-        Log(0, Befallen);
+        await Log(0, Befallen);
 
         Assert.Equal(
             [new LogErrorAction($"Bob (Frostreaver) saw a 'tribute' bonus in 'Befallen', which isn't on the Frostreaver bonus types list. Please report it at {CharacterScout.ReportIssuesUrl}")],
-            Log(10, Tribute));
+            await Log(10, Tribute));
     }
 
     [Fact]
-    public void BonusTypeNotOnTheServersListMeansNoneIsntReported()
+    public async Task BonusTypeNotOnTheServersListMeansNoneIsntReported()
     {
-        Log(0, Befallen);
-        Log(20, Kill);
-        Log(21, Tribute);
+        await Log(0, Befallen);
+        await Log(20, Kill);
+        await Log(21, Tribute);
 
-        Assert.Empty(Log(25, Chat));
-        Assert.Empty(Log(300, Chat));
+        Assert.Empty(await Log(25, Chat));
+        Assert.Empty(await Log(300, Chat));
     }
 
     [Fact]
-    public void UnknownZoneWithNoBonusIsNotAnError()
+    public async Task UnknownZoneWithNoBonusIsNotAnError()
     {
         Assert.Equal(
             [new LogInfoAction("Bob (Frostreaver) entered The Plane of Knowledge.")],
-            Log(0, "You have entered The Plane of Knowledge."));
-        Assert.Empty(Log(10, Kill));
-        Assert.Empty(Log(1000, Chat));
+            await Log(0, "You have entered The Plane of Knowledge."));
+        Assert.Empty(await Log(10, Kill));
+        Assert.Empty(await Log(1000, Chat));
     }
 
     [Fact]
-    public void BonusInAnUnknownZoneIsAnError()
+    public async Task BonusInAnUnknownZoneIsAnError()
     {
-        Log(0, "You have entered The Halls of Honor.");
+        await Log(0, "You have entered The Halls of Honor.");
 
         Assert.Equal(
             [new LogErrorAction($"Bob (Frostreaver) saw a 'experience' bonus in 'The Halls of Honor', which isn't on the Frostreaver zones list. Please report it at {CharacterScout.ReportIssuesUrl}")],
-            Log(10, Experience));
+            await Log(10, Experience));
     }
 
     [Fact]
-    public void ZoneEnteredWithoutListsIsResolvedWhenTheyLoad()
+    public async Task ZoneEnteredWithoutListsIsResolvedWhenTheyLoad()
     {
-        Assert.Equal([new LogInfoAction($"Bob (Frostreaver) entered Befallen, waiting until {Start.AddMinutes(5).ToLocalTime():HH:mm:ss} for a bonus message.")], LogWithoutLists(0, Befallen));
-        Assert.Empty(LogWithoutLists(60, Chat));
+        Assert.Equal([new LogInfoAction($"Bob (Frostreaver) entered Befallen, waiting until {Start.AddMinutes(5).ToLocalTime():HH:mm:ss} for a bonus message.")], await LogWithoutLists(0, Befallen));
+        Assert.Empty(await LogWithoutLists(60, Chat));
 
-        Assert.Empty(Log(61, Chat));
+        Assert.Empty(await Log(61, Chat));
         Assert.Equal(new KnownZone("Befallen"), this._scout.CurrentZone);
-        Assert.Equal([ReportNone("Befallen")], Log(300, Chat));
+        Assert.Equal([ReportNone("Befallen")], await Log(300, Chat));
     }
 
     [Fact]
-    public void BonusAfterTheListsLoadIsReported()
+    public async Task BonusAfterTheListsLoadIsReported()
     {
-        LogWithoutLists(0, Befallen);
+        await LogWithoutLists(0, Befallen);
 
-        Assert.Equal([Report("Befallen", "experience")], Log(10, Experience));
+        Assert.Equal([Report("Befallen", "experience")], await Log(10, Experience));
     }
 
     [Fact]
-    public void ZoneEnteredWithoutListsThatTurnsOutUnknownStopsWaiting()
+    public async Task ZoneEnteredWithoutListsThatTurnsOutUnknownStopsWaiting()
     {
-        LogWithoutLists(0, "You have entered The Halls of Honor.");
+        await LogWithoutLists(0, "You have entered The Halls of Honor.");
 
-        Assert.Empty(Log(60, Chat));
+        Assert.Empty(await Log(60, Chat));
         Assert.Equal(new UnknownZone("The Halls of Honor"), this._scout.CurrentZone);
-        Assert.Empty(Log(1000, Chat));
+        Assert.Empty(await Log(1000, Chat));
     }
 
     [Fact]
-    public void ListsThatNeverLoadMeanNoneIsntReported()
+    public async Task ListsThatNeverLoadMeanNoneIsntReported()
     {
-        LogWithoutLists(0, Befallen);
+        await LogWithoutLists(0, Befallen);
 
         Assert.Equal(
             [new LogErrorAction("Bob (Frostreaver) was in 'Befallen', but the Frostreaver zones list still isn't loaded, so 'none' wasn't reported.")],
-            LogWithoutLists(300, Chat));
-        Assert.Empty(LogWithoutLists(1000, Chat));
+            await LogWithoutLists(300, Chat));
+        Assert.Empty(await LogWithoutLists(1000, Chat));
     }
 
     [Fact]
-    public void BonusWhileListsAreMissingIsAnError()
+    public async Task BonusWhileListsAreMissingIsAnError()
     {
-        LogWithoutLists(0, Befallen);
+        await LogWithoutLists(0, Befallen);
 
         Assert.Equal(
             [new LogErrorAction("Bob (Frostreaver) saw a 'experience' bonus in 'Befallen', but the Frostreaver zones list isn't loaded, so it wasn't reported.")],
-            LogWithoutLists(10, Experience));
+            await LogWithoutLists(10, Experience));
     }
 
     [Fact]
-    public void AreasInsideAZoneDontChangeIt()
+    public async Task AreasInsideAZoneDontChangeIt()
     {
-        Log(0, Befallen);
-        Log(100, "You have entered an area where levitation effects do not function.");
+        await Log(0, Befallen);
+        await Log(100, "You have entered an area where levitation effects do not function.");
 
-        Assert.Equal([ReportNone("Befallen")], Log(300, Chat));
+        Assert.Equal([ReportNone("Befallen")], await Log(300, Chat));
     }
 
     [Fact]
-    public void ArenaAreasInsideAZoneDontChangeIt()
+    public async Task ArenaAreasInsideAZoneDontChangeIt()
     {
-        Log(0, Befallen);
-        Log(100, "You have entered an Arena (PvP) area.");
+        await Log(0, Befallen);
+        await Log(100, "You have entered an Arena (PvP) area.");
 
-        Assert.Equal([ReportNone("Befallen")], Log(300, Chat));
+        Assert.Equal([ReportNone("Befallen")], await Log(300, Chat));
     }
 
     static ReportBonusAction Report(string zone, string bonus) => new(new BonusReport(Server.Frostreaver, zone, new BonusKey(bonus)));
 
     static ReportNoBonusAction ReportNone(string zone) => new(Server.Frostreaver, zone);
 
-    IReadOnlyList<ScoutAction> Log(int seconds, string message) => this._scout.Handle(Parser.Parse($"[Thu Oct 29 12:00:00 2026] {message}"), Start.AddSeconds(seconds), Lists);
+    Task RecordExecutedAction(ScoutAction action, CancellationToken cancellationToken)
+    {
+        this._executedActions.Add(action);
+        return Task.CompletedTask;
+    }
 
-    IReadOnlyList<ScoutAction> LogWithoutLists(int seconds, string message) => this._scout.Handle(Parser.Parse($"[Thu Oct 29 12:00:00 2026] {message}"), Start.AddSeconds(seconds), null);
+    Task<IReadOnlyList<ScoutAction>> Log(int seconds, string message) => Handle(seconds, message, Lists);
+
+    Task<IReadOnlyList<ScoutAction>> LogWithoutLists(int seconds, string message) => Handle(seconds, message, null);
+
+    async Task<IReadOnlyList<ScoutAction>> Handle(int seconds, string message, ServerLists? lists)
+    {
+        this._executedActions.Clear();
+        await this._scout.HandleAsync(Parser.Parse($"[Thu Oct 29 12:00:00 2026] {message}"), Start.AddSeconds(seconds), lists, TestContext.Current.CancellationToken);
+        return [.. this._executedActions];
+    }
 }
