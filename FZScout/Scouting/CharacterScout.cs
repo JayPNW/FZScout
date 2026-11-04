@@ -30,10 +30,13 @@ class CharacterScout(Character character, Func<ScoutAction, CancellationToken, T
     public async Task HandleAsync(EverQuestLogWatcher.EverQuestLogEvent logEvent, DateTimeOffset now, ServerLists? lists, CancellationToken cancellationToken = default)
     {
         ResolveZone(lists);
-        IReadOnlyList<ScoutAction> actions = [.. ReportNoneIfADeadlinePassedBeforeThisMessage(now), .. DispatchLogEvent(logEvent, now, lists)];
-        foreach (var action in actions)
+        if (ReportNoneIfADeadlinePassedBeforeThisMessage(now) is { } reportNoneAction)
         {
-            await executeAsync(action, cancellationToken);
+            await executeAsync(reportNoneAction, cancellationToken);
+        }
+        if (DispatchLogEvent(logEvent, now, lists) is { } logEventAction)
+        {
+            await executeAsync(logEventAction, cancellationToken);
         }
     }
 
@@ -41,42 +44,42 @@ class CharacterScout(Character character, Func<ScoutAction, CancellationToken, T
     /// There's no clock: a deadline is only noticed when the character's next message arrives.
     /// A character who stops logging in before any further message arrives never gets a false <c>none</c>.
     /// </summary>
-    IReadOnlyList<ScoutAction> ReportNoneIfADeadlinePassedBeforeThisMessage(DateTimeOffset now)
+    ScoutAction? ReportNoneIfADeadlinePassedBeforeThisMessage(DateTimeOffset now)
     {
         if (!IsDue(this._killDeadline, now) && !IsDue(this._idleDeadline, now))
         {
-            return [];
+            return null;
         }
 
         if (CurrentZone is UnresolvedZone unresolved)
         {
             MarkAlreadyReportedThisZone();
-            return [new LogErrorAction($"{character} was in '{unresolved.LogName}', but the {character.Server} zones list still isn't loaded, so 'none' wasn't reported.")];
+            return new LogErrorAction($"{character} was in '{unresolved.LogName}', but the {character.Server} zones list still isn't loaded, so 'none' wasn't reported.");
         }
 
         if (CurrentZone is not KnownZone zone)
         {
-            return [];
+            return null;
         }
 
         MarkAlreadyReportedThisZone();
-        return [new ReportNoBonusAction(character.Server, zone.SiteName)];
+        return new ReportNoBonusAction(character.Server, zone.SiteName);
     }
 
     static bool IsDue(DateTimeOffset? deadline, DateTimeOffset now) => deadline is not null && deadline <= now;
 
     static bool IsReportable(Zone? zone) => zone is KnownZone or UnresolvedZone;
 
-    IReadOnlyList<ScoutAction> DispatchLogEvent(EverQuestLogWatcher.EverQuestLogEvent logEvent, DateTimeOffset now, ServerLists? lists) => logEvent switch
+    ScoutAction? DispatchLogEvent(EverQuestLogWatcher.EverQuestLogEvent logEvent, DateTimeOffset now, ServerLists? lists) => logEvent switch
     {
         EverQuestLogWatcher.ZoneEntered e => OnZoneEntered(e.ZoneName, now, lists),
         EverQuestLogWatcher.MobSlainByYou => OnKill(now),
         EverQuestLogWatcher.SlainByPet e when e.OwnerName == character.Name => OnKill(now),
         EverQuestLogWatcher.SlainByWarder e when e.OwnerName == character.Name => OnKill(now),
-        EverQuestLogWatcher.AreaIsSaturatedWithUnstableMagic e => BonusKey.FromAnnouncementText(e.Bonus) is { } bonus ? OnBonus(bonus, lists) : [],
+        EverQuestLogWatcher.AreaIsSaturatedWithUnstableMagic e => BonusKey.FromAnnouncementText(e.Bonus) is { } bonus ? OnBonus(bonus, lists) : null,
         EverQuestLogWatcher.DailyResetLogEvent => OnDailyReset(now),
         EverQuestLogWatcher.CampingCountdownProgressed => OnCamping(),
-        _ => [],
+        _ => null,
     };
 
     /// <summary>Once the zones list loads, works out which zone an <see cref="UnresolvedZone"/> is. Its deadlines still stand.</summary>
@@ -94,7 +97,7 @@ class CharacterScout(Character character, Func<ScoutAction, CancellationToken, T
         }
     }
 
-    IReadOnlyList<ScoutAction> OnZoneEntered(string logZone, DateTimeOffset now, ServerLists? lists)
+    ScoutAction? OnZoneEntered(string logZone, DateTimeOffset now, ServerLists? lists)
     {
         CurrentZone = ZoneNames.Resolve(logZone, lists?.Zones);
         this._alreadyReported = false;
@@ -108,70 +111,70 @@ class CharacterScout(Character character, Func<ScoutAction, CancellationToken, T
 
         if (this._idleDeadline is { } deadline)
         {
-            return [new LogInfoAction($"{character} entered {logZone}, waiting until {deadline.ToLocalTime():HH:mm:ss} for a bonus message.")];
+            return new LogInfoAction($"{character} entered {logZone}, waiting until {deadline.ToLocalTime():HH:mm:ss} for a bonus message.");
         }
 
-        return [new LogInfoAction($"{character} entered {logZone}.")];
+        return new LogInfoAction($"{character} entered {logZone}.");
     }
 
-    IReadOnlyList<ScoutAction> OnKill(DateTimeOffset now)
+    ScoutAction? OnKill(DateTimeOffset now)
     {
         if (IsReportable(CurrentZone) && !this._alreadyReported && this._killDeadline is null)
         {
             this._killDeadline = now + KillTimeout;
-            return [WaitingUntil(character, this._killDeadline.Value)];
+            return WaitingUntil(character, this._killDeadline.Value);
         }
 
-        return [];
+        return null;
     }
 
-    IReadOnlyList<ScoutAction> OnBonus(BonusKey bonus, ServerLists? lists)
+    ScoutAction? OnBonus(BonusKey bonus, ServerLists? lists)
     {
         // An unknown zone that never gets a bonus, like The Plane of Knowledge, is fine. One that does needs adding.
         if (CurrentZone is UnknownZone unknown)
         {
-            return [new LogErrorAction($"{character} saw a '{bonus}' bonus in '{unknown.LogName}', which isn't on the {character.Server} zones list. Please report it at {ReportIssuesUrl}")];
+            return new LogErrorAction($"{character} saw a '{bonus}' bonus in '{unknown.LogName}', which isn't on the {character.Server} zones list. Please report it at {ReportIssuesUrl}");
         }
 
         if (CurrentZone is UnresolvedZone unresolved)
         {
             MarkAlreadyReportedThisZone();
-            return [new LogErrorAction($"{character} saw a '{bonus}' bonus in '{unresolved.LogName}', but the {character.Server} zones list isn't loaded, so it wasn't reported.")];
+            return new LogErrorAction($"{character} saw a '{bonus}' bonus in '{unresolved.LogName}', but the {character.Server} zones list isn't loaded, so it wasn't reported.");
         }
 
         if (CurrentZone is not KnownZone zone)
         {
-            return [];
+            return null;
         }
 
         if (lists is not null && !lists.Types.Contains(bonus))
         {
             MarkAlreadyReportedThisZone();
-            return [new LogErrorAction($"{character} saw a '{bonus}' bonus in '{zone.SiteName}', which isn't on the {character.Server} bonus types list. Please report it at {ReportIssuesUrl}")];
+            return new LogErrorAction($"{character} saw a '{bonus}' bonus in '{zone.SiteName}', which isn't on the {character.Server} bonus types list. Please report it at {ReportIssuesUrl}");
         }
 
         MarkAlreadyReportedThisZone();
-        return [new ReportBonusAction(new BonusReport(character.Server, zone.SiteName, bonus))];
+        return new ReportBonusAction(new BonusReport(character.Server, zone.SiteName, bonus));
     }
 
-    IReadOnlyList<ScoutAction> OnDailyReset(DateTimeOffset now)
+    ScoutAction? OnDailyReset(DateTimeOffset now)
     {
         if (!IsReportable(CurrentZone))
         {
-            return [];
+            return null;
         }
 
         this._alreadyReported = false;
         this._killDeadline = null;
         SetIdleDeadline(now);
-        return [WaitingUntil(character, this._idleDeadline!.Value)];
+        return WaitingUntil(character, this._idleDeadline!.Value);
     }
 
     /// <summary>The character is probably logging out, and the next message may be from much later, so stop waiting for a bonus.</summary>
-    IReadOnlyList<ScoutAction> OnCamping()
+    ScoutAction? OnCamping()
     {
         this._idleDeadline = null;
-        return [];
+        return null;
     }
 
     static LogInfoAction WaitingUntil(Character character, DateTimeOffset deadline)
