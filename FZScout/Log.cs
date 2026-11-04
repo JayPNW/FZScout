@@ -9,14 +9,28 @@ class Log(Action<string, ConsoleColor?> write, TimeProvider timeProvider)
     {
     }
 
+    /// <summary>Raised with the message, without timestamp, whenever <see cref="Success"/> is written.</summary>
+    public event Action<string>? SuccessWritten;
+
+    /// <summary>Raised with the message, without timestamp or prefix, whenever <see cref="Error"/> is written.</summary>
+    public event Action<string>? ErrorWritten;
+
     public void Info(string message) => Write(message, null);
 
     /// <summary>Something worked that the user cares about, like a bonus uploaded to the site.</summary>
-    public void Success(string message) => Write(message, ConsoleColor.Cyan);
+    public void Success(string message)
+    {
+        Write(message, ConsoleColor.Cyan);
+        SuccessWritten?.Invoke(message);
+    }
 
     public void Warning(string message) => Write($"WARNING: {message}", ConsoleColor.Yellow);
 
-    public void Error(string message) => Write($"ERROR: {message}", ConsoleColor.Red);
+    public void Error(string message)
+    {
+        Write($"ERROR: {message}", ConsoleColor.Red);
+        ErrorWritten?.Invoke(message);
+    }
 
     void Write(string message, ConsoleColor? color)
     {

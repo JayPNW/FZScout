@@ -43,4 +43,39 @@ public class LogTests
 
         Assert.Equal([("12:00:00 ERROR: Broken", ConsoleColor.Red)], this._lines);
     }
+
+    [Fact]
+    public void SuccessIsAnnounced()
+    {
+        var announced = new List<string>();
+        this._log.SuccessWritten += announced.Add;
+
+        this._log.Success("Reported a bonus");
+
+        Assert.Equal(["Reported a bonus"], announced);
+    }
+
+    [Fact]
+    public void ErrorIsAnnounced()
+    {
+        var announced = new List<string>();
+        this._log.ErrorWritten += announced.Add;
+
+        this._log.Error("Broken");
+
+        Assert.Equal(["Broken"], announced);
+    }
+
+    [Fact]
+    public void InfoAndWarningAreNotAnnounced()
+    {
+        var announced = new List<string>();
+        this._log.SuccessWritten += announced.Add;
+        this._log.ErrorWritten += announced.Add;
+
+        this._log.Info("Watching a log");
+        this._log.Warning("Hmm");
+
+        Assert.Empty(announced);
+    }
 }
