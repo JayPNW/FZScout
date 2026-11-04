@@ -3,6 +3,8 @@ namespace FZScout;
 /// <summary>What the app is doing, as its icon and tooltip show it. Some of that changes just because time passes.</summary>
 class AppStatus(TimeProvider timeProvider)
 {
+    const string ProblemDescription = "something went wrong; its window shows what";
+
     /// <summary>Whether the app has an accepted API key and is watching the logs.</summary>
     public bool IsScouting { get; set; }
 
@@ -103,8 +105,6 @@ class AppStatus(TimeProvider timeProvider)
             return null;
         }
     }
-
-    const string ProblemDescription = "something went wrong; its window shows what";
 
     bool IsWaitingForBonusMessage => WaitingForBonusMessageUntil > timeProvider.GetUtcNow();
 
