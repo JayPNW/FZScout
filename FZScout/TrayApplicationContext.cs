@@ -16,6 +16,7 @@ class TrayApplicationContext : ApplicationContext
 
     readonly TimeProvider _timeProvider;
     readonly AppDependencies _dependencies;
+    readonly ShowToastNotifications _showToastNotifications = new();
     bool _hasExplainedHidingToTray;
     SettingsWindow? _openSettingsWindow;
 
@@ -79,12 +80,12 @@ class TrayApplicationContext : ApplicationContext
         this._hasExplainedHidingToTray = true;
         if (this._window.CanUserReachTrayIcon())
         {
-            ShowBalloonTip("FZScout is running", "Double-click this icon to see the log. To exit, right-click it and choose Exit.", ToolTipIcon.Info);
+            ShowToastIfTurnedOn("FZScout is running", "Double-click this icon to see the log. To exit, right-click it and choose Exit.", ToolTipIcon.Info);
             return;
         }
 
         this._window.ShowMinimizedOnTaskbar();
-        ShowBalloonTip("FZScout is running", "Windows is hiding its tray icon, so it stays on the taskbar. To show the icon, go to Settings > Personalization > Taskbar > Other system tray icons.", ToolTipIcon.Info);
+        ShowToastIfTurnedOn("FZScout is running", "Windows is hiding its tray icon, so it stays on the taskbar. To show the icon, go to Settings > Personalization > Taskbar > Other system tray icons.", ToolTipIcon.Info);
     }
 
     void ShowSettingsIfThereIsNoApiKey()
@@ -105,7 +106,7 @@ class TrayApplicationContext : ApplicationContext
             return;
         }
 
-        var settings = new SettingsWindow(new LaunchAtLogin(), this._dependencies.ApiKeyStore, this._dependencies.FangbreakerZoneClient, this._dependencies.Log);
+        var settings = new SettingsWindow(new LaunchAtLogin(), this._showToastNotifications, this._dependencies.ApiKeyStore, this._dependencies.FangbreakerZoneClient, this._dependencies.Log);
         settings.ApiKeySaved += () => UpdateStatus(status => status.HadProblemSinceLastSuccess = false);
         settings.FormClosed += (_, _) => this._openSettingsWindow = null;
         this._openSettingsWindow = settings;
@@ -128,7 +129,7 @@ class TrayApplicationContext : ApplicationContext
         }
 
         this._hasExplainedHidingToTray = true;
-        ShowBalloonTip("FZScout is still running", "To exit, right-click this icon and choose Exit.", ToolTipIcon.Info);
+        ShowToastIfTurnedOn("FZScout is still running", "To exit, right-click this icon and choose Exit.", ToolTipIcon.Info);
     }
 
     /// <summary>Safe to call from any thread.</summary>
@@ -161,11 +162,16 @@ class TrayApplicationContext : ApplicationContext
     void ShowToast(string message, ToolTipIcon icon)
     {
         var firstLine = message.Split('\n')[0].TrimEnd('\r');
-        this._window.BeginInvoke(() => ShowBalloonTip("FZScout", firstLine, icon));
+        this._window.BeginInvoke(() => ShowToastIfTurnedOn("FZScout", firstLine, icon));
     }
 
-    void ShowBalloonTip(string title, string text, ToolTipIcon icon)
+    void ShowToastIfTurnedOn(string title, string text, ToolTipIcon icon)
     {
+        if (!this._showToastNotifications.IsOn)
+        {
+            return;
+        }
+
         this._trayIcon.ShowBalloonTip(5000, title, text, icon);
     }
 

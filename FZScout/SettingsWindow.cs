@@ -9,17 +9,20 @@ class SettingsWindow : Form
     const string ApiKeyHelpUrl = "https://jaypnw.github.io/FZScout/create-api-key.html";
 
     readonly LaunchAtLogin _launchAtLogin;
+    readonly ShowToastNotifications _showToastNotifications;
     readonly IApiKeyStore _apiKeyStore;
     readonly FangbreakerZoneClient _fangbreakerZoneClient;
     readonly Log _log;
     readonly TextBox _apiKeyBox;
     readonly Label _apiKeyProblem;
     readonly CheckBox _launchAtLoginBox;
+    readonly CheckBox _showToastNotificationsBox;
     readonly Button _saveButton;
 
-    public SettingsWindow(LaunchAtLogin launchAtLogin, IApiKeyStore apiKeyStore, FangbreakerZoneClient fangbreakerZoneClient, Log log)
+    public SettingsWindow(LaunchAtLogin launchAtLogin, ShowToastNotifications showToastNotifications, IApiKeyStore apiKeyStore, FangbreakerZoneClient fangbreakerZoneClient, Log log)
     {
         this._launchAtLogin = launchAtLogin;
+        this._showToastNotifications = showToastNotifications;
         this._apiKeyStore = apiKeyStore;
         this._fangbreakerZoneClient = fangbreakerZoneClient;
         this._log = log;
@@ -33,6 +36,7 @@ class SettingsWindow : Form
         this._apiKeyProblem = new Label { AutoSize = true, MaximumSize = new Size(400, 0), ForeColor = Color.Firebrick, Visible = false };
         layout.Controls.Add(this._apiKeyProblem, 1, 2);
         this._launchAtLoginBox = AddLaunchAtLoginRow(layout, launchAtLogin);
+        this._showToastNotificationsBox = AddShowToastNotificationsRow(layout, showToastNotifications);
         this._saveButton = AddSaveAndCancelButtonsRow(layout);
         this._apiKeyBox.TextChanged += (_, _) => AllowSavingOnlyWithAnApiKey();
         AllowSavingOnlyWithAnApiKey();
@@ -93,6 +97,14 @@ class SettingsWindow : Form
         return launchAtLoginBox;
     }
 
+    static CheckBox AddShowToastNotificationsRow(TableLayoutPanel layout, ShowToastNotifications showToastNotifications)
+    {
+        var showToastNotificationsBox = new CheckBox { Text = "Show toast notifications", AutoSize = true, Checked = showToastNotifications.IsOn };
+        layout.Controls.Add(showToastNotificationsBox, 0, 4);
+        layout.SetColumnSpan(showToastNotificationsBox, 2);
+        return showToastNotificationsBox;
+    }
+
     Button AddSaveAndCancelButtonsRow(TableLayoutPanel layout)
     {
         var saveButton = new Button { Text = "Save", AutoSize = true };
@@ -105,7 +117,7 @@ class SettingsWindow : Form
         AcceptButton = saveButton;
         CancelButton = cancelButton;
 
-        layout.Controls.Add(buttons, 0, 4);
+        layout.Controls.Add(buttons, 0, 5);
         layout.SetColumnSpan(buttons, 2);
         return saveButton;
     }
@@ -129,6 +141,7 @@ class SettingsWindow : Form
         }
 
         SaveLaunchAtLogin();
+        SaveShowToastNotifications();
         Close();
     }
 
@@ -184,5 +197,16 @@ class SettingsWindow : Form
         }
 
         this._launchAtLogin.TurnOff();
+    }
+
+    void SaveShowToastNotifications()
+    {
+        if (this._showToastNotificationsBox.Checked)
+        {
+            this._showToastNotifications.TurnOn();
+            return;
+        }
+
+        this._showToastNotifications.TurnOff();
     }
 }
