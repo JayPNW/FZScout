@@ -3,7 +3,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="EverQuestLogWatcher" Version="0.1.0-ci.9" />
+    <PackageVersion Include="EverQuestLogWatcher" Version="0.1.0-ci.13" />
     <PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.11.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.3.151-beta" />
