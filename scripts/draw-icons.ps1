@@ -84,6 +84,8 @@ function ToPoints($points, [double]$scale) {
 
 function Draw($picture, [int]$size) {
     $bitmap = New-Object System.Drawing.Bitmap $size, $size, ([System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+    # Otherwise the PNG records the display's DPI, which differs from one process to the next, so the same picture gets different bytes.
+    $bitmap.SetResolution(96, 96)
     $g = [System.Drawing.Graphics]::FromImage($bitmap)
     $g.SmoothingMode = 'AntiAlias'
     $g.PixelOffsetMode = 'HighQuality'
