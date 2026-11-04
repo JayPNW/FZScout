@@ -1,4 +1,4 @@
-﻿using FZScout.Site;
+using FZScout.Site;
 
 namespace FZScout;
 
@@ -18,13 +18,7 @@ class SettingsWindow : Form
         this._launchAtLogin = launchAtLogin;
         Text = "FZScout Settings";
         Icon = AppIcon.Load();
-        FormBorderStyle = FormBorderStyle.FixedDialog;
-        MaximizeBox = false;
-        MinimizeBox = false;
-        ShowInTaskbar = false;
-        AutoSize = true;
-        AutoSizeMode = AutoSizeMode.GrowAndShrink;
-        StartPosition = FormStartPosition.Manual;
+        StyleAsFixedSizeDialog();
 
         var layout = new TableLayoutPanel { AutoSize = true, ColumnCount = 2, Padding = new Padding(12) };
         if (asksForApiKey)
@@ -33,22 +27,8 @@ class SettingsWindow : Form
             AddApiKeyRows(layout, this._apiKeyBox);
         }
 
-        this._launchAtLoginBox = new CheckBox { Text = "Launch FZScout when I log in to Windows", AutoSize = true, Checked = launchAtLogin.IsOn };
-        layout.Controls.Add(this._launchAtLoginBox, 0, 2);
-        layout.SetColumnSpan(this._launchAtLoginBox, 2);
-
-        var saveButton = new Button { Text = "Save", AutoSize = true };
-        saveButton.Click += (_, _) => Save();
-        var cancelButton = new Button { Text = "Cancel", AutoSize = true };
-        cancelButton.Click += (_, _) => Close();
-        var buttons = new FlowLayoutPanel { FlowDirection = FlowDirection.RightToLeft, Dock = DockStyle.Fill, AutoSize = true, Margin = new Padding(0, 12, 0, 0) };
-        buttons.Controls.Add(cancelButton);
-        buttons.Controls.Add(saveButton);
-        AcceptButton = saveButton;
-        CancelButton = cancelButton;
-
-        layout.Controls.Add(buttons, 0, 3);
-        layout.SetColumnSpan(buttons, 2);
+        this._launchAtLoginBox = AddLaunchAtLoginRow(layout, launchAtLogin);
+        AddSaveAndCancelButtonsRow(layout);
         Controls.Add(layout);
     }
 
@@ -78,6 +58,41 @@ class SettingsWindow : Form
         Show();
         Activate();
         this._apiKeyBox?.Focus();
+    }
+
+    void StyleAsFixedSizeDialog()
+    {
+        FormBorderStyle = FormBorderStyle.FixedDialog;
+        MaximizeBox = false;
+        MinimizeBox = false;
+        ShowInTaskbar = false;
+        AutoSize = true;
+        AutoSizeMode = AutoSizeMode.GrowAndShrink;
+        StartPosition = FormStartPosition.Manual;
+    }
+
+    static CheckBox AddLaunchAtLoginRow(TableLayoutPanel layout, LaunchAtLogin launchAtLogin)
+    {
+        var launchAtLoginBox = new CheckBox { Text = "Launch FZScout when I log in to Windows", AutoSize = true, Checked = launchAtLogin.IsOn };
+        layout.Controls.Add(launchAtLoginBox, 0, 2);
+        layout.SetColumnSpan(launchAtLoginBox, 2);
+        return launchAtLoginBox;
+    }
+
+    void AddSaveAndCancelButtonsRow(TableLayoutPanel layout)
+    {
+        var saveButton = new Button { Text = "Save", AutoSize = true };
+        saveButton.Click += (_, _) => Save();
+        var cancelButton = new Button { Text = "Cancel", AutoSize = true };
+        cancelButton.Click += (_, _) => Close();
+        var buttons = new FlowLayoutPanel { FlowDirection = FlowDirection.RightToLeft, Dock = DockStyle.Fill, AutoSize = true, Margin = new Padding(0, 12, 0, 0) };
+        buttons.Controls.Add(cancelButton);
+        buttons.Controls.Add(saveButton);
+        AcceptButton = saveButton;
+        CancelButton = cancelButton;
+
+        layout.Controls.Add(buttons, 0, 3);
+        layout.SetColumnSpan(buttons, 2);
     }
 
     static void AddApiKeyRows(TableLayoutPanel layout, TextBox apiKeyBox)
