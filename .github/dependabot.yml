@@ -4,6 +4,12 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    groups:
+      # The vpk tool should pack releases with the same version as the Velopack library the app uses.
+      velopack:
+        patterns:
+          - "Velopack"
+          - "vpk"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

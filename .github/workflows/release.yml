@@ -14,7 +14,7 @@ jobs:
         with:
           global-json-file: global.json
       - run: ./build-and-test.cmd
-      - run: dotnet tool install -g vpk
+      - run: dotnet tool restore
       - name: Publish release
         run: ./scripts/release.ps1 -GitHubToken ${{ secrets.GITHUB_TOKEN }}
       - name: Bump to the next version

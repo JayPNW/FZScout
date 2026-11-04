@@ -22,7 +22,7 @@ dotnet publish $project -c Release -o $publish -p:Version=$version -p:IncludeSou
 if ($LASTEXITCODE -ne 0) { throw 'publish failed' }
 
 # No deltas: this app is small enough that full packages are fine, so a leftover local Releases folder can't sneak a delta into a release.
-vpk pack --packId FZScout --packVersion $packVersion --packDir $publish --icon (Join-Path $project 'FZScout.ico') --runtime win-x64 --delta None
+dotnet vpk pack --packId FZScout --packVersion $packVersion --packDir $publish --icon (Join-Path $project 'FZScout.ico') --runtime win-x64 --delta None
 if ($LASTEXITCODE -ne 0) { throw 'pack failed' }
 
 $uploadArgs = @(
@@ -35,5 +35,5 @@ $uploadArgs = @(
     '--targetCommitish', (git rev-parse HEAD))
 if ($Prerelease) { $uploadArgs += '--pre' }
 
-vpk @uploadArgs
+dotnet vpk @uploadArgs
 if ($LASTEXITCODE -ne 0) { throw 'release failed' }
