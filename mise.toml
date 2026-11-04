@@ -1,0 +1,7 @@
+[tools]
+uv = "0.12.10"
+node = "24.22.2"
+"npm:jscpd" = "5.4.2"
+
+[tasks.habit-hooks]
+run = "uvx --from habit-hooks --with git+https://github.com/isidore/HabitHooksCsharp habit-hooks"

@@ -1,0 +1,8 @@
+{
+  "path": ["FZScout", "FZScout.Tests"],
+  "format": ["csharp"],
+  "ignore": ["**/bin/**", "**/obj/**"],
+  "threshold": 0,
+  "minLines": 5,
+  "minTokens": 50
+}

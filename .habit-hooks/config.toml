@@ -1,0 +1,2 @@
+plugins = ["csharp", "generic"]
+files = ["**/*.cs"]
