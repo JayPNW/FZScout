@@ -90,5 +90,68 @@ public class ScoutTests
         Assert.DoesNotContain(this._site.Requests, r => r.StartsWith("POST", StringComparison.Ordinal));
     }
 
+    [Fact]
+    public async Task WaitsForABonusMessageAfterEnteringAZone()
+    {
+        var changes = RecordWaitingForBonusMessageUntilChanges();
+
+        await Handle(0, new EverQuestLogWatcher.ZoneEntered(Bob, Start.UtcDateTime, "", "Befallen"));
+
+        Assert.Equal([Start + CharacterScout.IdleTimeout], changes);
+    }
+
+    [Fact]
+    public async Task StopsWaitingWhenTheBonusIsReported()
+    {
+        await Handle(0, new EverQuestLogWatcher.ZoneEntered(Bob, Start.UtcDateTime, "", "Clan Crushbone"));
+        var changes = RecordWaitingForBonusMessageUntilChanges();
+
+        await Handle(1, new EverQuestLogWatcher.AreaIsSaturatedWithUnstableMagic(Bob, Start.UtcDateTime, "", "multiplying the loot that may be found here"));
+
+        Assert.Equal([null], changes);
+    }
+
+    [Fact]
+    public async Task AKillShortensTheWait()
+    {
+        await Handle(0, new EverQuestLogWatcher.ZoneEntered(Bob, Start.UtcDateTime, "", "Befallen"));
+        var changes = RecordWaitingForBonusMessageUntilChanges();
+
+        await Handle(1, new EverQuestLogWatcher.MobSlainByYou(Bob, Start.UtcDateTime, ""));
+
+        Assert.Equal([Start.AddSeconds(1) + CharacterScout.KillTimeout], changes);
+    }
+
+    [Fact]
+    public async Task WaitsUntilTheLastCharacterStopsWaiting()
+    {
+        var alice = new EverQuestLogWatcher.Character("Alice", "fangbreaker");
+        await Handle(0, new EverQuestLogWatcher.ZoneEntered(Bob, Start.UtcDateTime, "", "Befallen"));
+        var changes = RecordWaitingForBonusMessageUntilChanges();
+
+        await Handle(60, new EverQuestLogWatcher.ZoneEntered(alice, Start.UtcDateTime, "", "Befallen"));
+        await Handle(61, new EverQuestLogWatcher.MobSlainByYou(Bob, Start.UtcDateTime, ""));
+
+        Assert.Equal([Start.AddSeconds(60) + CharacterScout.IdleTimeout], changes);
+    }
+
+    [Fact]
+    public async Task UninterestingEventsDoNotChangeTheWait()
+    {
+        await Handle(0, new EverQuestLogWatcher.ZoneEntered(Bob, Start.UtcDateTime, "", "Befallen"));
+        var changes = RecordWaitingForBonusMessageUntilChanges();
+
+        await Handle(1, new EverQuestLogWatcher.SayChatMessageFromYou(Bob, Start.UtcDateTime, ""));
+
+        Assert.Empty(changes);
+    }
+
+    List<DateTimeOffset?> RecordWaitingForBonusMessageUntilChanges()
+    {
+        var changes = new List<DateTimeOffset?>();
+        this._scout.WaitingForBonusMessageUntilChanged += changes.Add;
+        return changes;
+    }
+
     Task Handle(int seconds, EverQuestLogWatcher.EverQuestLogEvent logEvent) => this._scout.HandleAsync(logEvent, Start.AddSeconds(seconds), Cancel);
 }

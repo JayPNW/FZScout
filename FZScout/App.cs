@@ -1,4 +1,4 @@
-﻿using FZScout.Reporting;
+using FZScout.Reporting;
 using FZScout.Scouting;
 using FZScout.Site;
 
@@ -10,6 +10,12 @@ namespace FZScout;
 /// </summary>
 class App(AppDependencies dependencies)
 {
+    /// <summary>
+    /// Raised with the time the last character stops waiting for a bonus message, or null if none are waiting.
+    /// That time can already have passed, since a wait is only over once the character's next message arrives.
+    /// </summary>
+    public event Action<DateTimeOffset?>? WaitingForBonusMessageUntilChanged;
+
     public AppDependencies Dependencies => dependencies;
 
     public async Task RunAsync()
@@ -30,6 +36,7 @@ class App(AppDependencies dependencies)
 
         var client = Dependencies.FangbreakerZoneClient;
         var scout = new Scout(new ServerListCache(client, Dependencies.Log), Dependencies.Log, new BonusReporter(client, apiKey, Dependencies.Log));
+        scout.WaitingForBonusMessageUntilChanged += waitingUntil => WaitingForBonusMessageUntilChanged?.Invoke(waitingUntil);
         await WatchLogsAndReportBonusesAsync(scout, Dependencies.UserInput.ExitRequested);
     }
 
