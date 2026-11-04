@@ -8,11 +8,11 @@ class TrayApplicationContext : ApplicationContext
 {
     readonly MainWindow _window;
     readonly NotifyIcon _trayIcon;
-    readonly Icon _gemIcon = AppIcon.LoadForTray();
-    readonly Icon _waitingForBonusMessageIcon = AppIcon.LoadWaitingForBonusMessageForTray();
+    readonly Dictionary<StatusIcon, Icon> _trayIcons = Enum.GetValues<StatusIcon>().ToDictionary(statusIcon => statusIcon, AppIcon.LoadForTray);
+    readonly AppStatus _status;
 
-    /// <summary>The scout only notices a deadline passing when the next message arrives, so this puts the gem back on time.</summary>
-    readonly System.Windows.Forms.Timer _showGemWhenWaitingEnds = new();
+    /// <summary>Shows the status again when it changes just because time passes, like waiting for a bonus message ending.</summary>
+    readonly System.Windows.Forms.Timer _showStatusWhenItChangesByItself = new();
 
     readonly TimeProvider _timeProvider;
     bool _hasExplainedHidingToTray;
@@ -30,7 +30,7 @@ class TrayApplicationContext : ApplicationContext
 
         this._trayIcon = new NotifyIcon
         {
-            Icon = this._gemIcon,
+            Icon = this._trayIcons[StatusIcon.Gem],
             Text = "FZScout",
             ContextMenuStrip = menu,
             Visible = true,
@@ -40,8 +40,9 @@ class TrayApplicationContext : ApplicationContext
         app.Dependencies.Log.SuccessWritten += message => ShowToast(message, ToolTipIcon.Info);
         app.Dependencies.Log.ErrorWritten += message => ShowToast(message, ToolTipIcon.Error);
         this._timeProvider = app.Dependencies.TimeProvider;
-        this._showGemWhenWaitingEnds.Tick += (_, _) => ShowGem();
-        app.WaitingForBonusMessageUntilChanged += waitingUntil => this._window.BeginInvoke(() => ShowWaitingForBonusMessageUntil(waitingUntil));
+        this._status = new AppStatus(this._timeProvider);
+        this._showStatusWhenItChangesByItself.Tick += (_, _) => ShowStatus();
+        app.WaitingForBonusMessageUntilChanged += waitingUntil => UpdateStatus(status => status.WaitingForBonusMessageUntil = waitingUntil);
 
         this._window.CreateWithoutShowing();
         this._hasExplainedHidingToTray = true;
@@ -51,7 +52,7 @@ class TrayApplicationContext : ApplicationContext
 
     protected override void ExitThreadCore()
     {
-        this._showGemWhenWaitingEnds.Dispose();
+        this._showStatusWhenItChangesByItself.Dispose();
         this._trayIcon.Visible = false;
         this._trayIcon.Dispose();
         base.ExitThreadCore();
@@ -68,29 +69,27 @@ class TrayApplicationContext : ApplicationContext
         this._trayIcon.ShowBalloonTip(5000, "FZScout is still running", "To exit, right-click this icon and choose Exit.", ToolTipIcon.Info);
     }
 
-    /// <summary>Shows the hourglass until the time given, or the gem if that has passed or is null.</summary>
-    void ShowWaitingForBonusMessageUntil(DateTimeOffset? waitingUntil)
+    /// <summary>Safe to call from any thread.</summary>
+    void UpdateStatus(Action<AppStatus> update)
     {
-        var now = this._timeProvider.GetUtcNow();
-        if (waitingUntil is not { } waitingEnds || waitingEnds <= now)
+        this._window.BeginInvoke(() =>
         {
-            ShowGem();
-            return;
-        }
-
-        var timeUntilWaitingEnds = waitingEnds - now;
-        this._trayIcon.Icon = this._waitingForBonusMessageIcon;
-        this._trayIcon.Text = $"FZScout: waiting until {waitingEnds.ToLocalTime():HH:mm:ss} for a bonus message";
-        this._showGemWhenWaitingEnds.Stop();
-        this._showGemWhenWaitingEnds.Interval = (int)Math.Ceiling(timeUntilWaitingEnds.TotalMilliseconds);
-        this._showGemWhenWaitingEnds.Start();
+            update(this._status);
+            ShowStatus();
+        });
     }
 
-    void ShowGem()
+    void ShowStatus()
     {
-        this._showGemWhenWaitingEnds.Stop();
-        this._trayIcon.Icon = this._gemIcon;
-        this._trayIcon.Text = "FZScout";
+        this._trayIcon.Icon = this._trayIcons[this._status.Icon];
+        this._trayIcon.Text = this._status.Description;
+        this._showStatusWhenItChangesByItself.Stop();
+        if (this._status.ChangesByItselfAt is { } changesAt)
+        {
+            var timeUntilChange = changesAt - this._timeProvider.GetUtcNow();
+            this._showStatusWhenItChangesByItself.Interval = Math.Max(1, (int)Math.Ceiling(timeUntilChange.TotalMilliseconds));
+            this._showStatusWhenItChangesByItself.Start();
+        }
     }
 
     /// <summary>
