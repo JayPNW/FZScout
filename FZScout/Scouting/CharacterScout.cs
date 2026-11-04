@@ -74,7 +74,7 @@ class CharacterScout(Character character, Func<ScoutAction, CancellationToken, T
         EverQuestLogWatcher.MobSlainByYou => OnKill(now),
         EverQuestLogWatcher.SlainByPet e when e.OwnerName == character.Name => OnKill(now),
         EverQuestLogWatcher.SlainByWarder e when e.OwnerName == character.Name => OnKill(now),
-        EverQuestLogWatcher.AreaIsSaturatedWithUnstableMagic e => BonusKey.FromAnnouncementText(e.Bonus) is { } bonus ? OnBonus(bonus, lists) : null,
+        EverQuestLogWatcher.AreaIsSaturatedWithUnstableMagic e => OnBonus(e.Bonus, lists),
         EverQuestLogWatcher.DailyResetLogEvent => OnDailyReset(now),
         EverQuestLogWatcher.CampingCountdownProgressed => OnCamping(),
         _ => null,
@@ -126,8 +126,13 @@ class CharacterScout(Character character, Func<ScoutAction, CancellationToken, T
         return null;
     }
 
-    ScoutAction? OnBonus(BonusKey bonus, ServerLists? lists)
+    ScoutAction? OnBonus(string announcementText, ServerLists? lists)
     {
+        if (BonusKey.FromAnnouncementText(announcementText) is not { } bonus)
+        {
+            return null;
+        }
+
         // An unknown zone that never gets a bonus, like The Plane of Knowledge, is fine. One that does needs adding.
         if (CurrentZone is UnknownZone unknown)
         {
