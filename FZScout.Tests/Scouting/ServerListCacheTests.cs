@@ -1,8 +1,9 @@
 ﻿using System.Net;
-using FZScout.Reporting;
+using FZScout.Scouting;
+using FZScout.Tests.Reporting;
 using Microsoft.Extensions.Time.Testing;
 
-namespace FZScout.Tests.Reporting;
+namespace FZScout.Tests.Scouting;
 
 public class ServerListCacheTests
 {

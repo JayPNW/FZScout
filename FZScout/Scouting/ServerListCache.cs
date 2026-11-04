@@ -1,7 +1,6 @@
-﻿using FZScout.Scouting;
-using FZScout.Site;
+﻿using FZScout.Site;
 
-namespace FZScout.Reporting;
+namespace FZScout.Scouting;
 
 /// <summary>
 /// Each server's <c>types</c> and <c>zones</c> lists, loaded when first needed.

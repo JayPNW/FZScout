@@ -1,4 +1,5 @@
 ﻿using FZScout.Reporting;
+using FZScout.Scouting;
 using FZScout.Site;
 using FZScout.Tests.Reporting;
 using Microsoft.Extensions.Time.Testing;
