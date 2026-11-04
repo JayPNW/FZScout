@@ -113,7 +113,7 @@ class CharacterScout(Character character, ConsoleReporter log, BonusReporter bon
         if (IsReportable(CurrentZone) && !this._alreadyReported && this._killDeadline is null)
         {
             this._killDeadline = now + KillTimeout;
-            LogWaitingUntil(this._killDeadline.Value);
+            log.Info($"{character} made a kill, waiting until {this._killDeadline.Value.ToLocalTime():HH:mm:ss} for a bonus message.");
         }
 
         return Task.CompletedTask;
@@ -165,7 +165,8 @@ class CharacterScout(Character character, ConsoleReporter log, BonusReporter bon
 
         this._alreadyReported = false;
         this._killDeadline = null;
-        LogWaitingUntil(SetIdleDeadline(now));
+        var deadline = SetIdleDeadline(now);
+        log.Info($"{character} saw the daily reset, waiting until {deadline.ToLocalTime():HH:mm:ss} for a bonus message.");
         return Task.CompletedTask;
     }
 
@@ -174,11 +175,6 @@ class CharacterScout(Character character, ConsoleReporter log, BonusReporter bon
     {
         this._idleDeadline = null;
         return Task.CompletedTask;
-    }
-
-    void LogWaitingUntil(DateTimeOffset deadline)
-    {
-        log.Info($"{character} waiting until {deadline.ToLocalTime():HH:mm:ss} for a bonus message.");
     }
 
     DateTimeOffset SetIdleDeadline(DateTimeOffset now)
