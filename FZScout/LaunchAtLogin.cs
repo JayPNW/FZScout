@@ -16,13 +16,13 @@ class LaunchAtLogin(string runKeyPath = @"Software\Microsoft\Windows\CurrentVers
         }
     }
 
-    public void Enable(string exePath)
+    public void AddToStartupApps(string exePath)
     {
         using var key = Registry.CurrentUser.CreateSubKey(runKeyPath);
         key.SetValue(ValueName, $"\"{exePath}\"");
     }
 
-    public void Disable()
+    public void RemoveFromStartupApps()
     {
         using var key = Registry.CurrentUser.OpenSubKey(runKeyPath, writable: true);
         key?.DeleteValue(ValueName, throwOnMissingValue: false);

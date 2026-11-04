@@ -16,27 +16,27 @@ public class LaunchAtLoginTests : IDisposable
     public void Dispose() => Registry.CurrentUser.DeleteSubKeyTree(this._runKeyPath, throwOnMissingSubKey: false);
 
     [Fact]
-    public void EnableRunsTheExeQuoted()
+    public void AddToStartupAppsRunsTheExeQuoted()
     {
-        this._launchAtLogin.Enable(@"C:\Users\someone\AppData\Local\FZScout\current\FZScout.exe");
+        this._launchAtLogin.AddToStartupApps(@"C:\Users\someone\AppData\Local\FZScout\current\FZScout.exe");
 
         Assert.Equal(@"""C:\Users\someone\AppData\Local\FZScout\current\FZScout.exe""", this._launchAtLogin.Command);
     }
 
     [Fact]
-    public void DisableRemovesIt()
+    public void RemoveFromStartupAppsRemovesIt()
     {
-        this._launchAtLogin.Enable(@"C:\FZScout.exe");
+        this._launchAtLogin.AddToStartupApps(@"C:\FZScout.exe");
 
-        this._launchAtLogin.Disable();
+        this._launchAtLogin.RemoveFromStartupApps();
 
         Assert.Null(this._launchAtLogin.Command);
     }
 
     [Fact]
-    public void DisableWhenNeverEnabledDoesNothing()
+    public void RemoveFromStartupAppsWhenNeverAddedDoesNothing()
     {
-        this._launchAtLogin.Disable();
+        this._launchAtLogin.RemoveFromStartupApps();
 
         Assert.Null(this._launchAtLogin.Command);
     }

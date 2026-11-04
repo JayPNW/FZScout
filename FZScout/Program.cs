@@ -10,9 +10,9 @@ static class Program
     static void Main()
     {
         VelopackApp.Build()
-            .OnAfterInstallFastCallback(_ => new LaunchAtLogin().Enable(Environment.ProcessPath!))
-            .OnAfterUpdateFastCallback(_ => new LaunchAtLogin().Enable(Environment.ProcessPath!))
-            .OnBeforeUninstallFastCallback(_ => new LaunchAtLogin().Disable())
+            .OnAfterInstallFastCallback(_ => new LaunchAtLogin().AddToStartupApps(Environment.ProcessPath!))
+            .OnAfterUpdateFastCallback(_ => new LaunchAtLogin().AddToStartupApps(Environment.ProcessPath!))
+            .OnBeforeUninstallFastCallback(_ => new LaunchAtLogin().RemoveFromStartupApps())
             .Run();
         var pendingUpdateDownload = Task.Run(() => new GitHubUpdateChecker().DownloadLatestAndApplyOnDispose());
 
