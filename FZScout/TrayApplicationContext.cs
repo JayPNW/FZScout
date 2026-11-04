@@ -18,13 +18,16 @@ class TrayApplicationContext : ApplicationContext
     readonly AppDependencies _dependencies;
     readonly ShowToastNotifications _showToastNotifications = new();
     bool _hasExplainedHidingToTray;
+    readonly GitHubUpdateChecker _updateChecker;
     SettingsWindow? _openSettingsWindow;
+    AboutWindow? _openAboutWindow;
 
     /// <summary>The window isn't the context's main form, because Application.Run would show it.</summary>
-    public TrayApplicationContext(MainWindow window, App app)
+    public TrayApplicationContext(MainWindow window, App app, GitHubUpdateChecker updateChecker)
     {
         this._window = window;
         this._dependencies = app.Dependencies;
+        this._updateChecker = updateChecker;
         this._window.FormClosed += (_, _) => ExitThread();
         this._trayIcon = CreateTrayIconWithMenu();
         this._window.HiddenToTray += ExplainHidingToTrayTheFirstTime;
@@ -43,6 +46,7 @@ class TrayApplicationContext : ApplicationContext
         var showItem = menu.Items.Add("Show FZScout", null, (_, _) => this._window.ShowAndActivate());
         showItem.Font = new Font(showItem.Font, FontStyle.Bold);
         menu.Items.Add("Settings...", null, (_, _) => ShowSettings());
+        menu.Items.Add("About FZScout...", null, (_, _) => ShowAbout());
         menu.Items.Add("Exit", null, (_, _) => this._window.RequestExit());
 
         var trayIcon = new NotifyIcon
@@ -111,6 +115,22 @@ class TrayApplicationContext : ApplicationContext
         settings.FormClosed += (_, _) => this._openSettingsWindow = null;
         this._openSettingsWindow = settings;
         settings.ShowCenteredOver(this._window);
+    }
+
+    /// <summary>Brings an already open About window to the front, instead of opening a second one.</summary>
+    void ShowAbout()
+    {
+        this._window.ShowAndActivate();
+        if (this._openAboutWindow is not null)
+        {
+            this._openAboutWindow.Activate();
+            return;
+        }
+
+        var about = new AboutWindow(this._dependencies.GetVersion(), this._updateChecker);
+        about.FormClosed += (_, _) => this._openAboutWindow = null;
+        this._openAboutWindow = about;
+        about.ShowCenteredOver(this._window);
     }
 
     protected override void ExitThreadCore()

@@ -14,7 +14,7 @@ static class Program
 
         ApplicationConfiguration.Initialize();
         using var window = new MainWindow();
-        Application.Run(new TrayApplicationContext(window, CreateApp(window)));
+        Application.Run(new TrayApplicationContext(window, CreateApp(window), updates.UpdateChecker));
     }
 
     /// <summary>Returns without doing anything on a normal launch, when Velopack hasn't started us to handle one of these.</summary>

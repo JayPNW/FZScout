@@ -6,20 +6,22 @@ namespace FZScout;
 /// </summary>
 class WatchForNewUpdates : IDisposable
 {
-    readonly GitHubUpdateChecker _updateChecker = new();
     readonly CancellationTokenSource _stopCheckingForUpdates = new();
     readonly Task _checkingForUpdates;
 
     public WatchForNewUpdates(TimeProvider timeProvider)
     {
-        this._checkingForUpdates = Task.Run(() => this._updateChecker.DownloadNewestReleaseNowAndDailyUntilCancelled(timeProvider, this._stopCheckingForUpdates.Token));
+        this._checkingForUpdates = Task.Run(() => this.UpdateChecker.DownloadNewestReleaseNowAndDailyUntilCancelled(timeProvider, this._stopCheckingForUpdates.Token));
     }
+
+    /// <summary>For checking right away, on top of the daily checks. Whatever it downloads also gets installed after exit.</summary>
+    public GitHubUpdateChecker UpdateChecker { get; } = new();
 
     public void Dispose()
     {
         this._stopCheckingForUpdates.Cancel();
         this._checkingForUpdates.GetAwaiter().GetResult();
         this._stopCheckingForUpdates.Dispose();
-        this._updateChecker.InstallDownloadedUpdateAfterExit();
+        this.UpdateChecker.InstallDownloadedUpdateAfterExit();
     }
 }
