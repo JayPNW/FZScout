@@ -1,4 +1,4 @@
-namespace FZScout;
+﻿namespace FZScout;
 
 /// <summary>What the app is doing, as its icon and tooltip show it. Some of that changes just because time passes.</summary>
 class AppStatus(TimeProvider timeProvider)
