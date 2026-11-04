@@ -13,12 +13,12 @@ class FakeUpdateSource(VelopackAssetFeed feed, Exception? exception = null) : IU
 
     public Task<VelopackAssetFeed> GetReleaseFeed(IVelopackLogger logger, string? appId, string channel, Guid? stagingId = null, VelopackAsset? latestLocalRelease = null)
     {
-        if (this.ExceptionToThrowWhenChecked is not null)
+        if (ExceptionToThrowWhenChecked is not null)
         {
-            throw this.ExceptionToThrowWhenChecked;
+            throw ExceptionToThrowWhenChecked;
         }
 
-        return Task.FromResult(this.Feed);
+        return Task.FromResult(Feed);
     }
 
     public Task DownloadReleaseEntry(IVelopackLogger logger, VelopackAsset releaseEntry, string localFile, Action<int> progress, CancellationToken cancelToken = default)

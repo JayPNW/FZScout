@@ -1,3 +1,3 @@
-namespace FZScout;
+﻿namespace FZScout;
 
 record CouldNotCheckForUpdates(string Problem) : UpdateCheckResult;

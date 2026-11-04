@@ -20,7 +20,7 @@ class GitHubUpdateChecker(IUpdateSource updateSource, IVelopackLocator? locator 
     {
     }
 
-    public SemanticVersion? DownloadedVersionToInstallAfterExit => this.DownloadedUpdateToInstallAfterExit?.TargetFullRelease.Version;
+    public SemanticVersion? DownloadedVersionToInstallAfterExit => DownloadedUpdateToInstallAfterExit?.TargetFullRelease.Version;
 
     UpdateInfo? DownloadedUpdateToInstallAfterExit { get; set; }
 
@@ -80,7 +80,7 @@ class GitHubUpdateChecker(IUpdateSource updateSource, IVelopackLocator? locator 
             }
 
             await this._updateManager.DownloadUpdatesAsync(update, cancelToken: cancellationToken);
-            this.DownloadedUpdateToInstallAfterExit = update;
+            DownloadedUpdateToInstallAfterExit = update;
             return new DownloadedNewerRelease(update.TargetFullRelease.Version);
         }
         catch (Exception exception) when (!cancellationToken.IsCancellationRequested)
@@ -92,7 +92,7 @@ class GitHubUpdateChecker(IUpdateSource updateSource, IVelopackLocator? locator 
     /// <summary>Call as the app exits; the installer waits for this process to end before replacing it.</summary>
     public void InstallDownloadedUpdateAfterExit()
     {
-        if (this.DownloadedUpdateToInstallAfterExit is { } update)
+        if (DownloadedUpdateToInstallAfterExit is { } update)
         {
             this._updateManager.WaitExitThenApplyUpdates(update, restart: false);
         }

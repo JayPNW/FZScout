@@ -1,4 +1,4 @@
-namespace FZScout;
+﻿namespace FZScout;
 
 /// <summary>A dialog the user can't resize, which opens over another window without blocking it.</summary>
 class FixedSizeDialog : Form

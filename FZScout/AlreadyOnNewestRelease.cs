@@ -1,3 +1,3 @@
-namespace FZScout;
+﻿namespace FZScout;
 
 record AlreadyOnNewestRelease : UpdateCheckResult;
