@@ -77,7 +77,7 @@ class CharacterScout(Character character)
         _ => [],
     };
 
-    /// <summary>Once the zones list loads, works out which zone an <see cref="UnresolvedZone"/> is. Its timers keep running.</summary>
+    /// <summary>Once the zones list loads, works out which zone an <see cref="UnresolvedZone"/> is. Its deadlines still stand.</summary>
     void ResolveZone(ServerLists? lists)
     {
         if (CurrentZone is not UnresolvedZone unresolved || lists is null)
@@ -101,7 +101,7 @@ class CharacterScout(Character character)
 
         if (IsReportable(CurrentZone))
         {
-            StartIdleTimer(now);
+            SetIdleDeadline(now);
         }
 
         if (this._idleDeadline is { } deadline)
@@ -161,7 +161,7 @@ class CharacterScout(Character character)
 
         this._alreadyReported = false;
         this._killDeadline = null;
-        StartIdleTimer(now);
+        SetIdleDeadline(now);
         return [WaitingUntil(character, this._idleDeadline!.Value)];
     }
 
@@ -177,7 +177,7 @@ class CharacterScout(Character character)
         return new($"{character} waiting until {deadline.ToLocalTime():HH:mm:ss} for a bonus message.");
     }
 
-    void StartIdleTimer(DateTimeOffset now)
+    void SetIdleDeadline(DateTimeOffset now)
     {
         this._idleDeadline = now + IdleTimeout;
     }
