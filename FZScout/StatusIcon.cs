@@ -6,5 +6,7 @@ enum StatusIcon
     NotScouting,
     Stopped,
     Gem,
+    GemAfterProblem,
     WaitingForBonusMessage,
+    WaitingForBonusMessageAfterProblem,
 }

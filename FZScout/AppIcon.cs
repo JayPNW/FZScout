@@ -25,7 +25,9 @@ static class AppIcon
         StatusIcon.NotScouting => "FZScoutNotScouting.ico",
         StatusIcon.Stopped => "FZScoutStopped.ico",
         StatusIcon.Gem => "FZScout.ico",
+        StatusIcon.GemAfterProblem => "FZScoutProblem.ico",
         StatusIcon.WaitingForBonusMessage => "FZScoutWaiting.ico",
+        StatusIcon.WaitingForBonusMessageAfterProblem => "FZScoutWaitingProblem.ico",
         _ => throw new ArgumentOutOfRangeException(nameof(statusIcon), statusIcon, null),
     };
 }

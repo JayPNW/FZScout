@@ -15,6 +15,9 @@ class AppStatus(TimeProvider timeProvider)
     /// </summary>
     public DateTimeOffset? WaitingForBonusMessageUntil { get; set; }
 
+    /// <summary>Whether a problem was logged since scouting started or the last success, like a bonus that couldn't be reported.</summary>
+    public bool HadProblemSinceLastSuccess { get; set; }
+
     public StatusIcon Icon
     {
         get
@@ -29,9 +32,19 @@ class AppStatus(TimeProvider timeProvider)
                 return StatusIcon.NotScouting;
             }
 
+            if (IsWaitingForBonusMessage && HadProblemSinceLastSuccess)
+            {
+                return StatusIcon.WaitingForBonusMessageAfterProblem;
+            }
+
             if (IsWaitingForBonusMessage)
             {
                 return StatusIcon.WaitingForBonusMessage;
+            }
+
+            if (HadProblemSinceLastSuccess)
+            {
+                return StatusIcon.GemAfterProblem;
             }
 
             return StatusIcon.Gem;
@@ -53,9 +66,19 @@ class AppStatus(TimeProvider timeProvider)
                 return "FZScout: not scouting yet";
             }
 
+            if (IsWaitingForBonusMessage && HadProblemSinceLastSuccess)
+            {
+                return $"FZScout: {WaitingForBonusMessageDescription}, and {ProblemDescription}";
+            }
+
             if (IsWaitingForBonusMessage)
             {
-                return $"FZScout: waiting until {ToLocalTime(WaitingForBonusMessageUntil!.Value):HH:mm:ss} for a bonus message";
+                return $"FZScout: {WaitingForBonusMessageDescription}";
+            }
+
+            if (HadProblemSinceLastSuccess)
+            {
+                return $"FZScout: {ProblemDescription}";
             }
 
             return "FZScout";
@@ -81,7 +104,11 @@ class AppStatus(TimeProvider timeProvider)
         }
     }
 
+    const string ProblemDescription = "something went wrong; its window shows what";
+
     bool IsWaitingForBonusMessage => WaitingForBonusMessageUntil > timeProvider.GetUtcNow();
+
+    string WaitingForBonusMessageDescription => $"waiting until {ToLocalTime(WaitingForBonusMessageUntil!.Value):HH:mm:ss} for a bonus message";
 
     DateTimeOffset ToLocalTime(DateTimeOffset time) => TimeZoneInfo.ConvertTime(time, timeProvider.LocalTimeZone);
 }

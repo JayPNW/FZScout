@@ -1,7 +1,9 @@
 # Draws FZScout's icons at every size Windows asks for: an emerald gem into FZScout/FZScout.ico,
 # an emerald hourglass, for while waiting for a bonus message, into FZScout/FZScoutWaiting.ico,
 # a grey gem, for before scouting starts, into FZScout/FZScoutNotScouting.ico,
-# and a grey gem with a red problem badge, for once the app has stopped on its own, into FZScout/FZScoutStopped.ico.
+# a grey gem with a red problem badge, for once the app has stopped on its own, into FZScout/FZScoutStopped.ico,
+# and the gem and hourglass with that badge, for after a problem until the next success, into FZScout/FZScoutProblem.ico
+# and FZScout/FZScoutWaitingProblem.ico.
 # Each size is drawn separately rather than scaled, so the small ones stay crisp.
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
@@ -153,3 +155,5 @@ WriteIcon $gem 'FZScout.ico'
 WriteIcon $hourglass 'FZScoutWaiting.ico'
 WriteIcon (Greyed $gem) 'FZScoutNotScouting.ico'
 WriteIcon (WithProblemBadge (Greyed $gem)) 'FZScoutStopped.ico'
+WriteIcon (WithProblemBadge $gem) 'FZScoutProblem.ico'
+WriteIcon (WithProblemBadge $hourglass) 'FZScoutWaitingProblem.ico'

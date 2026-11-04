@@ -39,12 +39,14 @@ class TrayApplicationContext : ApplicationContext
         this._window.HiddenToTray += ExplainHidingToTrayTheFirstTime;
         app.Dependencies.Log.SuccessWritten += message => ShowToast(message, ToolTipIcon.Info);
         app.Dependencies.Log.ErrorWritten += message => ShowToast(message, ToolTipIcon.Error);
+        app.Dependencies.Log.SuccessWritten += _ => UpdateStatus(status => status.HadProblemSinceLastSuccess = false);
+        app.Dependencies.Log.ErrorWritten += _ => UpdateStatus(status => status.HadProblemSinceLastSuccess = true);
         this._timeProvider = app.Dependencies.TimeProvider;
         this._status = new AppStatus(this._timeProvider);
         this._showStatusWhenItChangesByItself.Tick += (_, _) => ShowStatus();
         ShowStatus();
         app.WaitingForBonusMessageUntilChanged += waitingUntil => UpdateStatus(status => status.WaitingForBonusMessageUntil = waitingUntil);
-        app.ScoutingStarted += () => UpdateStatus(status => status.IsScouting = true);
+        app.ScoutingStarted += () => UpdateStatus(StartScouting);
 
         this._window.CreateWithoutShowing();
         this._hasExplainedHidingToTray = true;
@@ -79,6 +81,13 @@ class TrayApplicationContext : ApplicationContext
             update(this._status);
             ShowStatus();
         });
+    }
+
+    /// <summary>Any problems so far were with getting started, like a mistyped API key, and are over now.</summary>
+    static void StartScouting(AppStatus status)
+    {
+        status.IsScouting = true;
+        status.HadProblemSinceLastSuccess = false;
     }
 
     void ShowStatus()
