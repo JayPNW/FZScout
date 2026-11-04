@@ -31,9 +31,9 @@ class SettingsWindow : Form
         StyleAsFixedSizeDialog();
 
         var layout = new TableLayoutPanel { AutoSize = true, ColumnCount = 2, Padding = new Padding(12) };
-        this._apiKeyBox = new TextBox { Width = 400, UseSystemPasswordChar = true, Text = apiKeyStore.Load()?.Value ?? "" };
-        AddApiKeyRows(layout, this._apiKeyBox);
-        this._apiKeyProblem = new Label { AutoSize = true, MaximumSize = new Size(400, 0), ForeColor = Color.Firebrick, Visible = false };
+        this._apiKeyBox = new TextBox { Anchor = AnchorStyles.Left | AnchorStyles.Right, UseSystemPasswordChar = true, Text = apiKeyStore.Load()?.Value ?? "" };
+        var help = AddApiKeyRows(layout, this._apiKeyBox);
+        this._apiKeyProblem = new Label { AutoSize = true, MaximumSize = new Size(help.PreferredSize.Width, 0), ForeColor = Color.Firebrick, Visible = false };
         layout.Controls.Add(this._apiKeyProblem, 1, 2);
         this._launchAtLoginBox = AddLaunchAtLoginRow(layout, launchAtLogin);
         this._showToastNotificationsBox = AddShowToastNotificationsRow(layout, showToastNotifications);
@@ -74,7 +74,8 @@ class SettingsWindow : Form
 
     void AllowSavingOnlyWithAnApiKey() => this._saveButton.Enabled = ApiKeyBoxText.Length > 0;
 
-    static void AddApiKeyRows(TableLayoutPanel layout, TextBox apiKeyBox)
+    /// <returns>The help line, whose width sets how wide the API key column is.</returns>
+    static LinkLabel AddApiKeyRows(TableLayoutPanel layout, TextBox apiKeyBox)
     {
         var apiKeyLabel = new Label { Text = "API key:", Anchor = AnchorStyles.Left, AutoSize = true };
 
@@ -87,6 +88,7 @@ class SettingsWindow : Form
         layout.Controls.Add(apiKeyLabel, 0, 0);
         layout.Controls.Add(apiKeyBox, 1, 0);
         layout.Controls.Add(help, 1, 1);
+        return help;
     }
 
     static CheckBox AddLaunchAtLoginRow(TableLayoutPanel layout, LaunchAtLogin launchAtLogin)
