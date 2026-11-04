@@ -79,12 +79,12 @@ class TrayApplicationContext : ApplicationContext
         this._hasExplainedHidingToTray = true;
         if (this._window.CanUserReachTrayIcon())
         {
-            this._trayIcon.ShowBalloonTip(5000, "FZScout is running", "Double-click this icon to see the log. To exit, right-click it and choose Exit.", ToolTipIcon.Info);
+            ShowBalloonTip("FZScout is running", "Double-click this icon to see the log. To exit, right-click it and choose Exit.", ToolTipIcon.Info);
             return;
         }
 
         this._window.ShowMinimizedOnTaskbar();
-        this._trayIcon.ShowBalloonTip(5000, "FZScout is running", "Windows is hiding its tray icon, so it stays on the taskbar. To show the icon, go to Settings > Personalization > Taskbar > Other system tray icons.", ToolTipIcon.Info);
+        ShowBalloonTip("FZScout is running", "Windows is hiding its tray icon, so it stays on the taskbar. To show the icon, go to Settings > Personalization > Taskbar > Other system tray icons.", ToolTipIcon.Info);
     }
 
     void ShowSettingsIfThereIsNoApiKey()
@@ -128,7 +128,7 @@ class TrayApplicationContext : ApplicationContext
         }
 
         this._hasExplainedHidingToTray = true;
-        this._trayIcon.ShowBalloonTip(5000, "FZScout is still running", "To exit, right-click this icon and choose Exit.", ToolTipIcon.Info);
+        ShowBalloonTip("FZScout is still running", "To exit, right-click this icon and choose Exit.", ToolTipIcon.Info);
     }
 
     /// <summary>Safe to call from any thread.</summary>
@@ -161,7 +161,12 @@ class TrayApplicationContext : ApplicationContext
     void ShowToast(string message, ToolTipIcon icon)
     {
         var firstLine = message.Split('\n')[0].TrimEnd('\r');
-        this._window.BeginInvoke(() => this._trayIcon.ShowBalloonTip(5000, "FZScout", firstLine, icon));
+        this._window.BeginInvoke(() => ShowBalloonTip("FZScout", firstLine, icon));
+    }
+
+    void ShowBalloonTip(string title, string text, ToolTipIcon icon)
+    {
+        this._trayIcon.ShowBalloonTip(5000, title, text, icon);
     }
 
     /// <summary>Runs off the UI thread, so watching logs never makes the window unresponsive.</summary>
