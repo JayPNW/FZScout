@@ -27,10 +27,7 @@ class TrayApplicationContext : ApplicationContext
         ShowLogSuccessesAndErrorsInToastsAndStatus(app.Dependencies.Log);
         this._timeProvider = app.Dependencies.TimeProvider;
         this._status = new AppStatus(this._timeProvider);
-        this._showStatusWhenItChangesByItself.Tick += (_, _) => ShowStatus();
-        ShowStatus();
-        app.WaitingForBonusMessageUntilChanged += waitingUntil => UpdateStatus(status => status.WaitingForBonusMessageUntil = waitingUntil);
-        app.ScoutingStarted += () => UpdateStatus(StartScouting);
+        ShowStatusNowAndWheneverItChanges(app);
         StartInTrayOrOnTaskbarAndSayWhere();
         RunAppThenStop(app);
     }
@@ -60,6 +57,14 @@ class TrayApplicationContext : ApplicationContext
         log.ErrorWritten += message => ShowToast(message, ToolTipIcon.Error);
         log.SuccessWritten += _ => UpdateStatus(status => status.HadProblemSinceLastSuccess = false);
         log.ErrorWritten += _ => UpdateStatus(status => status.HadProblemSinceLastSuccess = true);
+    }
+
+    void ShowStatusNowAndWheneverItChanges(App app)
+    {
+        this._showStatusWhenItChangesByItself.Tick += (_, _) => ShowStatus();
+        ShowStatus();
+        app.WaitingForBonusMessageUntilChanged += waitingUntil => UpdateStatus(status => status.WaitingForBonusMessageUntil = waitingUntil);
+        app.ScoutingStarted += () => UpdateStatus(StartScouting);
     }
 
     void StartInTrayOrOnTaskbarAndSayWhere()
