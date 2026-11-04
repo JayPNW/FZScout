@@ -27,6 +27,7 @@ class TrayApplicationContext : ApplicationContext
         var menu = new ContextMenuStrip();
         var showItem = menu.Items.Add("Show FZScout", null, (_, _) => this._window.ShowAndActivate());
         showItem.Font = new Font(showItem.Font, FontStyle.Bold);
+        menu.Items.Add("Settings...", null, (_, _) => this._window.ShowSettings());
         menu.Items.Add("Exit", null, (_, _) => this._window.RequestExit());
 
         this._trayIcon = new NotifyIcon
