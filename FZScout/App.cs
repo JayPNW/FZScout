@@ -8,17 +8,9 @@ namespace FZScout;
 /// The whole app, wired up from everything it needs from outside: the clock, the console, the sites, and so on.
 /// Tests pass in-memory versions of those.
 /// </summary>
-class App
+class App(AppDependencies dependencies)
 {
-    readonly ApiKeyPrompt _apiKeyPrompt;
-
-    public App(AppDependencies dependencies)
-    {
-        Dependencies = dependencies;
-        this._apiKeyPrompt = new ApiKeyPrompt(dependencies.FangbreakerZoneClient, dependencies.ApiKeyStore, dependencies.Log, dependencies.UserInput.ReadApiKeyAsync);
-    }
-
-    public AppDependencies Dependencies { get; }
+    public AppDependencies Dependencies => dependencies;
 
     public async Task RunAsync()
     {
@@ -46,7 +38,8 @@ class App
     {
         try
         {
-            return await this._apiKeyPrompt.GetAcceptedApiKeyAsync(Dependencies.UserInput.ExitRequested);
+            var apiKeyPrompt = new ApiKeyPrompt(Dependencies.FangbreakerZoneClient, Dependencies.ApiKeyStore, Dependencies.Log, Dependencies.UserInput.ReadApiKeyAsync);
+            return await apiKeyPrompt.GetAcceptedApiKeyAsync(Dependencies.UserInput.ExitRequested);
         }
         catch (OperationCanceledException) when (Dependencies.UserInput.ExitRequested.IsCancellationRequested)
         {
