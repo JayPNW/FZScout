@@ -8,7 +8,6 @@ $ErrorActionPreference = 'Stop'
 $root = Join-Path $PSScriptRoot '..'
 $project = Join-Path $root 'FZScout'
 $publish = Join-Path $root 'publish'
-$releases = Join-Path $root 'releases'
 $repoUrl = 'https://github.com/JayPNW/FZScout'
 
 $version = dotnet msbuild $project -getProperty:Version
@@ -23,14 +22,13 @@ dotnet publish $project -c Release -o $publish -p:Version=$version -p:IncludeSou
 if ($LASTEXITCODE -ne 0) { throw 'publish failed' }
 
 # No deltas: there is nothing to diff against on the first Velopack release, and this app is small enough that full packages are fine.
-vpk pack --packId FZScout --packVersion $packVersion --packDir $publish --mainExe FZScout.exe --icon (Join-Path $project 'FZScout.ico') --runtime win-x64 --outputDir $releases --delta None
+vpk pack --packId FZScout --packVersion $packVersion --packDir $publish --icon (Join-Path $project 'FZScout.ico') --runtime win-x64 --delta None
 if ($LASTEXITCODE -ne 0) { throw 'pack failed' }
 
 $uploadArgs = @(
     'upload', 'github',
     '--repoUrl', $repoUrl,
     '--token', $GitHubToken,
-    '--outputDir', $releases,
     '--publish',
     '--releaseName', "v$version",
     '--tag', "v$version",
