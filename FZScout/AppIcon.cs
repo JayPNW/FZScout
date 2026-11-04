@@ -1,4 +1,4 @@
-namespace FZScout;
+﻿namespace FZScout;
 
 /// <summary>FZScout's emerald gem, drawn by scripts/draw-icon.ps1.</summary>
 static class AppIcon
