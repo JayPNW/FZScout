@@ -1,4 +1,4 @@
-namespace FZScout.Tests.Scouting;
+﻿namespace FZScout.Tests.Scouting;
 
 /// <summary>When <c>none</c> is reported. See the Timing section of InternalDocumentation/SPEC.md.</summary>
 public class CharacterScoutTimingTests : CharacterScoutTestFixture

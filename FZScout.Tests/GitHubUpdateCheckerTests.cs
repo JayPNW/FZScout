@@ -1,4 +1,4 @@
-using Velopack;
+﻿using Velopack;
 using Velopack.Locators;
 using Velopack.Logging;
 

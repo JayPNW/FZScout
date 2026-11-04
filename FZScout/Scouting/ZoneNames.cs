@@ -1,4 +1,4 @@
-namespace FZScout.Scouting;
+﻿namespace FZScout.Scouting;
 
 /// <summary>Turns the zone name in the log into the site's zone name. See InternalDocumentation/Zones.md.</summary>
 static class ZoneNames

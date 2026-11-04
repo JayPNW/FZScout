@@ -1,4 +1,4 @@
-using FZScout.Scouting;
+﻿using FZScout.Scouting;
 
 namespace FZScout.Tests.Scouting;
 

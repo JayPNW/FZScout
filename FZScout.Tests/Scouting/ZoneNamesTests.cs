@@ -1,4 +1,4 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using FZScout.Scouting;
 
 namespace FZScout.Tests.Scouting;
