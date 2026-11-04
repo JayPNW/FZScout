@@ -3,7 +3,7 @@
 namespace FZScout.Reporting;
 
 /// <summary>Sends the scouts' reports to the site, following the Reporting section of InternalDocumentation/SPEC.md.</summary>
-class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ApiKey apiKey, ConsoleReporter log)
+class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ApiKey apiKey, Log log)
 {
     public Task ReportBonusAsync(BonusReport report, CancellationToken cancellationToken = default)
     {

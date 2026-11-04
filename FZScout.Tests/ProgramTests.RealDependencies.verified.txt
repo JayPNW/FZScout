@@ -2,8 +2,8 @@
   ApiKeyStore: WindowsCredentialManagerApiKeyStore,
   FangbreakerZoneClient: FangbreakerZoneClient,
   GetVersion: Program.GetVersion,
-  Log: ConsoleReporter,
+  Log: Log,
   TimeProvider: SystemTimeProvider,
   TryClaimSingleInstance: SingleInstance.TryClaim,
-  UserInput: ConsoleUserInput
+  UserInput: MainWindow
 }

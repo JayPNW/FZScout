@@ -6,7 +6,8 @@ public class ProgramTests
     [Fact]
     public Task RealDependencies()
     {
-        var dependencies = Program.CreateApp().Dependencies;
+        using var window = new MainWindow();
+        var dependencies = Program.CreateApp(window).Dependencies;
 
         var description = typeof(AppDependencies)
             .GetProperties()

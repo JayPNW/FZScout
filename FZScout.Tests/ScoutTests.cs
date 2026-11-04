@@ -19,7 +19,7 @@ public class ScoutTests
 
     public ScoutTests()
     {
-        var log = new ConsoleReporter(this._output, new FakeTimeProvider(Start));
+        var log = new Log(this._output, new FakeTimeProvider(Start));
         var fangbreakerZoneClient = this._site.Client;
         var serverListCache = new ServerListCache(fangbreakerZoneClient, log);
         var bonusReporter = new BonusReporter(fangbreakerZoneClient, new ApiKey("fz_live_test"), log);

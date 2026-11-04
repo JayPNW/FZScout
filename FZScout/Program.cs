@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using FZScout.Site;
 using Velopack;
 
@@ -6,21 +6,31 @@ namespace FZScout;
 
 static class Program
 {
-    static async Task Main()
+    [STAThread]
+    static void Main()
     {
-        VelopackApp.Build().Run();
-        using var pendingUpdate = await new GitHubUpdateChecker().DownloadLatestAndApplyOnDispose();
+        VelopackApp.Build()
+            .OnAfterInstallFastCallback(_ => new LaunchAtLogin().Enable(Environment.ProcessPath!))
+            .OnAfterUpdateFastCallback(_ => new LaunchAtLogin().Enable(Environment.ProcessPath!))
+            .OnBeforeUninstallFastCallback(_ => new LaunchAtLogin().Disable())
+            .Run();
+        var pendingUpdateDownload = Task.Run(() => new GitHubUpdateChecker().DownloadLatestAndApplyOnDispose());
 
-        var app = CreateApp();
-        await app.RunAsync();
+        ApplicationConfiguration.Initialize();
+        using (var window = new MainWindow())
+        {
+            Application.Run(new TrayApplicationContext(window, CreateApp(window)));
+        }
+
+        using var pendingUpdate = pendingUpdateDownload.GetAwaiter().GetResult();
     }
 
-    internal static App CreateApp()
+    internal static App CreateApp(MainWindow window)
     {
         var timeProvider = TimeProvider.System;
         return new App(new AppDependencies(
-            new ConsoleUserInput(),
-            new ConsoleReporter(timeProvider),
+            window,
+            new Log(window.WriteLine, timeProvider),
             GetVersion: GetVersion,
             timeProvider,
             TryClaimSingleInstance: SingleInstance.TryClaim,

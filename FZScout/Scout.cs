@@ -3,7 +3,7 @@ using FZScout.Scouting;
 
 namespace FZScout;
 
-class Scout(ServerListCache serverListCache, ConsoleReporter log, BonusReporter bonusReporter)
+class Scout(ServerListCache serverListCache, Log log, BonusReporter bonusReporter)
 {
     readonly Dictionary<Character, CharacterScout> _characters = [];
 

@@ -24,7 +24,7 @@ public class AppTests
     {
         this._app = new App(new AppDependencies(
             this._userInput,
-            new ConsoleReporter(this._output, this._time),
+            new Log(this._output, this._time),
             GetVersion: () => "1",
             this._time,
             TryClaimSingleInstance: this._singleInstance.TryClaim,

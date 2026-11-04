@@ -3,7 +3,7 @@
 namespace FZScout;
 
 /// <summary>Gets an API key the site accepts: the stored one, or else asks the user until the site accepts one or the user enters nothing.</summary>
-class ApiKeyPrompt(FangbreakerZoneClient fangbreakerZoneClient, IApiKeyStore apiKeyStore, ConsoleReporter log, Func<CancellationToken, Task<ApiKey?>> readApiKeyAsync)
+class ApiKeyPrompt(FangbreakerZoneClient fangbreakerZoneClient, IApiKeyStore apiKeyStore, Log log, Func<CancellationToken, Task<ApiKey?>> readApiKeyAsync)
 {
     /// <summary>Checks a key by posting 'none' for a zone that never has a bonus.</summary>
     static readonly BonusReport KeyCheck = new(Server.Fangbreaker, "The Nexus", BonusKey.None);
@@ -18,7 +18,7 @@ class ApiKeyPrompt(FangbreakerZoneClient fangbreakerZoneClient, IApiKeyStore api
 
         while (true)
         {
-            log.Info("Get an API key from https://fangbreaker.zone/account and paste it here. (For help see https://jaypnw.github.io/FZScout/create-api-key.html):");
+            log.Info("Get an API key from https://fangbreaker.zone/account and paste it into Settings. (For help see https://jaypnw.github.io/FZScout/create-api-key.html):");
             var answer = await readApiKeyAsync(cancellationToken);
             if (answer is not { } apiKey)
             {

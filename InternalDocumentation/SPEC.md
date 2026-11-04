@@ -1,6 +1,6 @@
 # Spec
 
-A console app that monitors EverQuest logs for zone bonuses and posts them to https://fangbreaker.zone and https://frostreaver.zone.
+A Windows system tray app that monitors EverQuest logs for zone bonuses and posts them to https://fangbreaker.zone and https://frostreaver.zone.
 
 Most behavior is best learned from the code. This file records only intent that the code can't explain on its own.
 

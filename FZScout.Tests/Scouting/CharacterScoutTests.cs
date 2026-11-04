@@ -34,7 +34,7 @@ public class CharacterScoutTests
 
     public CharacterScoutTests()
     {
-        var log = new ConsoleReporter(this._output, new FakeTimeProvider(Start));
+        var log = new Log(this._output, new FakeTimeProvider(Start));
         var bonusReporter = new BonusReporter(this._site.Client, new ApiKey("fz_live_test"), log);
         this._scout = new(Bob, log, bonusReporter);
     }

@@ -5,7 +5,7 @@ using FZScout.Site;
 namespace FZScout;
 
 /// <summary>
-/// The whole app, wired up from everything it needs from outside: the clock, the console, the sites, and so on.
+/// The whole app, wired up from everything it needs from outside: the clock, the window, the sites, and so on.
 /// Tests pass in-memory versions of those.
 /// </summary>
 class App(AppDependencies dependencies)
@@ -26,7 +26,7 @@ class App(AppDependencies dependencies)
         {
             return;
         }
-        Dependencies.Log.Info("Press Ctrl+C to exit.");
+        Dependencies.Log.Info("To exit, right-click the FZScout icon in the system tray and choose Exit.");
 
         var client = Dependencies.FangbreakerZoneClient;
         var scout = new Scout(new ServerListCache(client, Dependencies.Log), Dependencies.Log, new BonusReporter(client, apiKey, Dependencies.Log));

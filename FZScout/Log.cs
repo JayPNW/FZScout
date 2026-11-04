@@ -1,16 +1,11 @@
 ﻿namespace FZScout;
 
-/// <summary>The app's log: timestamped lines, colored on the console. Never pass it the API key.</summary>
-class ConsoleReporter(Action<string, ConsoleColor?> write, TimeProvider timeProvider)
+/// <summary>The app's log: timestamped lines, some colored. Never pass it the API key.</summary>
+class Log(Action<string, ConsoleColor?> write, TimeProvider timeProvider)
 {
     /// <summary>Plain text, for tests.</summary>
-    public ConsoleReporter(TextWriter writer, TimeProvider timeProvider)
+    public Log(TextWriter writer, TimeProvider timeProvider)
         : this((line, _) => writer.WriteLine(line), timeProvider)
-    {
-    }
-
-    public ConsoleReporter(TimeProvider timeProvider)
-        : this(WriteToConsole, timeProvider)
     {
     }
 
@@ -22,19 +17,6 @@ class ConsoleReporter(Action<string, ConsoleColor?> write, TimeProvider timeProv
     public void Warning(string message) => Write($"WARNING: {message}", ConsoleColor.Yellow);
 
     public void Error(string message) => Write($"ERROR: {message}", ConsoleColor.Red);
-
-    static void WriteToConsole(string line, ConsoleColor? color)
-    {
-        if (color is null)
-        {
-            Console.WriteLine(line);
-            return;
-        }
-
-        Console.ForegroundColor = color.Value;
-        Console.WriteLine(line);
-        Console.ResetColor();
-    }
 
     void Write(string message, ConsoleColor? color)
     {

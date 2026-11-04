@@ -4,7 +4,7 @@ namespace FZScout;
 
 record AppDependencies(
     IUserInput UserInput,
-    ConsoleReporter Log,
+    Log Log,
     Func<string?> GetVersion,
     TimeProvider TimeProvider,
     Func<IDisposable?> TryClaimSingleInstance,

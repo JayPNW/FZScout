@@ -2,7 +2,7 @@
 
 namespace FZScout.Scouting;
 
-class ServerListCache(FangbreakerZoneClient fangbreakerZoneClient, ConsoleReporter log)
+class ServerListCache(FangbreakerZoneClient fangbreakerZoneClient, Log log)
 {
     readonly Dictionary<Server, ServerLists> _lists = [];
 
