@@ -12,6 +12,7 @@ public class CharacterScoutTests
     const string Tribute = "This land is saturated with unstable magic, enhancing the potency of any offerings made here.";
     const string DailyReset = "Fonts of unstable magic are erupting and receding in response to some nameless power. The magic is cascading throughout Norrath and into the Planes beyond. Hunt for the lands that have been most recently saturated with this magic to reap their many and varied resources.";
     const string Camping = "It will take you about 30 seconds to prepare your camp.";
+    const string Chat = "You say, 'hello'";
     const string CampAbandoned = "You abandon your preparations to camp.";
 
     static readonly Character Bob = new("Bob", Server.Frostreaver);
@@ -47,17 +48,17 @@ public class CharacterScoutTests
     {
         Log(0, Befallen);
 
-        Assert.Empty(Tick(299));
-        Assert.Equal([ReportNone("Befallen")], Tick(300));
+        Assert.Empty(Log(299, Chat));
+        Assert.Equal([ReportNone("Befallen")], Log(300, Chat));
     }
 
     [Fact]
     public void NoneIsReportedOnlyOnce()
     {
         Log(0, Befallen);
-        Tick(300);
+        Log(300, Chat);
 
-        Assert.Empty(Tick(600));
+        Assert.Empty(Log(600, Chat));
     }
 
     [Fact]
@@ -66,9 +67,9 @@ public class CharacterScoutTests
         Log(0, Befallen);
         Log(20, Kill);
 
-        Assert.Empty(Tick(24));
-        Assert.Equal([ReportNone("Befallen")], Tick(25));
-        Assert.Empty(Tick(300));
+        Assert.Empty(Log(24, Chat));
+        Assert.Equal([ReportNone("Befallen")], Log(25, Chat));
+        Assert.Empty(Log(300, Chat));
     }
 
     [Fact]
@@ -77,7 +78,7 @@ public class CharacterScoutTests
         Log(0, Befallen);
         Log(20, "A wolf was slain by Bob`s pet!");
 
-        Assert.Equal([ReportNone("Befallen")], Tick(25));
+        Assert.Equal([ReportNone("Befallen")], Log(25, Chat));
     }
 
     [Fact]
@@ -86,7 +87,7 @@ public class CharacterScoutTests
         Log(0, Befallen);
         Log(20, "A gnoll pup was slain by Bob`s warder!");
 
-        Assert.Equal([ReportNone("Befallen")], Tick(25));
+        Assert.Equal([ReportNone("Befallen")], Log(25, Chat));
     }
 
     [Fact]
@@ -95,7 +96,7 @@ public class CharacterScoutTests
         Log(0, Befallen);
         Log(20, "A wolf was slain by Alice`s pet!");
 
-        Assert.Empty(Tick(25));
+        Assert.Empty(Log(25, Chat));
     }
 
     [Fact]
@@ -105,7 +106,7 @@ public class CharacterScoutTests
         Log(20, Kill);
         Log(23, Kill);
 
-        Assert.Equal([ReportNone("Befallen")], Tick(25));
+        Assert.Equal([ReportNone("Befallen")], Log(25, Chat));
     }
 
     [Fact]
@@ -116,7 +117,7 @@ public class CharacterScoutTests
         Log(20, Experience);
         Log(40, Kill);
 
-        Assert.Empty(Tick(300));
+        Assert.Empty(Log(300, Chat));
     }
 
     [Fact]
@@ -125,7 +126,7 @@ public class CharacterScoutTests
         // A kill doesn't always trigger the message; sometimes it comes minutes later.
         Log(0, Befallen);
         Log(20, Kill);
-        Tick(25);
+        Log(25, Chat);
 
         Assert.Equal([Report("Befallen", "experience")], Log(200, Experience));
     }
@@ -136,8 +137,8 @@ public class CharacterScoutTests
         Log(0, Befallen);
         Log(100, Crushbone);
 
-        Assert.Empty(Tick(300));
-        Assert.Equal([ReportNone("Crushbone")], Tick(400));
+        Assert.Empty(Log(300, Chat));
+        Assert.Equal([ReportNone("Crushbone")], Log(400, Chat));
     }
 
     [Fact]
@@ -147,7 +148,7 @@ public class CharacterScoutTests
         Log(20, Kill);
         Log(22, Crushbone);
 
-        Assert.Empty(Tick(30));
+        Assert.Empty(Log(30, Chat));
     }
 
     [Fact]
@@ -157,7 +158,7 @@ public class CharacterScoutTests
         Log(10, Experience);
         Log(100, Befallen);
 
-        Assert.Equal([ReportNone("Befallen")], Tick(400));
+        Assert.Equal([ReportNone("Befallen")], Log(400, Chat));
     }
 
     [Fact]
@@ -167,8 +168,8 @@ public class CharacterScoutTests
         Log(10, Experience);
         Log(1000, DailyReset);
 
-        Assert.Empty(Tick(1299));
-        Assert.Equal([ReportNone("Befallen")], Tick(1300));
+        Assert.Empty(Log(1299, Chat));
+        Assert.Equal([ReportNone("Befallen")], Log(1300, Chat));
     }
 
     [Fact]
@@ -179,7 +180,7 @@ public class CharacterScoutTests
         Log(1000, DailyReset);
         Log(1010, Kill);
 
-        Assert.Equal([ReportNone("Befallen")], Tick(1015));
+        Assert.Equal([ReportNone("Befallen")], Log(1015, Chat));
     }
 
     [Fact]
@@ -189,7 +190,7 @@ public class CharacterScoutTests
         Log(200, Camping);
         Log(205, "It will take about 25 more seconds to prepare your camp.");
 
-        Assert.Empty(Tick(10_000));
+        Assert.Empty(Log(10_000, Chat));
     }
 
     [Fact]
@@ -199,7 +200,7 @@ public class CharacterScoutTests
         Log(200, Camping);
         Log(210, CampAbandoned);
 
-        Assert.Empty(Tick(10_000));
+        Assert.Empty(Log(10_000, Chat));
     }
 
     [Fact]
@@ -212,7 +213,7 @@ public class CharacterScoutTests
     public void BonusBeforeAnyZoneIsIgnored()
     {
         Assert.Empty(Log(0, Experience));
-        Assert.Empty(Tick(1000));
+        Assert.Empty(Log(1000, Chat));
     }
 
     [Fact]
@@ -232,8 +233,8 @@ public class CharacterScoutTests
         Log(20, Kill);
         Log(21, Tribute);
 
-        Assert.Empty(Tick(25));
-        Assert.Empty(Tick(300));
+        Assert.Empty(Log(25, Chat));
+        Assert.Empty(Log(300, Chat));
     }
 
     [Fact]
@@ -243,7 +244,7 @@ public class CharacterScoutTests
             [new LogInfoAction("Bob (Frostreaver) entered The Plane of Knowledge.")],
             Log(0, "You have entered The Plane of Knowledge."));
         Assert.Empty(Log(10, Kill));
-        Assert.Empty(Tick(1000));
+        Assert.Empty(Log(1000, Chat));
     }
 
     [Fact]
@@ -260,11 +261,11 @@ public class CharacterScoutTests
     public void ZoneEnteredWithoutListsIsResolvedWhenTheyLoad()
     {
         Assert.Equal([new LogInfoAction($"Bob (Frostreaver) entered Befallen, waiting until {Start.AddMinutes(5).ToLocalTime():HH:mm:ss} for a bonus message.")], LogWithoutLists(0, Befallen));
-        Assert.Empty(this._scout.Tick(Start.AddSeconds(60), null));
+        Assert.Empty(LogWithoutLists(60, Chat));
 
-        Assert.Empty(Tick(61));
+        Assert.Empty(Log(61, Chat));
         Assert.Equal(new KnownZone("Befallen"), this._scout.CurrentZone);
-        Assert.Equal([ReportNone("Befallen")], Tick(300));
+        Assert.Equal([ReportNone("Befallen")], Log(300, Chat));
     }
 
     [Fact]
@@ -280,9 +281,9 @@ public class CharacterScoutTests
     {
         LogWithoutLists(0, "You have entered The Halls of Honor.");
 
-        Assert.Empty(Tick(60));
+        Assert.Empty(Log(60, Chat));
         Assert.Equal(new UnknownZone("The Halls of Honor"), this._scout.CurrentZone);
-        Assert.Empty(Tick(1000));
+        Assert.Empty(Log(1000, Chat));
     }
 
     [Fact]
@@ -292,8 +293,8 @@ public class CharacterScoutTests
 
         Assert.Equal(
             [new LogErrorAction("Bob (Frostreaver) was in 'Befallen', but the Frostreaver zones list still isn't loaded, so 'none' wasn't reported.")],
-            this._scout.Tick(Start.AddSeconds(300), null));
-        Assert.Empty(this._scout.Tick(Start.AddSeconds(1000), null));
+            LogWithoutLists(300, Chat));
+        Assert.Empty(LogWithoutLists(1000, Chat));
     }
 
     [Fact]
@@ -312,7 +313,7 @@ public class CharacterScoutTests
         Log(0, Befallen);
         Log(100, "You have entered an area where levitation effects do not function.");
 
-        Assert.Equal([ReportNone("Befallen")], Tick(300));
+        Assert.Equal([ReportNone("Befallen")], Log(300, Chat));
     }
 
     [Fact]
@@ -321,7 +322,7 @@ public class CharacterScoutTests
         Log(0, Befallen);
         Log(100, "You have entered an Arena (PvP) area.");
 
-        Assert.Equal([ReportNone("Befallen")], Tick(300));
+        Assert.Equal([ReportNone("Befallen")], Log(300, Chat));
     }
 
     static ReportBonusAction Report(string zone, string bonus) => new(new BonusReport(Server.Frostreaver, zone, new BonusKey(bonus)));
@@ -329,8 +330,6 @@ public class CharacterScoutTests
     static ReportNoBonusAction ReportNone(string zone) => new(Server.Frostreaver, zone);
 
     IReadOnlyList<ScoutAction> Log(int seconds, string message) => this._scout.Handle(Parser.Parse($"[Thu Oct 29 12:00:00 2026] {message}"), Start.AddSeconds(seconds), Lists);
-
-    IReadOnlyList<ScoutAction> Tick(int seconds) => this._scout.Tick(Start.AddSeconds(seconds), Lists);
 
     IReadOnlyList<ScoutAction> LogWithoutLists(int seconds, string message) => this._scout.Handle(Parser.Parse($"[Thu Oct 29 12:00:00 2026] {message}"), Start.AddSeconds(seconds), null);
 }

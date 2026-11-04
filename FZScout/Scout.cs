@@ -10,7 +10,7 @@ class Scout(ServerListCache serverListCache, BonusReporter bonusReporter)
 
     /// <summary>
     /// Call for every event the EverQuestLogWatcher library reports. Servers we don't report, and events that don't matter to scouting, are ignored.
-    /// A character whose bonus/none timer ran out before this message arrived gets that report too, folded into the same call.
+    /// A character whose deadline for a bonus message passed before this message arrived gets that report too, folded into the same call.
     /// </summary>
     public async Task HandleAsync(EverQuestLogWatcher.EverQuestLogEvent logEvent, DateTimeOffset now, CancellationToken cancellationToken = default)
     {
