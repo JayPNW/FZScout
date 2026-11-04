@@ -3,7 +3,7 @@
 namespace FZScout;
 
 /// <summary>Saves only an API key the site accepts. Stays open showing what went wrong otherwise.</summary>
-class SettingsWindow : Form
+class SettingsWindow : FixedSizeDialog
 {
     const string GetApiKeyUrl = "https://fangbreaker.zone/account";
     const string ApiKeyHelpUrl = "https://jaypnw.github.io/FZScout/create-api-key.html";
@@ -27,8 +27,6 @@ class SettingsWindow : Form
         this._fangbreakerZoneClient = fangbreakerZoneClient;
         this._log = log;
         Text = "FZScout Settings";
-        Icon = AppIcon.Load();
-        StyleAsFixedSizeDialog();
 
         var layout = new TableLayoutPanel { AutoSize = true, ColumnCount = 2, Padding = new Padding(12) };
         this._apiKeyBox = new TextBox { Anchor = AnchorStyles.Left | AnchorStyles.Right, UseSystemPasswordChar = true, Text = apiKeyStore.Load()?.Value ?? "" };
@@ -48,28 +46,10 @@ class SettingsWindow : Form
 
     string ApiKeyBoxText => this._apiKeyBox.Text.Trim();
 
-    /// <summary>Shows the window over <paramref name="owner"/> without blocking it, so the log stays readable and scrollable.</summary>
-    public void ShowCenteredOver(Form owner)
+    protected override void OnShown(EventArgs e)
     {
-        Owner = owner;
-        CreateControl();
-        Location = new Point(
-            owner.Left + ((owner.Width - Width) / 2),
-            owner.Top + ((owner.Height - Height) / 2));
-        Show();
-        Activate();
+        base.OnShown(e);
         this._apiKeyBox.Focus();
-    }
-
-    void StyleAsFixedSizeDialog()
-    {
-        FormBorderStyle = FormBorderStyle.FixedDialog;
-        MaximizeBox = false;
-        MinimizeBox = false;
-        ShowInTaskbar = false;
-        AutoSize = true;
-        AutoSizeMode = AutoSizeMode.GrowAndShrink;
-        StartPosition = FormStartPosition.Manual;
     }
 
     void AllowSavingOnlyWithAnApiKey() => this._saveButton.Enabled = ApiKeyBoxText.Length > 0;
