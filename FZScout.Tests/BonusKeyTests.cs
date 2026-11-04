@@ -1,8 +1,7 @@
-﻿namespace FZScout.Tests;
+namespace FZScout.Tests;
 
 public class BonusKeyTests
 {
-    // Real announcement text from an EverQuest log, one per known bonus key.
     [Theory]
     [InlineData("improving the experiences of all who venture here", "experience")]
     [InlineData("improving the experience tied to abilities for all who venture here", "aa")]
@@ -15,7 +14,7 @@ public class BonusKeyTests
     [InlineData("enhancing the benefits of offerings for all who venture here", "tribute")]
     [InlineData("enhancing the potency of any offerings made here", "tribute")]
     [InlineData("improving the rate at which proficiency is gained while adventuring here", "tradeskill")]
-    public void RecognizesEachKnownAnnouncement(string announcementText, string key)
+    public void RecognizesTheRealEverQuestAnnouncementTextForEachKnownBonusKey(string announcementText, string key)
     {
         Assert.Equal(new BonusKey(key), BonusKey.FromAnnouncementText(announcementText));
     }

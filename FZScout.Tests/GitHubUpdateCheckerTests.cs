@@ -1,4 +1,4 @@
-﻿using Velopack;
+using Velopack;
 using Velopack.Locators;
 using Velopack.Logging;
 
@@ -6,6 +6,9 @@ namespace FZScout.Tests;
 
 public class GitHubUpdateCheckerTests
 {
+    const string Sha1OfTheEmptyFileTheFakeDownloadWrites = "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709";
+    const string Sha256OfTheEmptyFileTheFakeDownloadWrites = "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855";
+
     [Theory]
     [InlineData("2.0.0", "3.0.0", true)]
     [InlineData("3.0.0", "3.0.0", false)]
@@ -25,9 +28,8 @@ public class GitHubUpdateCheckerTests
                     Version = SemanticVersion.Parse(latest),
                     Type = VelopackAssetType.Full,
                     FileName = "FZScout-win-Full.nupkg",
-                    // The fake download below writes an empty file, so these must be the hashes of zero bytes.
-                    SHA1 = "DA39A3EE5E6B4B0D3255BFEF95601890AFD80709",
-                    SHA256 = "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855",
+                    SHA1 = Sha1OfTheEmptyFileTheFakeDownloadWrites,
+                    SHA256 = Sha256OfTheEmptyFileTheFakeDownloadWrites,
                 },
             ],
         };

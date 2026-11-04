@@ -1,8 +1,8 @@
-﻿using FZScout.Site;
+using FZScout.Site;
 
 namespace FZScout.Tests.Site;
 
-// Fails when a site adds, removes, or renames a zone, so Zones.md and ZoneNames can be updated.
+/// <summary>Fails when a site adds, removes, or renames a zone, so Zones.md and ZoneNames can be updated.</summary>
 [CategoryTrait("Integration")]
 public class SiteZonesIntegrationTests
 {

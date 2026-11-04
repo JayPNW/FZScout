@@ -1,4 +1,4 @@
-﻿using FZScout.Reporting;
+using FZScout.Reporting;
 using FZScout.Scouting;
 using FZScout.Site;
 using FZScout.Tests.Reporting;
@@ -21,8 +21,7 @@ public class CharacterScoutTests
     static readonly Character Bob = new("Bob", Server.Frostreaver);
     static readonly DateTimeOffset Start = new(2026, 10, 29, 12, 0, 0, TimeSpan.Zero);
 
-    // Like Frostreaver's: no tribute.
-    static readonly ServerLists Lists = new(
+    static readonly ServerLists ListsWithoutTributeLikeFrostreaver = new(
         new HashSet<BonusKey> { new("experience"), new("aa"), new("loot"), BonusKey.None },
         new HashSet<string> { "Befallen", "Crushbone", "Greater Faydark" });
 
@@ -133,9 +132,8 @@ public class CharacterScoutTests
     }
 
     [Fact]
-    public async Task BonusAfterReportingNoneIsStillReported()
+    public async Task BonusMessageArrivingMinutesAfterAKillIsReportedEvenAfterReportingNone()
     {
-        // A kill doesn't always trigger the message; sometimes it comes minutes later.
         await Log(0, Befallen);
         await Log(20, Kill);
         await Log(25, Chat);
@@ -341,7 +339,7 @@ public class CharacterScoutTests
 
     static string ReportNone(string zone) => $"Reported Frostreaver '{zone}' is 'none' because no bonus message arrived in time.";
 
-    Task<IReadOnlyList<string>> Log(int seconds, string message) => Handle(seconds, message, Lists);
+    Task<IReadOnlyList<string>> Log(int seconds, string message) => Handle(seconds, message, ListsWithoutTributeLikeFrostreaver);
 
     Task<IReadOnlyList<string>> LogWithoutLists(int seconds, string message) => Handle(seconds, message, null);
 

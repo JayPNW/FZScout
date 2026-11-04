@@ -1,4 +1,4 @@
-﻿using FZScout.Reporting;
+using FZScout.Reporting;
 using FZScout.Scouting;
 using FZScout.Site;
 using FZScout.Tests.Reporting;
@@ -50,8 +50,8 @@ public class ScoutTests
         await Handle(0, new EverQuestLogWatcher.ZoneEntered(Bob, Start.UtcDateTime, "", "Befallen"));
         await Handle(1, new EverQuestLogWatcher.MobSlainByYou(Bob, Start.UtcDateTime, ""));
 
-        // Nothing fires on its own: the 'none' report waits for the next message, well past the 5-second kill timeout.
-        await Handle(6, new EverQuestLogWatcher.ZoneEntered(Bob, Start.UtcDateTime, "", "Befallen"));
+        var nextMessageWellPastTheKillTimeout = new EverQuestLogWatcher.ZoneEntered(Bob, Start.UtcDateTime, "", "Befallen");
+        await Handle(6, nextMessageWellPastTheKillTimeout);
 
         Assert.Equal(
             """POST /api/client/bonuses {"serverName":"Fangbreaker","zoneName":"Befallen","bonusKey":"none"}""",

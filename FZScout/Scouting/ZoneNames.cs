@@ -1,4 +1,4 @@
-﻿namespace FZScout.Scouting;
+namespace FZScout.Scouting;
 
 /// <summary>Turns the zone name in the log into the site's zone name. See InternalDocumentation/Zones.md.</summary>
 static class ZoneNames
@@ -67,11 +67,11 @@ static class ZoneNames
         var siteName = SiteName(logZone, siteZones);
         if (siteName is null && !LogToSite.ContainsKey(logZone))
         {
-            var colon = logZone.IndexOf(':');
-            if (colon > 0)
+            var endOfParentZoneNameInInstanceName = logZone.IndexOf(':');
+            if (endOfParentZoneNameInInstanceName > 0)
             {
-                // An instance, like "Lavaspinner's Lair: The Drake Menace", reports as its parent zone.
-                siteName = SiteName(logZone[..colon], siteZones);
+                var parentZoneOfInstance = logZone[..endOfParentZoneNameInInstanceName];
+                siteName = SiteName(parentZoneOfInstance, siteZones);
             }
         }
 

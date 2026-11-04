@@ -1,10 +1,13 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 using FZScout.Scouting;
 
 namespace FZScout.Tests.Scouting;
 
 public class ZoneNamesTests
 {
+    const int ZonesWithADifferentLogNameGroup = 0;
+    const int ZonesWhoseLogNameMatchesGroup = 1;
+
     /// <summary>Generates the zone name mapping, linked from InternalDocumentation/Zones.md, from the sites' zone lists.</summary>
     [Fact]
     public Task ZoneNamesMapping()
@@ -13,31 +16,30 @@ public class ZoneNamesTests
         var siteZones = File.ReadAllLines(path).Where(line => line.Length > 0).ToHashSet();
         var logNames = ZoneNames.LogToSite.ToLookup(pair => pair.Value, pair => pair.Key);
 
-        // Zones with a different log name, then zones whose names match.
-        static IEnumerable<(int Group, string LogName, string Site)> ToRows(
-            string zone, ILookup<string, string> logNames, HashSet<string> siteZones)
-        {
-            if (logNames.Contains(zone))
-            {
-                return logNames[zone].Select(logName =>
-                    (0, logName, Describe(ZoneNames.Resolve(logName, siteZones))));
-            }
-
-            if (ZoneNames.LogToSite.ContainsKey(zone))
-            {
-                // Listed above under its log name, which maps it to another site zone.
-                return [];
-            }
-
-            return [(1, "<same>", Describe(ZoneNames.Resolve(zone, siteZones)))];
-        }
-
         var rows = from zone in siteZones
-                   from r in ToRows(zone, logNames, siteZones)
-                   orderby r.Group, r.Group == 0 ? r.LogName : r.Site
+                   from r in ToMappingRows(zone, logNames, siteZones)
+                   orderby r.Group, r.Group == ZonesWithADifferentLogNameGroup ? r.LogName : r.Site
                    select (r.LogName, r.Site);
 
         return Verify(FormatAsMarkdownTable(("EQ log message name", "Site zone name"), rows));
+    }
+
+    static IEnumerable<(int Group, string LogName, string Site)> ToMappingRows(
+        string zone, ILookup<string, string> logNames, HashSet<string> siteZones)
+    {
+        if (logNames.Contains(zone))
+        {
+            return logNames[zone].Select(logName =>
+                (ZonesWithADifferentLogNameGroup, logName, Describe(ZoneNames.Resolve(logName, siteZones))));
+        }
+
+        var isAlsoALogNameMappedToAnotherSiteZoneSoAlreadyListed = ZoneNames.LogToSite.ContainsKey(zone);
+        if (isAlsoALogNameMappedToAnotherSiteZoneSoAlreadyListed)
+        {
+            return [];
+        }
+
+        return [(ZonesWhoseLogNameMatchesGroup, "<same>", Describe(ZoneNames.Resolve(zone, siteZones)))];
     }
 
     static string FormatAsMarkdownTable<TTuple>(TTuple header, IEnumerable<TTuple> rows)
