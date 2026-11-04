@@ -161,8 +161,10 @@ class CharacterScout(Character character, Log log, BonusReporter bonusReporter)
         return CurrentZone as KnownZone;
     }
 
-    void AskUserToReportAZoneThatGetsBonusesButIsMissingFromTheZonesList(BonusKey bonus, UnknownZone unknown) =>
+    void AskUserToReportAZoneThatGetsBonusesButIsMissingFromTheZonesList(BonusKey bonus, UnknownZone unknown)
+    {
         log.Error($"{character} saw a '{bonus}' bonus in '{unknown.LogName}', which isn't on the {character.Server} zones list. Please report it at {ReportIssuesUrl}");
+    }
 
     Task OnDailyReset(DateTimeOffset now)
     {
