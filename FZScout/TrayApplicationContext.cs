@@ -30,6 +30,8 @@ class TrayApplicationContext : ApplicationContext
         };
         this._trayIcon.DoubleClick += (_, _) => this._window.ShowAndActivate();
         this._window.HiddenToTray += ExplainHidingToTrayTheFirstTime;
+        app.Dependencies.Log.SuccessWritten += message => ShowToast(message, ToolTipIcon.Info);
+        app.Dependencies.Log.ErrorWritten += message => ShowToast(message, ToolTipIcon.Error);
 
         this._window.CreateWithoutShowing();
         this._hasExplainedHidingToTray = true;
@@ -53,6 +55,15 @@ class TrayApplicationContext : ApplicationContext
 
         this._hasExplainedHidingToTray = true;
         this._trayIcon.ShowBalloonTip(5000, "FZScout is still running", "To exit, right-click this icon and choose Exit.", ToolTipIcon.Info);
+    }
+
+    /// <summary>
+    /// Safe to call from any thread. Shows only the first line, so an exception's stack trace doesn't fill the toast.
+    /// </summary>
+    void ShowToast(string message, ToolTipIcon icon)
+    {
+        var firstLine = message.Split('\n')[0].TrimEnd('\r');
+        this._window.BeginInvoke(() => this._trayIcon.ShowBalloonTip(5000, "FZScout", firstLine, icon));
     }
 
     /// <summary>Runs off the UI thread, so watching logs never makes the window unresponsive.</summary>
