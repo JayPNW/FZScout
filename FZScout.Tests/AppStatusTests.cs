@@ -12,7 +12,15 @@ public class AppStatusTests
     public AppStatusTests()
     {
         this._timeProvider.SetLocalTimeZone(TimeZoneInfo.Utc);
-        this._status = new AppStatus(this._timeProvider);
+        this._status = new AppStatus(this._timeProvider) { IsScouting = true };
+    }
+
+    [Fact]
+    public void ShowsTheGreyGemUntilScoutingStarts()
+    {
+        this._status.IsScouting = false;
+
+        Assert.Equal((StatusIcon.NotScouting, "FZScout: not scouting yet", null), Shown());
     }
 
     [Fact]

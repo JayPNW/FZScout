@@ -22,6 +22,7 @@ static class AppIcon
 
     static string ResourceName(StatusIcon statusIcon) => statusIcon switch
     {
+        StatusIcon.NotScouting => "FZScoutNotScouting.ico",
         StatusIcon.Gem => "FZScout.ico",
         StatusIcon.WaitingForBonusMessage => "FZScoutWaiting.ico",
         _ => throw new ArgumentOutOfRangeException(nameof(statusIcon), statusIcon, null),

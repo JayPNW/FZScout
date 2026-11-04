@@ -30,7 +30,7 @@ class TrayApplicationContext : ApplicationContext
 
         this._trayIcon = new NotifyIcon
         {
-            Icon = this._trayIcons[StatusIcon.Gem],
+            Icon = this._trayIcons[StatusIcon.NotScouting],
             Text = "FZScout",
             ContextMenuStrip = menu,
             Visible = true,
@@ -42,7 +42,9 @@ class TrayApplicationContext : ApplicationContext
         this._timeProvider = app.Dependencies.TimeProvider;
         this._status = new AppStatus(this._timeProvider);
         this._showStatusWhenItChangesByItself.Tick += (_, _) => ShowStatus();
+        ShowStatus();
         app.WaitingForBonusMessageUntilChanged += waitingUntil => UpdateStatus(status => status.WaitingForBonusMessageUntil = waitingUntil);
+        app.ScoutingStarted += () => UpdateStatus(status => status.IsScouting = true);
 
         this._window.CreateWithoutShowing();
         this._hasExplainedHidingToTray = true;

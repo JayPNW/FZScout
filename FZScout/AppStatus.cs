@@ -3,6 +3,9 @@ namespace FZScout;
 /// <summary>What the app is doing, as its icon and tooltip show it. Some of that changes just because time passes.</summary>
 class AppStatus(TimeProvider timeProvider)
 {
+    /// <summary>Whether the app has an accepted API key and is watching the logs.</summary>
+    public bool IsScouting { get; set; }
+
     /// <summary>
     /// When the last character stops waiting for a bonus message, or null if none are waiting.
     /// Can already have passed, since the scouts only notice that when the next message arrives.
@@ -13,6 +16,11 @@ class AppStatus(TimeProvider timeProvider)
     {
         get
         {
+            if (!IsScouting)
+            {
+                return StatusIcon.NotScouting;
+            }
+
             if (IsWaitingForBonusMessage)
             {
                 return StatusIcon.WaitingForBonusMessage;
@@ -27,6 +35,11 @@ class AppStatus(TimeProvider timeProvider)
     {
         get
         {
+            if (!IsScouting)
+            {
+                return "FZScout: not scouting yet";
+            }
+
             if (IsWaitingForBonusMessage)
             {
                 return $"FZScout: waiting until {ToLocalTime(WaitingForBonusMessageUntil!.Value):HH:mm:ss} for a bonus message";

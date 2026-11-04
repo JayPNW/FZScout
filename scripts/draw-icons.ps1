@@ -1,9 +1,9 @@
 # Draws FZScout's icons at every size Windows asks for: an emerald gem into FZScout/FZScout.ico,
-# and an emerald hourglass, for while waiting for a bonus message, into FZScout/FZScoutWaiting.ico.
+# an emerald hourglass, for while waiting for a bonus message, into FZScout/FZScoutWaiting.ico,
+# and a grey gem, for before scouting starts, into FZScout/FZScoutNotScouting.ico.
 # Each size is drawn separately rather than scaled, so the small ones stay crisp.
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
-$outlineColor = '#05301B'
 
 # On a 32-unit grid: flat table on top, crown down to the girdle, pavilion down to a point.
 $T1=@(10,4); $T2=@(22,4); $G0=@(2,12); $G1=@(11,12); $G2=@(21,12); $G3=@(30,12); $P=@(16,29)
@@ -16,6 +16,7 @@ $gem = @{
         @{ Points = @($G1,$G2,$P);      Color = '#17804B' }  # pavilion middle
         @{ Points = @($G2,$G3,$P);      Color = '#0E5F37' }) # pavilion right
     Outlines = @(,@($T1,$T2,$G3,$P,$G0))
+    OutlineColor = '#05301B'
 }
 
 # On the same grid and in the gem's colors: a cap at each end, and two glass bulbs meeting at the waist, lit from the upper left.
@@ -35,6 +36,22 @@ $hourglass = @{
         @($BulbTopLeft,$BulbTopRight,$Waist)
         @($Waist,$BulbBottomRight,$BulbBottomLeft)
         @($BulbBottomLeft,$BulbBottomRight,$CapBottomRight,$CapBottomLeft))
+    OutlineColor = '#05301B'
+}
+
+function Grey([string]$color) {
+    $c = [System.Drawing.ColorTranslator]::FromHtml($color)
+    $brightness = [int](0.299 * $c.R + 0.587 * $c.G + 0.114 * $c.B)
+    '#{0:X2}{0:X2}{0:X2}' -f $brightness
+}
+
+# The same shapes, each color as bright as before, but grey.
+function Greyed($picture) {
+    @{
+        Facets = @($picture.Facets | ForEach-Object { @{ Points = $_.Points; Color = (Grey $_.Color) } })
+        Outlines = $picture.Outlines
+        OutlineColor = (Grey $picture.OutlineColor)
+    }
 }
 
 function ToPoints($points, [double]$scale) {
@@ -51,7 +68,7 @@ function Draw($picture, [int]$size) {
     foreach ($facet in $picture.Facets) {
         $g.FillPolygon((New-Object System.Drawing.SolidBrush ([System.Drawing.ColorTranslator]::FromHtml($facet.Color))), (ToPoints $facet.Points $scale))
     }
-    $pen = New-Object System.Drawing.Pen ([System.Drawing.ColorTranslator]::FromHtml($outlineColor)), ([Math]::Max(1.0, 1.6 * $scale))
+    $pen = New-Object System.Drawing.Pen ([System.Drawing.ColorTranslator]::FromHtml($picture.OutlineColor)), ([Math]::Max(1.0, 1.6 * $scale))
     $pen.LineJoin = 'Round'
     foreach ($outline in $picture.Outlines) {
         $g.DrawPolygon($pen, (ToPoints $outline $scale))
@@ -110,3 +127,4 @@ function WriteIcon($picture, [string]$fileName) {
 
 WriteIcon $gem 'FZScout.ico'
 WriteIcon $hourglass 'FZScoutWaiting.ico'
+WriteIcon (Greyed $gem) 'FZScoutNotScouting.ico'
