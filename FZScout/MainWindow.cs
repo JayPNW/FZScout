@@ -16,7 +16,7 @@ class MainWindow : Form, IUserInput
     {
         Text = "FZScout";
         Icon = AppIcon.Load();
-        ClientSize = new Size(900, 450);
+        ClientSize = new Size(1200, 450);
         StartPosition = FormStartPosition.CenterScreen;
 
         this._logView = new RichTextBox
@@ -25,7 +25,7 @@ class MainWindow : Form, IUserInput
             ReadOnly = true,
             BackColor = Color.Black,
             ForeColor = Color.Gainsboro,
-            Font = new Font("Consolas", 10),
+            Font = new Font("Consolas", 6),
             BorderStyle = BorderStyle.None,
             DetectUrls = true,
             WordWrap = true,
