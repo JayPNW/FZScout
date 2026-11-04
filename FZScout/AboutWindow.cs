@@ -26,7 +26,7 @@ class AboutWindow : FixedSizeDialog
         var layout = new TableLayoutPanel { AutoSize = true, ColumnCount = 1, Padding = new Padding(12) };
         var appName = new Label { Text = "FZScout", AutoSize = true, Font = new Font(Font.FontFamily, Font.Size * 1.5f, FontStyle.Bold) };
         var version = new Label { Text = $"Version {runningVersion ?? "unknown"}", AutoSize = true };
-        this._updateCheckResult = new Label { Text = "Checking for updates...", AutoSize = true, MaximumSize = new Size(360, 0), Margin = new Padding(3, 12, 3, 3) };
+        this._updateCheckResult = new Label { Text = "Checking for updates...", AutoSize = true, MaximumSize = new Size(640, 0), Margin = new Padding(3, 12, 3, 3) };
         var releases = new LinkLabel { Text = "See all releases", AutoSize = true };
         releases.LinkClicked += (_, _) => Browser.Open(ReleasesUrl);
         layout.Controls.Add(appName);
