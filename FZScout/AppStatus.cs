@@ -6,6 +6,9 @@ class AppStatus(TimeProvider timeProvider)
     /// <summary>Whether the app has an accepted API key and is watching the logs.</summary>
     public bool IsScouting { get; set; }
 
+    /// <summary>Whether the app has stopped on its own, like when the API key is rejected, and won't scout any more.</summary>
+    public bool HasStopped { get; set; }
+
     /// <summary>
     /// When the last character stops waiting for a bonus message, or null if none are waiting.
     /// Can already have passed, since the scouts only notice that when the next message arrives.
@@ -16,6 +19,11 @@ class AppStatus(TimeProvider timeProvider)
     {
         get
         {
+            if (HasStopped)
+            {
+                return StatusIcon.Stopped;
+            }
+
             if (!IsScouting)
             {
                 return StatusIcon.NotScouting;
@@ -35,6 +43,11 @@ class AppStatus(TimeProvider timeProvider)
     {
         get
         {
+            if (HasStopped)
+            {
+                return "FZScout has stopped. Its window shows why.";
+            }
+
             if (!IsScouting)
             {
                 return "FZScout: not scouting yet";
@@ -54,6 +67,11 @@ class AppStatus(TimeProvider timeProvider)
     {
         get
         {
+            if (HasStopped)
+            {
+                return null;
+            }
+
             if (IsWaitingForBonusMessage)
             {
                 return WaitingForBonusMessageUntil;

@@ -4,6 +4,7 @@ namespace FZScout;
 enum StatusIcon
 {
     NotScouting,
+    Stopped,
     Gem,
     WaitingForBonusMessage,
 }

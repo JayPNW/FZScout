@@ -24,6 +24,16 @@ public class AppStatusTests
     }
 
     [Fact]
+    public void ShowsTheGreyGemWithAProblemBadgeOnceTheAppHasStopped()
+    {
+        this._status.WaitingForBonusMessageUntil = Start.AddMinutes(5);
+
+        this._status.HasStopped = true;
+
+        Assert.Equal((StatusIcon.Stopped, "FZScout has stopped. Its window shows why.", null), Shown());
+    }
+
+    [Fact]
     public void ShowsTheGemWhenNothingIsGoingOn()
     {
         Assert.Equal((StatusIcon.Gem, "FZScout", null), Shown());

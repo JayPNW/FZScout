@@ -30,6 +30,7 @@
     <EmbeddedResource Include="FZScout.ico" LogicalName="FZScout.ico" />
     <EmbeddedResource Include="FZScoutWaiting.ico" LogicalName="FZScoutWaiting.ico" />
     <EmbeddedResource Include="FZScoutNotScouting.ico" LogicalName="FZScoutNotScouting.ico" />
+    <EmbeddedResource Include="FZScoutStopped.ico" LogicalName="FZScoutStopped.ico" />
   </ItemGroup>
 
   <ItemGroup>

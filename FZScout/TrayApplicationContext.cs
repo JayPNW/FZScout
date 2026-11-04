@@ -121,6 +121,8 @@ class TrayApplicationContext : ApplicationContext
             return;
         }
 
+        this._status.HasStopped = true;
+        ShowStatus();
         this._window.HidesInsteadOfClosing = false;
         this._window.ShowAndActivate();
     }

@@ -1,6 +1,7 @@
 # Draws FZScout's icons at every size Windows asks for: an emerald gem into FZScout/FZScout.ico,
 # an emerald hourglass, for while waiting for a bonus message, into FZScout/FZScoutWaiting.ico,
-# and a grey gem, for before scouting starts, into FZScout/FZScoutNotScouting.ico.
+# a grey gem, for before scouting starts, into FZScout/FZScoutNotScouting.ico,
+# and a grey gem with a red problem badge, for once the app has stopped on its own, into FZScout/FZScoutStopped.ico.
 # Each size is drawn separately rather than scaled, so the small ones stay crisp.
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
@@ -51,6 +52,26 @@ function Greyed($picture) {
         Facets = @($picture.Facets | ForEach-Object { @{ Points = $_.Points; Color = (Grey $_.Color) } })
         Outlines = $picture.Outlines
         OutlineColor = (Grey $picture.OutlineColor)
+        Overlays = $picture.Overlays
+    }
+}
+
+function Circle([double]$centerX, [double]$centerY, [double]$radius) {
+    $corners = 24
+    ,@(0..($corners - 1) | ForEach-Object { $angle = 2 * [Math]::PI * $_ / $corners; ,@(($centerX + $radius * [Math]::Cos($angle)), ($centerY + $radius * [Math]::Sin($angle))) })
+}
+
+# A red circle with a white exclamation mark in the bottom right corner, drawn over the picture and its outlines.
+function WithProblemBadge($picture) {
+    @{
+        Facets = $picture.Facets
+        Outlines = $picture.Outlines
+        OutlineColor = $picture.OutlineColor
+        Overlays = @(
+            @{ Points = (Circle 24 24 8);   Color = '#3A0505' }  # rim
+            @{ Points = (Circle 24 24 6.5); Color = '#E02424' }  # badge
+            @{ Points = @(@(22.75,19), @(25.25,19), @(25.25,25), @(22.75,25)); Color = '#FFFFFF' }   # exclamation mark
+            @{ Points = @(@(22.75,26.5), @(25.25,26.5), @(25.25,29), @(22.75,29)); Color = '#FFFFFF' }) # its dot
     }
 }
 
@@ -72,6 +93,9 @@ function Draw($picture, [int]$size) {
     $pen.LineJoin = 'Round'
     foreach ($outline in $picture.Outlines) {
         $g.DrawPolygon($pen, (ToPoints $outline $scale))
+    }
+    foreach ($overlay in $picture.Overlays) {
+        $g.FillPolygon((New-Object System.Drawing.SolidBrush ([System.Drawing.ColorTranslator]::FromHtml($overlay.Color))), (ToPoints $overlay.Points $scale))
     }
     $g.Dispose()
     ,$bitmap
@@ -128,3 +152,4 @@ function WriteIcon($picture, [string]$fileName) {
 WriteIcon $gem 'FZScout.ico'
 WriteIcon $hourglass 'FZScoutWaiting.ico'
 WriteIcon (Greyed $gem) 'FZScoutNotScouting.ico'
+WriteIcon (WithProblemBadge (Greyed $gem)) 'FZScoutStopped.ico'
