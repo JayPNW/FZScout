@@ -1,4 +1,4 @@
-namespace FZScout;
+﻿namespace FZScout;
 
 /// <summary>FZScout's emerald gem, and the emerald hourglass shown while waiting for a bonus message, drawn by scripts/draw-icons.ps1.</summary>
 static class AppIcon

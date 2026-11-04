@@ -1,4 +1,4 @@
-namespace FZScout;
+﻿namespace FZScout;
 
 /// <summary>
 /// Runs the app in the background behind a system tray icon, starting with the window hidden. Exits when the user chooses Exit,
