@@ -1,43 +1,9 @@
-using FZScout.Reporting;
 using FZScout.Scouting;
-using FZScout.Site;
-using FZScout.Tests.Reporting;
-using Microsoft.Extensions.Time.Testing;
 
 namespace FZScout.Tests.Scouting;
 
-public class CharacterScoutTests
+public class CharacterScoutTests : CharacterScoutTestFixture
 {
-    const string Befallen = "You have entered Befallen.";
-    const string Crushbone = "You have entered Clan Crushbone.";
-    const string Kill = "You have slain a skeleton!";
-    const string Experience = "This land is saturated with unstable magic, improving the experiences of all who venture here.";
-    const string Tribute = "This land is saturated with unstable magic, enhancing the potency of any offerings made here.";
-    const string DailyReset = "Fonts of unstable magic are erupting and receding in response to some nameless power. The magic is cascading throughout Norrath and into the Planes beyond. Hunt for the lands that have been most recently saturated with this magic to reap their many and varied resources.";
-    const string Camping = "It will take you about 30 seconds to prepare your camp.";
-    const string Chat = "You say, 'hello'";
-    const string CampAbandoned = "You abandon your preparations to camp.";
-
-    static readonly Character Bob = new("Bob", Server.Frostreaver);
-    static readonly DateTimeOffset Start = new(2026, 10, 29, 12, 0, 0, TimeSpan.Zero);
-
-    static readonly ServerLists ListsWithoutTributeLikeFrostreaver = new(
-        new HashSet<BonusKey> { new("experience"), new("aa"), new("loot"), BonusKey.None },
-        new HashSet<string> { "Befallen", "Crushbone", "Greater Faydark" });
-
-    static readonly EverQuestLogWatcher.EverQuestLogLineParser Parser = new(new EverQuestLogWatcher.Character(Bob.Name, Bob.Server.Name));
-
-    readonly FakeSite _site = new();
-    readonly StringWriter _output = new();
-    readonly CharacterScout _scout;
-
-    public CharacterScoutTests()
-    {
-        var log = new Log(this._output, new FakeTimeProvider(Start));
-        var bonusReporter = new BonusReporter(this._site.Client, new ApiKey("fz_live_test"), log);
-        this._scout = new(Bob, log, bonusReporter);
-    }
-
     [Fact]
     public async Task BonusMessageIsReported()
     {
@@ -52,165 +18,6 @@ public class CharacterScoutTests
         await Log(0, Crushbone);
 
         Assert.Equal([Report("Crushbone", "experience")], await Log(10, Experience));
-    }
-
-    [Fact]
-    public async Task NoBonusFiveMinutesAfterEnteringIsReportedAsNone()
-    {
-        await Log(0, Befallen);
-
-        Assert.Empty(await Log(299, Chat));
-        Assert.Equal([ReportNone("Befallen")], await Log(300, Chat));
-    }
-
-    [Fact]
-    public async Task NoneIsReportedOnlyOnce()
-    {
-        await Log(0, Befallen);
-        await Log(300, Chat);
-
-        Assert.Empty(await Log(600, Chat));
-    }
-
-    [Fact]
-    public async Task NoBonusFiveSecondsAfterAKillIsReportedAsNone()
-    {
-        await Log(0, Befallen);
-        await Log(20, Kill);
-
-        Assert.Empty(await Log(24, Chat));
-        Assert.Equal([ReportNone("Befallen")], await Log(25, Chat));
-        Assert.Empty(await Log(300, Chat));
-    }
-
-    [Fact]
-    public async Task KillByOwnPetCountsAsAKill()
-    {
-        await Log(0, Befallen);
-        await Log(20, "A wolf was slain by Bob`s pet!");
-
-        Assert.Equal([ReportNone("Befallen")], await Log(25, Chat));
-    }
-
-    [Fact]
-    public async Task KillByOwnWarderCountsAsAKill()
-    {
-        await Log(0, Befallen);
-        await Log(20, "A gnoll pup was slain by Bob`s warder!");
-
-        Assert.Equal([ReportNone("Befallen")], await Log(25, Chat));
-    }
-
-    [Fact]
-    public async Task KillByAnotherPlayersPetIsNotAKill()
-    {
-        await Log(0, Befallen);
-        await Log(20, "A wolf was slain by Alice`s pet!");
-
-        Assert.Empty(await Log(25, Chat));
-    }
-
-    [Fact]
-    public async Task LaterKillsDoNotPushTheKillTimerBack()
-    {
-        await Log(0, Befallen);
-        await Log(20, Kill);
-        await Log(23, Kill);
-
-        Assert.Equal([ReportNone("Befallen")], await Log(25, Chat));
-    }
-
-    [Fact]
-    public async Task KillsAfterABonusDoNothing()
-    {
-        await Log(0, Befallen);
-        await Log(20, Kill);
-        await Log(20, Experience);
-        await Log(40, Kill);
-
-        Assert.Empty(await Log(300, Chat));
-    }
-
-    [Fact]
-    public async Task BonusMessageArrivingMinutesAfterAKillIsReportedEvenAfterReportingNone()
-    {
-        await Log(0, Befallen);
-        await Log(20, Kill);
-        await Log(25, Chat);
-
-        Assert.Equal([Report("Befallen", "experience")], await Log(200, Experience));
-    }
-
-    [Fact]
-    public async Task EnteringAnotherZoneRestartsTheIdleTimer()
-    {
-        await Log(0, Befallen);
-        await Log(100, Crushbone);
-
-        Assert.Empty(await Log(300, Chat));
-        Assert.Equal([ReportNone("Crushbone")], await Log(400, Chat));
-    }
-
-    [Fact]
-    public async Task EnteringAnotherZoneCancelsTheKillTimer()
-    {
-        await Log(0, Befallen);
-        await Log(20, Kill);
-        await Log(22, Crushbone);
-
-        Assert.Empty(await Log(30, Chat));
-    }
-
-    [Fact]
-    public async Task ReEnteringTheSameZoneStartsANewVisit()
-    {
-        await Log(0, Befallen);
-        await Log(10, Experience);
-        await Log(100, Befallen);
-
-        Assert.Equal([ReportNone("Befallen")], await Log(400, Chat));
-    }
-
-    [Fact]
-    public async Task DailyResetRestartsTheIdleTimer()
-    {
-        await Log(0, Befallen);
-        await Log(10, Experience);
-        await Log(1000, DailyReset);
-
-        Assert.Empty(await Log(1299, Chat));
-        Assert.Equal([ReportNone("Befallen")], await Log(1300, Chat));
-    }
-
-    [Fact]
-    public async Task DailyResetRearmsKills()
-    {
-        await Log(0, Befallen);
-        await Log(10, Experience);
-        await Log(1000, DailyReset);
-        await Log(1010, Kill);
-
-        Assert.Equal([ReportNone("Befallen")], await Log(1015, Chat));
-    }
-
-    [Fact]
-    public async Task CampingStopsTheIdleTimer()
-    {
-        await Log(0, Befallen);
-        await Log(200, Camping);
-        await Log(205, "It will take about 25 more seconds to prepare your camp.");
-
-        Assert.Empty(await Log(10_000, Chat));
-    }
-
-    [Fact]
-    public async Task AbandoningCampDoesNotRestartTheIdleTimer()
-    {
-        await Log(0, Befallen);
-        await Log(200, Camping);
-        await Log(210, CampAbandoned);
-
-        Assert.Empty(await Log(10_000, Chat));
     }
 
     [Fact]
@@ -274,7 +81,7 @@ public class CharacterScoutTests
         Assert.Empty(await LogWithoutLists(60, Chat));
 
         Assert.Empty(await Log(61, Chat));
-        Assert.Equal(new KnownZone("Befallen"), this._scout.CurrentZone);
+        Assert.Equal(new KnownZone("Befallen"), Scout.CurrentZone);
         Assert.Equal([ReportNone("Befallen")], await Log(300, Chat));
     }
 
@@ -292,7 +99,7 @@ public class CharacterScoutTests
         await LogWithoutLists(0, "You have entered The Halls of Honor.");
 
         Assert.Empty(await Log(60, Chat));
-        Assert.Equal(new UnknownZone("The Halls of Honor"), this._scout.CurrentZone);
+        Assert.Equal(new UnknownZone("The Halls of Honor"), Scout.CurrentZone);
         Assert.Empty(await Log(1000, Chat));
     }
 
@@ -333,21 +140,5 @@ public class CharacterScoutTests
         await Log(100, "You have entered an Arena (PvP) area.");
 
         Assert.Equal([ReportNone("Befallen")], await Log(300, Chat));
-    }
-
-    static string Report(string zone, string bonus) => $"Reported Frostreaver '{zone}' is '{bonus}'.";
-
-    static string ReportNone(string zone) => $"Reported Frostreaver '{zone}' is 'none' because no bonus message arrived in time.";
-
-    Task<IReadOnlyList<string>> Log(int seconds, string message) => Handle(seconds, message, ListsWithoutTributeLikeFrostreaver);
-
-    Task<IReadOnlyList<string>> LogWithoutLists(int seconds, string message) => Handle(seconds, message, null);
-
-    /// <returns>The lines the scout logged for this message, without their timestamps.</returns>
-    async Task<IReadOnlyList<string>> Handle(int seconds, string message, ServerLists? lists)
-    {
-        this._output.GetStringBuilder().Clear();
-        await this._scout.HandleAsync(Parser.Parse($"[Thu Oct 29 12:00:00 2026] {message}"), Start.AddSeconds(seconds), lists, TestContext.Current.CancellationToken);
-        return [.. this._output.ToString().Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Select(line => line["12:00:00 ".Length..])];
     }
 }
