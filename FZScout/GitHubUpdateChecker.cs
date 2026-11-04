@@ -6,7 +6,6 @@ namespace FZScout;
 
 class GitHubUpdateChecker(IUpdateSource updateSource, IVelopackLocator? locator = null)
 {
-    /// <summary>Talks to the real GitHub.</summary>
     public GitHubUpdateChecker()
         : this(new GithubSource($"https://github.com/{GitHubRepository.OwnerAndName}", accessToken: null, prerelease: false))
     {

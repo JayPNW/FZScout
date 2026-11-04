@@ -2,7 +2,6 @@
 
 namespace FZScout.Tests.Site;
 
-// Talks to the real sites.
 // Fails when a site adds, removes, or renames a zone, so Zones.md and ZoneNames can be updated.
 [CategoryTrait("Integration")]
 public class SiteZonesIntegrationTests

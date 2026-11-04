@@ -34,7 +34,6 @@ class ApiKeyPrompt(FangbreakerZoneClient fangbreakerZoneClient, IApiKeyStore api
         }
     }
 
-    /// <summary>True unless the site rejects the key. A key that can't be checked is used as is.</summary>
     async Task<bool> IsAcceptedAsync(ApiKey apiKey, CancellationToken cancellationToken)
     {
         log.Info($"Checking the API key with {KeyCheck.Server.Site.Host}.");

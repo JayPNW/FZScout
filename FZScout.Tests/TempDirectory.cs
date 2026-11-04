@@ -1,6 +1,5 @@
 namespace FZScout.Tests;
 
-/// <summary>A directory that exists only for the life of a test.</summary>
 class TempDirectory : IDisposable
 {
     public TempDirectory()

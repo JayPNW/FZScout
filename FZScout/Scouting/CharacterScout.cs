@@ -76,7 +76,6 @@ class CharacterScout(Character character, ConsoleReporter log, BonusReporter bon
         _ => Task.CompletedTask,
     };
 
-    /// <summary>Once the zones list loads, works out which zone an <see cref="UnresolvedZone"/> is. Its deadlines still stand.</summary>
     void ResolveZone(ServerLists? lists)
     {
         if (CurrentZone is not UnresolvedZone unresolved || lists is null)

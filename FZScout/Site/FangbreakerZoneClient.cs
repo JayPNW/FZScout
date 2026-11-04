@@ -11,7 +11,6 @@ class FangbreakerZoneClient(HttpMessageHandler httpMessageHandler)
 
     readonly HttpClient _httpClient = new(httpMessageHandler) { Timeout = TimeSpan.FromSeconds(30) };
 
-    /// <summary>Talks to the real sites.</summary>
     public FangbreakerZoneClient()
         : this(new HttpClientHandler())
     {

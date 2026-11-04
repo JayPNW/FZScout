@@ -1,7 +1,6 @@
 ﻿namespace FZScout;
 
 /// <summary>The app's log: timestamped lines, colored on the console. Never pass it the API key.</summary>
-/// <param name="write">Writes one line, in a color if one is given.</param>
 class ConsoleReporter(Action<string, ConsoleColor?> write, TimeProvider timeProvider)
 {
     /// <summary>Plain text, for tests.</summary>
@@ -10,7 +9,6 @@ class ConsoleReporter(Action<string, ConsoleColor?> write, TimeProvider timeProv
     {
     }
 
-    /// <summary>Colored, to the real console.</summary>
     public ConsoleReporter(TimeProvider timeProvider)
         : this(WriteToConsole, timeProvider)
     {

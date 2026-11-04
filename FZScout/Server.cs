@@ -8,7 +8,7 @@ record Server(string Name, Uri Site)
 
     public static readonly IReadOnlyList<Server> All = [Fangbreaker, Frostreaver];
 
-    /// <summary>Finds the server for the <c>{server}</c> in a log file name, ignoring case. Null for servers we don't report.</summary>
+    /// <summary>Finds the server for the <c>{server}</c> in a log file name. Null for servers we don't report.</summary>
     public static Server? FromName(string name)
     {
         return All.FirstOrDefault(s => string.Equals(s.Name, name, StringComparison.OrdinalIgnoreCase));

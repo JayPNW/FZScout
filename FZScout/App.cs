@@ -47,10 +47,6 @@ class App(AppDependencies dependencies)
         }
     }
 
-    /// <summary>
-    /// Runs for the life of the app: feeds every event EverQuestLogWatcher finds to the scout. One bad event is logged, not fatal.
-    /// Stops if the site rejects the API key.
-    /// </summary>
     async Task WatchLogsAndReportBonusesAsync(Scout scout, CancellationToken cancellationToken)
     {
         try

@@ -10,7 +10,6 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ApiKey apiKey, 
         return PostAsync(report, $"Reported {report}.", cancellationToken);
     }
 
-    /// <summary>Reports <c>none</c> for a zone, unless the site already shows a bonus for it.</summary>
     public async Task ReportNoBonusAsync(Server server, string zone, CancellationToken cancellationToken = default)
     {
         var report = new BonusReport(server, zone, BonusKey.None);

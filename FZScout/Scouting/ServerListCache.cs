@@ -2,10 +2,6 @@
 
 namespace FZScout.Scouting;
 
-/// <summary>
-/// Each server's <c>types</c> and <c>zones</c> lists, loaded when first needed.
-/// If loading fails, it tries again the next time the lists are needed.
-/// </summary>
 class ServerListCache(FangbreakerZoneClient fangbreakerZoneClient, ConsoleReporter log)
 {
     readonly Dictionary<Server, ServerLists> _lists = [];

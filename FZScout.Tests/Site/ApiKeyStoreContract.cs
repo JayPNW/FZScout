@@ -2,7 +2,6 @@
 
 namespace FZScout.Tests.Site;
 
-// Shared tests for all implementations of IApiKeyStore
 public abstract class ApiKeyStoreContract
 {
     private protected readonly IApiKeyStore Store;

@@ -1,6 +1,5 @@
 ﻿namespace FZScout.Site;
 
-/// <summary>Keeps the API key only as long as this object lives.</summary>
 class InMemoryApiKeyStore : IApiKeyStore
 {
     ApiKey? _apiKey;
