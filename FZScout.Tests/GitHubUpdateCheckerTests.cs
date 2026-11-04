@@ -40,6 +40,23 @@ public class GitHubUpdateCheckerTests
         Assert.Equal(downloaded, pendingUpdate is not null);
     }
 
+    [Theory]
+    [InlineData("3.0.0", false)]
+    [InlineData("3.0.0-ci.99", true)]
+    [InlineData(null, false)]
+    public void AcceptsPrereleasesOnlyWhenCurrentVersionIsPrerelease(string? current, bool acceptsPrereleases)
+    {
+        SemanticVersion? currentlyInstalledVersion = null;
+        if (current is not null)
+        {
+            currentlyInstalledVersion = SemanticVersion.Parse(current);
+        }
+
+        var source = GitHubUpdateChecker.CreateGitHubSource(currentlyInstalledVersion);
+
+        Assert.Equal(acceptsPrereleases, source.Prerelease);
+    }
+
     [Fact]
     public async Task StaysQuietWhenGitHubIsUnreachable()
     {
