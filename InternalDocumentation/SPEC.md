@@ -11,9 +11,9 @@ Most behavior is best learned from the code. This file records only intent that 
 
 ## Timing
 
-Timers aren't driven by a clock. They are checked only when the character's next log message arrives. That way a character who stops playing never gets a false `none`.
+"Timers" aren't driven by a clock. They are checked only when the character's next log message arrives. That way a character who stops playing never gets a false `none`.
 
-## Reporting
+## Reporting Conflicts
 
 Before reporting `none`, check what the site already shows. If it has a real bonus for the zone, assume the site is right and don't report.
 
