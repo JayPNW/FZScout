@@ -40,10 +40,10 @@ class CharacterScout(Character character)
     /// <param name="lists">The server's lists, or null if they couldn't be loaded.</param>
     public IReadOnlyList<ScoutAction> Tick(DateTimeOffset now, ServerLists? lists)
     {
-        var resolved = ResolveZone(lists);
+        ResolveZone(lists);
         if (!IsDue(this._killDeadline, now) && !IsDue(this._idleDeadline, now))
         {
-            return resolved;
+            return [];
         }
 
         if (CurrentZone is UnresolvedZone unresolved)
@@ -54,7 +54,7 @@ class CharacterScout(Character character)
 
         if (CurrentZone is not KnownZone zone)
         {
-            return resolved;
+            return [];
         }
 
         MarkAlreadyReportedThisZone();
@@ -78,11 +78,11 @@ class CharacterScout(Character character)
     };
 
     /// <summary>Once the zones list loads, works out which zone an <see cref="UnresolvedZone"/> is. Its timers keep running.</summary>
-    IReadOnlyList<ScoutAction> ResolveZone(ServerLists? lists)
+    void ResolveZone(ServerLists? lists)
     {
         if (CurrentZone is not UnresolvedZone unresolved || lists is null)
         {
-            return [];
+            return;
         }
 
         CurrentZone = ZoneNames.Resolve(unresolved.LogName, lists.Zones);
@@ -90,8 +90,6 @@ class CharacterScout(Character character)
         {
             MarkAlreadyReportedThisZone();
         }
-
-        return [];
     }
 
     IReadOnlyList<ScoutAction> OnZoneEntered(string logZone, DateTimeOffset now, ServerLists? lists)
