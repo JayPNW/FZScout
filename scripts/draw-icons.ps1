@@ -1,4 +1,5 @@
-# Draws FZScout's icons at every size Windows asks for: an emerald gem into FZScout/FZScout.ico.
+# Draws FZScout's icons at every size Windows asks for: an emerald gem into FZScout/FZScout.ico,
+# and an emerald hourglass, for while waiting for a bonus message, into FZScout/FZScoutWaiting.ico.
 # Each size is drawn separately rather than scaled, so the small ones stay crisp.
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
@@ -15,6 +16,25 @@ $gem = @{
         @{ Points = @($G1,$G2,$P);      Color = '#17804B' }  # pavilion middle
         @{ Points = @($G2,$G3,$P);      Color = '#0E5F37' }) # pavilion right
     Outlines = @(,@($T1,$T2,$G3,$P,$G0))
+}
+
+# On the same grid and in the gem's colors: a cap at each end, and two glass bulbs meeting at the waist, lit from the upper left.
+$CapTopLeft=@(6,2); $CapTopRight=@(26,2); $BulbTopLeft=@(6,6); $BulbTopRight=@(26,6); $TopMiddle=@(16,6)
+$Waist=@(16,16)
+$BulbBottomLeft=@(6,26); $BulbBottomRight=@(26,26); $BottomMiddle=@(16,26); $CapBottomLeft=@(6,30); $CapBottomRight=@(26,30)
+$hourglass = @{
+    Facets = @(
+        @{ Points = @($CapTopLeft,$CapTopRight,$BulbTopRight,$BulbTopLeft);             Color = '#36C47A' }  # top cap
+        @{ Points = @($BulbTopLeft,$TopMiddle,$Waist);                                   Color = '#C8FADF' }  # top bulb left
+        @{ Points = @($TopMiddle,$BulbTopRight,$Waist);                                  Color = '#76E3A6' }  # top bulb right
+        @{ Points = @($Waist,$BottomMiddle,$BulbBottomLeft);                             Color = '#25A363' }  # bottom bulb left
+        @{ Points = @($Waist,$BulbBottomRight,$BottomMiddle);                            Color = '#17804B' }  # bottom bulb right
+        @{ Points = @($BulbBottomLeft,$BulbBottomRight,$CapBottomRight,$CapBottomLeft); Color = '#0E5F37' }) # bottom cap
+    Outlines = @(
+        @($CapTopLeft,$CapTopRight,$BulbTopRight,$BulbTopLeft)
+        @($BulbTopLeft,$BulbTopRight,$Waist)
+        @($Waist,$BulbBottomRight,$BulbBottomLeft)
+        @($BulbBottomLeft,$BulbBottomRight,$CapBottomRight,$CapBottomLeft))
 }
 
 function ToPoints($points, [double]$scale) {
@@ -89,3 +109,4 @@ function WriteIcon($picture, [string]$fileName) {
 }
 
 WriteIcon $gem 'FZScout.ico'
+WriteIcon $hourglass 'FZScoutWaiting.ico'

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="FZScout.ico" LogicalName="FZScout.ico" />
+    <EmbeddedResource Include="FZScoutWaiting.ico" LogicalName="FZScoutWaiting.ico" />
   </ItemGroup>
 
   <ItemGroup>

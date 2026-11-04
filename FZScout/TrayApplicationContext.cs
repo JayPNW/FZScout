@@ -1,4 +1,4 @@
-﻿namespace FZScout;
+namespace FZScout;
 
 /// <summary>
 /// Runs the app in the background behind a system tray icon, starting with the window hidden. Exits when the user chooses Exit,
@@ -8,6 +8,13 @@ class TrayApplicationContext : ApplicationContext
 {
     readonly MainWindow _window;
     readonly NotifyIcon _trayIcon;
+    readonly Icon _gemIcon = AppIcon.LoadForTray();
+    readonly Icon _waitingForBonusMessageIcon = AppIcon.LoadWaitingForBonusMessageForTray();
+
+    /// <summary>The scout only notices a deadline passing when the next message arrives, so this puts the gem back on time.</summary>
+    readonly System.Windows.Forms.Timer _showGemWhenWaitingEnds = new();
+
+    readonly TimeProvider _timeProvider;
     bool _hasExplainedHidingToTray;
 
     /// <summary>The window isn't the context's main form, because Application.Run would show it.</summary>
@@ -23,7 +30,7 @@ class TrayApplicationContext : ApplicationContext
 
         this._trayIcon = new NotifyIcon
         {
-            Icon = AppIcon.LoadForTray(),
+            Icon = this._gemIcon,
             Text = "FZScout",
             ContextMenuStrip = menu,
             Visible = true,
@@ -32,6 +39,9 @@ class TrayApplicationContext : ApplicationContext
         this._window.HiddenToTray += ExplainHidingToTrayTheFirstTime;
         app.Dependencies.Log.SuccessWritten += message => ShowToast(message, ToolTipIcon.Info);
         app.Dependencies.Log.ErrorWritten += message => ShowToast(message, ToolTipIcon.Error);
+        this._timeProvider = app.Dependencies.TimeProvider;
+        this._showGemWhenWaitingEnds.Tick += (_, _) => ShowGem();
+        app.WaitingForBonusMessageUntilChanged += waitingUntil => this._window.BeginInvoke(() => ShowWaitingForBonusMessageUntil(waitingUntil));
 
         this._window.CreateWithoutShowing();
         this._hasExplainedHidingToTray = true;
@@ -41,6 +51,7 @@ class TrayApplicationContext : ApplicationContext
 
     protected override void ExitThreadCore()
     {
+        this._showGemWhenWaitingEnds.Dispose();
         this._trayIcon.Visible = false;
         this._trayIcon.Dispose();
         base.ExitThreadCore();
@@ -55,6 +66,31 @@ class TrayApplicationContext : ApplicationContext
 
         this._hasExplainedHidingToTray = true;
         this._trayIcon.ShowBalloonTip(5000, "FZScout is still running", "To exit, right-click this icon and choose Exit.", ToolTipIcon.Info);
+    }
+
+    /// <summary>Shows the hourglass until the time given, or the gem if that has passed or is null.</summary>
+    void ShowWaitingForBonusMessageUntil(DateTimeOffset? waitingUntil)
+    {
+        var now = this._timeProvider.GetUtcNow();
+        if (waitingUntil is not { } waitingEnds || waitingEnds <= now)
+        {
+            ShowGem();
+            return;
+        }
+
+        var timeUntilWaitingEnds = waitingEnds - now;
+        this._trayIcon.Icon = this._waitingForBonusMessageIcon;
+        this._trayIcon.Text = $"FZScout: waiting until {waitingEnds.ToLocalTime():HH:mm:ss} for a bonus message";
+        this._showGemWhenWaitingEnds.Stop();
+        this._showGemWhenWaitingEnds.Interval = (int)Math.Ceiling(timeUntilWaitingEnds.TotalMilliseconds);
+        this._showGemWhenWaitingEnds.Start();
+    }
+
+    void ShowGem()
+    {
+        this._showGemWhenWaitingEnds.Stop();
+        this._trayIcon.Icon = this._gemIcon;
+        this._trayIcon.Text = "FZScout";
     }
 
     /// <summary>
