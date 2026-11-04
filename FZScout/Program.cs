@@ -14,7 +14,9 @@ static class Program
             .OnAfterUpdateFastCallback(_ => new LaunchAtLogin().AddToStartupApps(Environment.ProcessPath!))
             .OnBeforeUninstallFastCallback(_ => new LaunchAtLogin().RemoveFromStartupApps())
             .Run();
-        var pendingUpdateDownload = Task.Run(() => new GitHubUpdateChecker().DownloadLatestAndApplyOnDispose());
+        var updateChecker = new GitHubUpdateChecker();
+        using var stopCheckingForUpdates = new CancellationTokenSource();
+        var checkingForUpdates = Task.Run(() => updateChecker.DownloadNewestReleaseNowAndDailyUntilCancelled(TimeProvider.System, stopCheckingForUpdates.Token));
 
         ApplicationConfiguration.Initialize();
         using (var window = new MainWindow())
@@ -22,7 +24,9 @@ static class Program
             Application.Run(new TrayApplicationContext(window, CreateApp(window)));
         }
 
-        using var pendingUpdate = pendingUpdateDownload.GetAwaiter().GetResult();
+        stopCheckingForUpdates.Cancel();
+        checkingForUpdates.GetAwaiter().GetResult();
+        updateChecker.InstallDownloadedUpdateAfterExit();
     }
 
     internal static App CreateApp(MainWindow window)

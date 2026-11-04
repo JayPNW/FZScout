@@ -1,4 +1,5 @@
-﻿using Velopack;
+﻿using Microsoft.Extensions.Time.Testing;
+using Velopack;
 using Velopack.Locators;
 using Velopack.Logging;
 
@@ -18,28 +19,54 @@ public class GitHubUpdateCheckerTests
     [InlineData("3.0.0-ci.99", "2.0.0", false)]
     public async Task DownloadsNewerRelease(string current, string latest, bool downloaded)
     {
-        var feed = new VelopackAssetFeed
-        {
-            Assets =
-            [
-                new VelopackAsset
-                {
-                    PackageId = "FZScout",
-                    Version = SemanticVersion.Parse(latest),
-                    Type = VelopackAssetType.Full,
-                    FileName = "FZScout-win-Full.nupkg",
-                    SHA1 = Sha1OfTheEmptyFileTheFakeDownloadWrites,
-                    SHA256 = Sha256OfTheEmptyFileTheFakeDownloadWrites,
-                },
-            ],
-        };
         using var installDir = new TempDirectory();
-        var locator = new TestVelopackLocator("FZScout", current, installDir.Path, NullVelopackLogger.Instance);
-        var checker = new GitHubUpdateChecker(new FakeUpdateSource(feed), locator);
+        var checker = CreateChecker(current, new FakeUpdateSource(FeedWithRelease(latest)), installDir);
 
-        var pendingUpdate = await checker.DownloadLatestAndApplyOnDispose(TestContext.Current.CancellationToken);
+        await checker.DownloadNewestRelease(TestContext.Current.CancellationToken);
 
-        Assert.Equal(downloaded, pendingUpdate is not null);
+        Assert.Equal(downloaded, checker.DownloadedVersionToInstallAfterExit is not null);
+    }
+
+    [Fact]
+    public async Task InstallsTheNewestOfSeveralDownloads()
+    {
+        using var installDir = new TempDirectory();
+        var source = new FakeUpdateSource(FeedWithRelease("2.0.0"));
+        var checker = CreateChecker("1.0.0", source, installDir);
+        await checker.DownloadNewestRelease(TestContext.Current.CancellationToken);
+
+        source.Feed = FeedWithRelease("3.0.0");
+        await checker.DownloadNewestRelease(TestContext.Current.CancellationToken);
+
+        Assert.Equal(SemanticVersion.Parse("3.0.0"), checker.DownloadedVersionToInstallAfterExit);
+    }
+
+    [Fact]
+    public async Task KeepsAnEarlierDownloadWhenGitHubBecomesUnreachable()
+    {
+        using var installDir = new TempDirectory();
+        var source = new FakeUpdateSource(FeedWithRelease("2.0.0"));
+        var checker = CreateChecker("1.0.0", source, installDir);
+        await checker.DownloadNewestRelease(TestContext.Current.CancellationToken);
+
+        source.ExceptionToThrowWhenChecked = new HttpRequestException();
+        await checker.DownloadNewestRelease(TestContext.Current.CancellationToken);
+
+        Assert.Equal(SemanticVersion.Parse("2.0.0"), checker.DownloadedVersionToInstallAfterExit);
+    }
+
+    [Fact]
+    public async Task StopsQuietlyWhenCancelledBetweenChecks()
+    {
+        using var installDir = new TempDirectory();
+        var checker = CreateChecker("1.0.0", new FakeUpdateSource(FeedWithRelease("2.0.0")), installDir);
+        using var stopChecking = new CancellationTokenSource();
+        var checking = checker.DownloadNewestReleaseNowAndDailyUntilCancelled(new FakeTimeProvider(), stopChecking.Token);
+
+        stopChecking.Cancel();
+        await checking;
+
+        Assert.True(checking.IsCompletedSuccessfully);
     }
 
     [Theory]
@@ -63,11 +90,32 @@ public class GitHubUpdateCheckerTests
     public async Task StaysQuietWhenGitHubIsUnreachable()
     {
         using var installDir = new TempDirectory();
-        var locator = new TestVelopackLocator("FZScout", "1.0.0", installDir.Path, NullVelopackLogger.Instance);
-        var checker = new GitHubUpdateChecker(new FakeUpdateSource(new VelopackAssetFeed(), new HttpRequestException()), locator);
+        var checker = CreateChecker("1.0.0", new FakeUpdateSource(new VelopackAssetFeed(), new HttpRequestException()), installDir);
 
-        var pendingUpdate = await checker.DownloadLatestAndApplyOnDispose(TestContext.Current.CancellationToken);
+        await checker.DownloadNewestRelease(TestContext.Current.CancellationToken);
 
-        Assert.Null(pendingUpdate);
+        Assert.Null(checker.DownloadedVersionToInstallAfterExit);
     }
+
+    static GitHubUpdateChecker CreateChecker(string current, FakeUpdateSource source, TempDirectory installDir)
+    {
+        var locator = new TestVelopackLocator("FZScout", current, installDir.Path, NullVelopackLogger.Instance);
+        return new GitHubUpdateChecker(source, locator);
+    }
+
+    static VelopackAssetFeed FeedWithRelease(string version) => new()
+    {
+        Assets =
+        [
+            new VelopackAsset
+            {
+                PackageId = "FZScout",
+                Version = SemanticVersion.Parse(version),
+                Type = VelopackAssetType.Full,
+                FileName = $"FZScout-{version}-full.nupkg",
+                SHA1 = Sha1OfTheEmptyFileTheFakeDownloadWrites,
+                SHA256 = Sha256OfTheEmptyFileTheFakeDownloadWrites,
+            },
+        ],
+    };
 }
