@@ -1,4 +1,4 @@
-﻿namespace FZScout;
+namespace FZScout;
 
 /// <summary>
 /// Runs the app in the background behind a system tray icon, starting with the window hidden. Exits when the user chooses Exit,
@@ -22,33 +22,48 @@ class TrayApplicationContext : ApplicationContext
     {
         this._window = window;
         this._window.FormClosed += (_, _) => ExitThread();
-
-        var menu = new ContextMenuStrip();
-        var showItem = menu.Items.Add("Show FZScout", null, (_, _) => this._window.ShowAndActivate());
-        showItem.Font = new Font(showItem.Font, FontStyle.Bold);
-        menu.Items.Add("Settings...", null, (_, _) => this._window.ShowSettings());
-        menu.Items.Add("Exit", null, (_, _) => this._window.RequestExit());
-
-        this._trayIcon = new NotifyIcon
-        {
-            Icon = this._trayIcons[StatusIcon.NotScouting],
-            Text = "FZScout",
-            ContextMenuStrip = menu,
-            Visible = true,
-        };
-        this._trayIcon.DoubleClick += (_, _) => this._window.ShowAndActivate();
+        this._trayIcon = CreateTrayIconWithMenu();
         this._window.HiddenToTray += ExplainHidingToTrayTheFirstTime;
-        app.Dependencies.Log.SuccessWritten += message => ShowToast(message, ToolTipIcon.Info);
-        app.Dependencies.Log.ErrorWritten += message => ShowToast(message, ToolTipIcon.Error);
-        app.Dependencies.Log.SuccessWritten += _ => UpdateStatus(status => status.HadProblemSinceLastSuccess = false);
-        app.Dependencies.Log.ErrorWritten += _ => UpdateStatus(status => status.HadProblemSinceLastSuccess = true);
+        ShowLogSuccessesAndErrorsInToastsAndStatus(app.Dependencies.Log);
         this._timeProvider = app.Dependencies.TimeProvider;
         this._status = new AppStatus(this._timeProvider);
         this._showStatusWhenItChangesByItself.Tick += (_, _) => ShowStatus();
         ShowStatus();
         app.WaitingForBonusMessageUntilChanged += waitingUntil => UpdateStatus(status => status.WaitingForBonusMessageUntil = waitingUntil);
         app.ScoutingStarted += () => UpdateStatus(StartScouting);
+        StartInTrayOrOnTaskbarAndSayWhere();
+        RunAppThenStop(app);
+    }
 
+    NotifyIcon CreateTrayIconWithMenu()
+    {
+        var menu = new ContextMenuStrip();
+        var showItem = menu.Items.Add("Show FZScout", null, (_, _) => this._window.ShowAndActivate());
+        showItem.Font = new Font(showItem.Font, FontStyle.Bold);
+        menu.Items.Add("Settings...", null, (_, _) => this._window.ShowSettings());
+        menu.Items.Add("Exit", null, (_, _) => this._window.RequestExit());
+
+        var trayIcon = new NotifyIcon
+        {
+            Icon = this._trayIcons[StatusIcon.NotScouting],
+            Text = "FZScout",
+            ContextMenuStrip = menu,
+            Visible = true,
+        };
+        trayIcon.DoubleClick += (_, _) => this._window.ShowAndActivate();
+        return trayIcon;
+    }
+
+    void ShowLogSuccessesAndErrorsInToastsAndStatus(Log log)
+    {
+        log.SuccessWritten += message => ShowToast(message, ToolTipIcon.Info);
+        log.ErrorWritten += message => ShowToast(message, ToolTipIcon.Error);
+        log.SuccessWritten += _ => UpdateStatus(status => status.HadProblemSinceLastSuccess = false);
+        log.ErrorWritten += _ => UpdateStatus(status => status.HadProblemSinceLastSuccess = true);
+    }
+
+    void StartInTrayOrOnTaskbarAndSayWhere()
+    {
         var trayIconReachability = new TrayIconReachability();
         this._window.CanUserReachTrayIcon = () => trayIconReachability.CanUserReachTrayIcon(Environment.ProcessPath!);
         this._window.CreateWithoutShowing();
@@ -56,14 +71,11 @@ class TrayApplicationContext : ApplicationContext
         if (this._window.CanUserReachTrayIcon())
         {
             this._trayIcon.ShowBalloonTip(5000, "FZScout is running", "Double-click this icon to see the log. To exit, right-click it and choose Exit.", ToolTipIcon.Info);
-        }
-        else
-        {
-            this._window.ShowMinimizedOnTaskbar();
-            this._trayIcon.ShowBalloonTip(5000, "FZScout is running", "Windows is hiding its tray icon, so it stays on the taskbar. To show the icon, go to Settings > Personalization > Taskbar > Other system tray icons.", ToolTipIcon.Info);
+            return;
         }
 
-        RunAppThenStop(app);
+        this._window.ShowMinimizedOnTaskbar();
+        this._trayIcon.ShowBalloonTip(5000, "FZScout is running", "Windows is hiding its tray icon, so it stays on the taskbar. To show the icon, go to Settings > Personalization > Taskbar > Other system tray icons.", ToolTipIcon.Info);
     }
 
     protected override void ExitThreadCore()
