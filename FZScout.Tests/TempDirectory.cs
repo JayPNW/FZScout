@@ -1,4 +1,4 @@
-namespace FZScout.Tests;
+﻿namespace FZScout.Tests;
 
 class TempDirectory : IDisposable
 {

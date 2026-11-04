@@ -1,4 +1,4 @@
-namespace FZScout;
+﻿namespace FZScout;
 
 static class DictionaryExtensions
 {

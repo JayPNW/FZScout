@@ -1,4 +1,4 @@
-using Velopack;
+﻿using Velopack;
 
 namespace FZScout;
 
