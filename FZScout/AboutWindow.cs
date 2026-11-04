@@ -8,7 +8,7 @@ namespace FZScout;
 /// </summary>
 class AboutWindow : FixedSizeDialog
 {
-    const string ReleasesUrl = $"https://github.com/{GitHubRepository.OwnerAndName}/releases";
+    const string UpdateWillBeInstalledOnExit = "An update is available and will be installed on exit.";
 
     readonly GitHubUpdateChecker _updateChecker;
     readonly Action _exitToInstallUpdateThenRestart;
@@ -24,15 +24,10 @@ class AboutWindow : FixedSizeDialog
         Text = "About FZScout";
 
         var layout = new TableLayoutPanel { AutoSize = true, ColumnCount = 1, Padding = new Padding(12) };
-        var appName = new Label { Text = "FZScout", AutoSize = true, Font = new Font(Font.FontFamily, Font.Size * 1.5f, FontStyle.Bold) };
-        var version = new Label { Text = $"Version {runningVersion ?? "unknown"}", AutoSize = true };
+        var version = new Label { Text = $"v{runningVersion ?? "unknown"}", AutoSize = true };
         this._updateCheckResult = new Label { Text = "Checking for updates...", AutoSize = true, MaximumSize = new Size(640, 0), Margin = new Padding(3, 12, 3, 3) };
-        var releases = new LinkLabel { Text = "See all releases", AutoSize = true };
-        releases.LinkClicked += (_, _) => Browser.Open(ReleasesUrl);
-        layout.Controls.Add(appName);
         layout.Controls.Add(version);
         layout.Controls.Add(this._updateCheckResult);
-        layout.Controls.Add(releases);
         layout.Controls.Add(CreateCloseButtonRow());
         Controls.Add(layout);
 
@@ -74,23 +69,21 @@ class AboutWindow : FixedSizeDialog
     string Describe(UpdateCheckResult result) => result switch
     {
         AlreadyOnNewestRelease => "FZScout is up to date.",
-        DownloadedNewerRelease downloaded => DescribeDownloadedVersion(downloaded.Version),
+        DownloadedNewerRelease => UpdateWillBeInstalledOnExit,
         NotInstalledSoCannotUpdate => "This copy of FZScout isn't installed, so it can't update itself.",
         CouldNotCheckForUpdates couldNotCheck => DescribeProblemCheckingForUpdates(couldNotCheck.Problem),
         _ => throw new UnreachableException(),
     };
 
-    static string DescribeDownloadedVersion(Velopack.SemanticVersion version) => $"Version {version} is downloaded, and will be installed when FZScout exits.";
-
     /// <summary>Mentions an update an earlier check downloaded, since it still gets installed.</summary>
     string DescribeProblemCheckingForUpdates(string problem)
     {
         var couldNotCheck = $"Couldn't check for updates: {problem}";
-        if (this._updateChecker.DownloadedVersionToInstallAfterExit is not { } earlierDownload)
+        if (this._updateChecker.DownloadedVersionToInstallAfterExit is null)
         {
             return couldNotCheck;
         }
 
-        return $"{couldNotCheck}{Environment.NewLine}{Environment.NewLine}{DescribeDownloadedVersion(earlierDownload)}";
+        return $"{couldNotCheck}{Environment.NewLine}{Environment.NewLine}{UpdateWillBeInstalledOnExit}";
     }
 }
