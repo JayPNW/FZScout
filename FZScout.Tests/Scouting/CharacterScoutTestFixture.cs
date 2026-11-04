@@ -34,7 +34,7 @@ public abstract class CharacterScoutTestFixture
     protected CharacterScoutTestFixture()
     {
         var log = new Log(this._output, new FakeTimeProvider(Start));
-        var bonusReporter = new BonusReporter(this._site.Client, new ApiKey("fz_live_test"), log);
+        var bonusReporter = new BonusReporter(this._site.Client, () => new ApiKey("fz_live_test"), log);
         Scout = new(Bob, log, bonusReporter);
     }
 

@@ -7,7 +7,7 @@ class AppStatus(TimeProvider timeProvider)
 
     public bool IsScouting { get; set; }
 
-    /// <summary>Whether the app has stopped on its own, like when the API key is rejected, and won't scout any more.</summary>
+    /// <summary>Whether the app has stopped on its own, like after an unexpected problem, and won't scout any more.</summary>
     public bool HasStopped { get; set; }
 
     /// <summary>Can already have passed, since the scouts only notice that when the next message arrives.</summary>

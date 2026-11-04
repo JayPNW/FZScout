@@ -27,37 +27,37 @@ class App(AppDependencies dependencies)
         }
 
         Dependencies.Log.Info($"FZScout v{Dependencies.GetVersion()}");
-        if (await GetAcceptedApiKeyAsync() is not { } apiKey)
-        {
-            return;
-        }
         Dependencies.Log.Info("To exit, right-click the FZScout icon in the system tray and choose Exit.");
+        await LogProblemWithStoredApiKeyAsync(Dependencies.UserInput.ExitRequested);
 
-        var scout = CreateScoutReportingWith(apiKey);
+        var scout = CreateScout();
         ScoutingStarted?.Invoke();
         await WatchLogsAndReportBonusesAsync(scout, Dependencies.UserInput.ExitRequested);
     }
 
-    Scout CreateScoutReportingWith(ApiKey apiKey)
+    /// <summary>The only time the key is checked without the user asking, so a bad one shows up before the first report.</summary>
+    public async Task LogProblemWithStoredApiKeyAsync(CancellationToken cancellationToken)
     {
-        var client = Dependencies.FangbreakerZoneClient;
-        var scout = new Scout(new ServerListCache(client, Dependencies.Log), Dependencies.Log, new BonusReporter(client, apiKey, Dependencies.Log));
-        scout.WaitingForBonusMessageUntilChanged += waitingUntil => WaitingForBonusMessageUntilChanged?.Invoke(waitingUntil);
-        return scout;
+        if (Dependencies.ApiKeyStore.Load() is not { } apiKey)
+        {
+            Dependencies.Log.Error("No API key. Enter one in Settings.");
+            return;
+        }
+
+        var result = await Dependencies.FangbreakerZoneClient.CheckApiKeyAsync(apiKey, cancellationToken);
+        if (result.Outcome == ApiOutcome.KeyRejected)
+        {
+            Dependencies.Log.Error($"API key rejected. Enter a new one in Settings. {result.Error}");
+        }
     }
 
-    /// <returns>Null if the user entered no key or asked to exit.</returns>
-    public async Task<ApiKey?> GetAcceptedApiKeyAsync()
+    Scout CreateScout()
     {
-        try
-        {
-            var apiKeyPrompt = new ApiKeyPrompt(Dependencies.FangbreakerZoneClient, Dependencies.ApiKeyStore, Dependencies.Log, Dependencies.UserInput.ReadApiKeyAsync);
-            return await apiKeyPrompt.GetAcceptedApiKeyAsync(Dependencies.UserInput.ExitRequested);
-        }
-        catch (OperationCanceledException) when (Dependencies.UserInput.ExitRequested.IsCancellationRequested)
-        {
-            return null;
-        }
+        var client = Dependencies.FangbreakerZoneClient;
+        var bonusReporter = new BonusReporter(client, Dependencies.ApiKeyStore.Load, Dependencies.Log);
+        var scout = new Scout(new ServerListCache(client, Dependencies.Log), Dependencies.Log, bonusReporter);
+        scout.WaitingForBonusMessageUntilChanged += waitingUntil => WaitingForBonusMessageUntilChanged?.Invoke(waitingUntil);
+        return scout;
     }
 
     async Task WatchLogsAndReportBonusesAsync(Scout scout, CancellationToken cancellationToken)
@@ -72,10 +72,6 @@ class App(AppDependencies dependencies)
         catch (OperationCanceledException)
         {
         }
-        catch (ApiKeyRejectedException)
-        {
-            Dependencies.Log.Error("API key rejected. Exiting.");
-        }
     }
 
     async Task HandleLogEventLoggingUnexpectedProblemsAsync(Scout scout, EverQuestLogWatcher.EverQuestLogEvent logEvent, CancellationToken cancellationToken)
@@ -84,7 +80,7 @@ class App(AppDependencies dependencies)
         {
             await scout.HandleAsync(logEvent, Dependencies.TimeProvider.GetUtcNow(), cancellationToken);
         }
-        catch (Exception exception) when (exception is not OperationCanceledException and not ApiKeyRejectedException)
+        catch (Exception exception) when (exception is not OperationCanceledException)
         {
             Dependencies.Log.Error($"Unexpected problem: {exception}");
         }

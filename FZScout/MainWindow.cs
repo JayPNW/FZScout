@@ -1,16 +1,14 @@
 ﻿using System.ComponentModel;
-using FZScout.Site;
 
 namespace FZScout;
 
 /// <summary>
-/// Shows the log, and opens Settings when the user asks or the app needs an API key. Safe to call from any thread once created, except where noted.
+/// Shows the log. Safe to call from any thread once created, except where noted.
 /// </summary>
 class MainWindow : Form, IUserInput
 {
     readonly CancellationTokenSource _exitRequested = new();
     readonly RichTextBox _logView;
-    SettingsWindow? _openSettingsWindow;
 
     public MainWindow()
     {
@@ -56,30 +54,10 @@ class MainWindow : Form, IUserInput
         RequestExit();
     }
 
-    public Task<ApiKey?> ReadApiKeyAsync(CancellationToken cancellationToken)
-    {
-        var answer = new TaskCompletionSource<ApiKey?>(TaskCreationOptions.RunContinuationsAsynchronously);
-        BeginInvoke(() => AskForApiKeyInSettings(answer));
-        return answer.Task.WaitAsync(cancellationToken);
-    }
-
     public void WriteLine(string line, ConsoleColor? color) => BeginInvoke(() => AppendLine(line, color));
 
-    /// <summary>Lets other threads write to the window and ask for the API key before the user ever opens it.</summary>
+    /// <summary>Lets other threads write to the window before the user ever opens it.</summary>
     public void CreateWithoutShowing() => _ = Handle;
-
-    /// <summary>Brings an already open Settings window to the front, instead of opening a second one. Call on the UI thread.</summary>
-    public void ShowSettings()
-    {
-        ShowAndActivate();
-        if (this._openSettingsWindow is not null)
-        {
-            this._openSettingsWindow.Activate();
-            return;
-        }
-
-        OpenSettings(asksForApiKey: false, onClosed: _ => { });
-    }
 
     public void ShowMinimizedOnTaskbar()
     {
@@ -136,31 +114,6 @@ class MainWindow : Form, IUserInput
         }
 
         return Color.FromName(color.Value.ToString());
-    }
-
-    /// <summary>Replaces a Settings window the user already opened, since that one has no API key box.</summary>
-    void AskForApiKeyInSettings(TaskCompletionSource<ApiKey?> answer)
-    {
-        ShowAndActivate();
-        this._openSettingsWindow?.Close();
-        OpenSettings(asksForApiKey: true, onClosed: settings => answer.TrySetResult(settings.EnteredApiKey));
-    }
-
-    void OpenSettings(bool asksForApiKey, Action<SettingsWindow> onClosed)
-    {
-        var settings = new SettingsWindow(new LaunchAtLogin(), asksForApiKey);
-        this._openSettingsWindow = settings;
-        settings.FormClosed += (_, _) =>
-        {
-            if (this._openSettingsWindow == settings)
-            {
-                this._openSettingsWindow = null;
-            }
-
-            onClosed(settings);
-            settings.Dispose();
-        };
-        settings.ShowCenteredOver(this);
     }
 
     void HideToTrayOrMinimize()

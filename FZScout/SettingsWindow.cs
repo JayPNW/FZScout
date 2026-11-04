@@ -2,50 +2,47 @@
 
 namespace FZScout;
 
+/// <summary>Saves only an API key the site accepts. Stays open showing what went wrong otherwise.</summary>
 class SettingsWindow : Form
 {
     const string GetApiKeyUrl = "https://fangbreaker.zone/account";
     const string ApiKeyHelpUrl = "https://jaypnw.github.io/FZScout/create-api-key.html";
 
     readonly LaunchAtLogin _launchAtLogin;
-    readonly TextBox? _apiKeyBox;
+    readonly IApiKeyStore _apiKeyStore;
+    readonly FangbreakerZoneClient _fangbreakerZoneClient;
+    readonly Log _log;
+    readonly TextBox _apiKeyBox;
+    readonly Label _apiKeyProblem;
     readonly CheckBox _launchAtLoginBox;
-    bool _wasSaved;
+    readonly Button _saveButton;
 
-    /// <param name="asksForApiKey">Only when the app is waiting for one, since a running app keeps using the key it started with.</param>
-    public SettingsWindow(LaunchAtLogin launchAtLogin, bool asksForApiKey)
+    public SettingsWindow(LaunchAtLogin launchAtLogin, IApiKeyStore apiKeyStore, FangbreakerZoneClient fangbreakerZoneClient, Log log)
     {
         this._launchAtLogin = launchAtLogin;
+        this._apiKeyStore = apiKeyStore;
+        this._fangbreakerZoneClient = fangbreakerZoneClient;
+        this._log = log;
         Text = "FZScout Settings";
         Icon = AppIcon.Load();
         StyleAsFixedSizeDialog();
 
         var layout = new TableLayoutPanel { AutoSize = true, ColumnCount = 2, Padding = new Padding(12) };
-        if (asksForApiKey)
-        {
-            this._apiKeyBox = new TextBox { Width = 400, UseSystemPasswordChar = true };
-            AddApiKeyRows(layout, this._apiKeyBox);
-        }
-
+        this._apiKeyBox = new TextBox { Width = 400, UseSystemPasswordChar = true, Text = apiKeyStore.Load()?.Value ?? "" };
+        AddApiKeyRows(layout, this._apiKeyBox);
+        this._apiKeyProblem = new Label { AutoSize = true, MaximumSize = new Size(400, 0), ForeColor = Color.Firebrick, Visible = false };
+        layout.Controls.Add(this._apiKeyProblem, 1, 2);
         this._launchAtLoginBox = AddLaunchAtLoginRow(layout, launchAtLogin);
-        AddSaveAndCancelButtonsRow(layout);
+        this._saveButton = AddSaveAndCancelButtonsRow(layout);
+        this._apiKeyBox.TextChanged += (_, _) => AllowSavingOnlyWithAnApiKey();
+        AllowSavingOnlyWithAnApiKey();
         Controls.Add(layout);
     }
 
-    /// <summary>Null if the user cancelled, left the box empty, or wasn't asked for one.</summary>
-    public ApiKey? EnteredApiKey
-    {
-        get
-        {
-            var text = this._apiKeyBox?.Text.Trim() ?? "";
-            if (!this._wasSaved || text.Length == 0)
-            {
-                return null;
-            }
+    /// <summary>Raised only after the site accepted the key.</summary>
+    public event Action? ApiKeySaved;
 
-            return new ApiKey(text);
-        }
-    }
+    string ApiKeyBoxText => this._apiKeyBox.Text.Trim();
 
     /// <summary>Shows the window over <paramref name="owner"/> without blocking it, so the log stays readable and scrollable.</summary>
     public void ShowCenteredOver(Form owner)
@@ -57,7 +54,7 @@ class SettingsWindow : Form
             owner.Top + ((owner.Height - Height) / 2));
         Show();
         Activate();
-        this._apiKeyBox?.Focus();
+        this._apiKeyBox.Focus();
     }
 
     void StyleAsFixedSizeDialog()
@@ -71,29 +68,7 @@ class SettingsWindow : Form
         StartPosition = FormStartPosition.Manual;
     }
 
-    static CheckBox AddLaunchAtLoginRow(TableLayoutPanel layout, LaunchAtLogin launchAtLogin)
-    {
-        var launchAtLoginBox = new CheckBox { Text = "Launch FZScout when I log in to Windows", AutoSize = true, Checked = launchAtLogin.IsOn };
-        layout.Controls.Add(launchAtLoginBox, 0, 2);
-        layout.SetColumnSpan(launchAtLoginBox, 2);
-        return launchAtLoginBox;
-    }
-
-    void AddSaveAndCancelButtonsRow(TableLayoutPanel layout)
-    {
-        var saveButton = new Button { Text = "Save", AutoSize = true };
-        saveButton.Click += (_, _) => Save();
-        var cancelButton = new Button { Text = "Cancel", AutoSize = true };
-        cancelButton.Click += (_, _) => Close();
-        var buttons = new FlowLayoutPanel { FlowDirection = FlowDirection.RightToLeft, Dock = DockStyle.Fill, AutoSize = true, Margin = new Padding(0, 12, 0, 0) };
-        buttons.Controls.Add(cancelButton);
-        buttons.Controls.Add(saveButton);
-        AcceptButton = saveButton;
-        CancelButton = cancelButton;
-
-        layout.Controls.Add(buttons, 0, 3);
-        layout.SetColumnSpan(buttons, 2);
-    }
+    void AllowSavingOnlyWithAnApiKey() => this._saveButton.Enabled = ApiKeyBoxText.Length > 0;
 
     static void AddApiKeyRows(TableLayoutPanel layout, TextBox apiKeyBox)
     {
@@ -110,11 +85,88 @@ class SettingsWindow : Form
         layout.Controls.Add(help, 1, 1);
     }
 
-    void Save()
+    static CheckBox AddLaunchAtLoginRow(TableLayoutPanel layout, LaunchAtLogin launchAtLogin)
     {
-        this._wasSaved = true;
+        var launchAtLoginBox = new CheckBox { Text = "Launch FZScout when I log in to Windows", AutoSize = true, Checked = launchAtLogin.IsOn };
+        layout.Controls.Add(launchAtLoginBox, 0, 3);
+        layout.SetColumnSpan(launchAtLoginBox, 2);
+        return launchAtLoginBox;
+    }
+
+    Button AddSaveAndCancelButtonsRow(TableLayoutPanel layout)
+    {
+        var saveButton = new Button { Text = "Save", AutoSize = true };
+        saveButton.Click += async (_, _) => await SaveIfApiKeyIsAcceptedAsync();
+        var cancelButton = new Button { Text = "Cancel", AutoSize = true };
+        cancelButton.Click += (_, _) => Close();
+        var buttons = new FlowLayoutPanel { FlowDirection = FlowDirection.RightToLeft, Dock = DockStyle.Fill, AutoSize = true, Margin = new Padding(0, 12, 0, 0) };
+        buttons.Controls.Add(cancelButton);
+        buttons.Controls.Add(saveButton);
+        AcceptButton = saveButton;
+        CancelButton = cancelButton;
+
+        layout.Controls.Add(buttons, 0, 4);
+        layout.SetColumnSpan(buttons, 2);
+        return saveButton;
+    }
+
+    async Task SaveIfApiKeyIsAcceptedAsync()
+    {
+        var apiKey = new ApiKey(ApiKeyBoxText);
+        this._apiKeyBox.Enabled = false;
+        this._saveButton.Enabled = false;
+        this._apiKeyProblem.Visible = false;
+        var problem = await CheckAndSaveApiKeyAsync(apiKey);
+        if (IsDisposed)
+        {
+            return;
+        }
+
+        if (problem is not null)
+        {
+            ShowApiKeyProblem(problem);
+            return;
+        }
+
         SaveLaunchAtLogin();
         Close();
+    }
+
+    /// <returns>What went wrong, or null if the key was saved.</returns>
+    async Task<string?> CheckAndSaveApiKeyAsync(ApiKey apiKey)
+    {
+        var result = await this._fangbreakerZoneClient.CheckApiKeyAsync(apiKey);
+        if (result.Outcome == ApiOutcome.KeyRejected)
+        {
+            return "The site rejected this API key.";
+        }
+
+        if (!result.IsSuccess)
+        {
+            return $"Couldn't check the API key. {result.Error}";
+        }
+
+        try
+        {
+            this._apiKeyStore.Save(apiKey);
+        }
+        catch (Exception exception)
+        {
+            return $"Couldn't save the API key: {exception.Message}";
+        }
+
+        this._log.Info($"API key verified and saved to {this._apiKeyStore.StorageLocationForDisplay}.");
+        ApiKeySaved?.Invoke();
+        return null;
+    }
+
+    void ShowApiKeyProblem(string problem)
+    {
+        this._apiKeyProblem.Text = problem;
+        this._apiKeyProblem.Visible = true;
+        this._apiKeyBox.Enabled = true;
+        AllowSavingOnlyWithAnApiKey();
+        this._apiKeyBox.Focus();
     }
 
     void SaveLaunchAtLogin()

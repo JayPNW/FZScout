@@ -3,7 +3,8 @@
 namespace FZScout.Reporting;
 
 /// <summary>Sends the scouts' reports to the site, following the Reporting section of InternalDocumentation/SPEC.md.</summary>
-class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ApiKey apiKey, Log log)
+/// <param name="loadApiKey">Called for each report, so a key the user saves in Settings takes effect right away.</param>
+class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, Func<ApiKey?> loadApiKey, Log log)
 {
     public Task ReportBonusAsync(BonusReport report, CancellationToken cancellationToken = default)
     {
@@ -23,6 +24,12 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ApiKey apiKey, 
 
     async Task PostAsync(BonusReport report, string successMessage, CancellationToken cancellationToken)
     {
+        if (loadApiKey() is not { } apiKey)
+        {
+            log.Error($"Couldn't report {report}, because there's no API key. Enter one in Settings.");
+            return;
+        }
+
         var result = await fangbreakerZoneClient.ReportBonusAsync(report, apiKey, cancellationToken);
         if (result.IsSuccess)
         {
@@ -30,11 +37,13 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, ApiKey apiKey, 
             return;
         }
 
-        log.Error($"Couldn't report {report}. {result.Error}");
         if (result.Outcome == ApiOutcome.KeyRejected)
         {
-            throw new ApiKeyRejectedException();
+            log.Error($"Couldn't report {report}, because the API key was rejected. Enter a new one in Settings. {result.Error}");
+            return;
         }
+
+        log.Error($"Couldn't report {report}. {result.Error}");
     }
 
     /// <summary>True unless the site already shows a bonus for the zone, which we assume is right.</summary>

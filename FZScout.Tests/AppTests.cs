@@ -8,14 +8,13 @@ namespace FZScout.Tests;
 public class AppTests
 {
     static readonly ApiKey StoredApiKey = new("fz_live_stored");
-    static readonly ApiKey TypedApiKey = new("fz_live_typed");
 
     const string KeyCheckRequest = """POST /api/client/bonuses {"serverName":"Fangbreaker","zoneName":"The Nexus","bonusKey":"none"}""";
 
     readonly FakeTimeProvider _time = new(new DateTimeOffset(2026, 10, 29, 12, 0, 0, TimeSpan.Zero));
     readonly StringWriter _output = new();
     readonly FakeSite _site = new();
-    readonly InMemoryUserInput _userInput = new(Cancel, TypedApiKey);
+    readonly InMemoryUserInput _userInput = new(Cancel);
     readonly InMemorySingleInstance _singleInstance = new();
     readonly InMemoryApiKeyStore _apiKeyStore = new();
     readonly App _app;
@@ -53,73 +52,41 @@ public class AppTests
     {
         this._apiKeyStore.Save(StoredApiKey);
 
-        await this._app.GetAcceptedApiKeyAsync();
+        await this._app.LogProblemWithStoredApiKeyAsync(Cancel);
 
         Assert.Equal([KeyCheckRequest], this._site.Requests);
-        Assert.Contains("API key verified.", Output);
-        Assert.Equal(0, this._userInput.TimesAskedForApiKey);
+        Assert.DoesNotContain("ERROR", Output);
     }
 
     [Fact]
-    public async Task AsksForAnApiKeyWhenNoneIsStored()
-    {
-        await this._app.GetAcceptedApiKeyAsync();
-
-        Assert.Equal(1, this._userInput.TimesAskedForApiKey);
-        Assert.Equal(TypedApiKey, this._apiKeyStore.Load());
-        Assert.Equal([KeyCheckRequest], this._site.Requests);
-        Assert.Contains("API key verified.", Output);
-    }
-
-    [Fact]
-    public async Task AsksForANewApiKeyWhenTheSiteRejectsTheStoredOne()
+    public async Task LogsWhyTheSiteRejectedTheStoredApiKey()
     {
         this._apiKeyStore.Save(StoredApiKey);
         this._site.RejectApiKey(StoredApiKey);
 
-        await this._app.GetAcceptedApiKeyAsync();
+        await this._app.LogProblemWithStoredApiKeyAsync(Cancel);
 
-        Assert.Contains("ERROR: API key rejected.", Output);
-        Assert.Equal(1, this._userInput.TimesAskedForApiKey);
-        Assert.Equal(TypedApiKey, this._apiKeyStore.Load());
-        Assert.Contains("API key verified.", Output);
+        Assert.Contains("""ERROR: API key rejected. Enter a new one in Settings. POST https://fangbreaker.zone/api/client/bonuses returned 401: {"ok":false,"error":"Nope"}""", Output);
+        Assert.Equal(StoredApiKey, this._apiKeyStore.Load());
     }
 
     [Fact]
-    public async Task ShowsWhyTheSiteRejectedTheKey()
+    public async Task LogsThatThereIsNoApiKey()
     {
-        this._apiKeyStore.Save(StoredApiKey);
-        this._site.RejectApiKey(StoredApiKey);
+        await this._app.LogProblemWithStoredApiKeyAsync(Cancel);
 
-        await this._app.GetAcceptedApiKeyAsync();
-
-        Assert.Contains("""ERROR: POST https://fangbreaker.zone/api/client/bonuses returned 401: {"ok":false,"error":"Nope"}""", Output);
+        Assert.Empty(this._site.Requests);
+        Assert.Contains("ERROR: No API key. Enter one in Settings.", Output);
     }
 
     [Fact]
-    public async Task UsesAStoredKeyThatCantBeChecked()
+    public async Task SaysNothingWhenTheStoredApiKeyCantBeChecked()
     {
         this._apiKeyStore.Save(StoredApiKey);
         this._site.Fail("POST /api/client/bonuses", System.Net.HttpStatusCode.InternalServerError);
 
-        Assert.Equal(StoredApiKey, await this._app.GetAcceptedApiKeyAsync());
-        Assert.Contains("WARNING: API key: couldn't check it, so it will be used as is.", Output);
-        Assert.Equal(0, this._userInput.TimesAskedForApiKey);
-    }
+        await this._app.LogProblemWithStoredApiKeyAsync(Cancel);
 
-    [Fact]
-    public async Task ExitsWhenNoApiKeyIsEntered()
-    {
-        this._userInput.TypedApiKey = null;
-        var scoutingStarted = false;
-        this._app.ScoutingStarted += () => scoutingStarted = true;
-
-        await this._app.RunAsync();
-
-        Assert.False(scoutingStarted);
-
-        Assert.Equal(1, this._userInput.TimesAskedForApiKey);
-        Assert.Empty(this._site.Requests);
-        Assert.Contains("No API key entered. Exiting.", Output);
+        Assert.DoesNotContain("ERROR", Output);
     }
 }

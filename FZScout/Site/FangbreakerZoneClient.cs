@@ -9,6 +9,9 @@ class FangbreakerZoneClient(HttpMessageHandler httpMessageHandler)
 {
     static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
+    /// <summary>Checks a key by posting 'none' for a zone that never has a bonus.</summary>
+    static readonly BonusReport ApiKeyCheck = new(Server.Fangbreaker, "The Nexus", BonusKey.None);
+
     readonly HttpClient _httpClient = new(httpMessageHandler) { Timeout = TimeSpan.FromSeconds(30) };
 
     public FangbreakerZoneClient()
@@ -43,6 +46,8 @@ class FangbreakerZoneClient(HttpMessageHandler httpMessageHandler)
         var result = await SendAsync<ReportResponseDto>(request, cancellationToken);
         return Map(result, r => r.Updated);
     }
+
+    public Task<ApiResult<bool>> CheckApiKeyAsync(ApiKey apiKey, CancellationToken cancellationToken = default) => ReportBonusAsync(ApiKeyCheck, apiKey, cancellationToken);
 
     async Task<ApiResult<T>> GetAsync<T>(Server server, string list, CancellationToken cancellationToken)
     {

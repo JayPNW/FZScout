@@ -15,12 +15,13 @@ public class BonusReporterTests
     readonly FakeSite _site = new();
     readonly StringWriter _output = new();
     readonly BonusReporter _reporter;
+    ApiKey? _storedApiKey = new("fz_live_test");
 
     public BonusReporterTests()
     {
         var log = new Log(this._output, new FakeTimeProvider(Start));
         var fangbreakerZoneClient = this._site.Client;
-        this._reporter = new BonusReporter(fangbreakerZoneClient, new ApiKey("fz_live_test"), log);
+        this._reporter = new BonusReporter(fangbreakerZoneClient, () => this._storedApiKey, log);
     }
 
     static CancellationToken Cancel => TestContext.Current.CancellationToken;
@@ -90,12 +91,24 @@ public class BonusReporterTests
     }
 
     [Fact]
-    public async Task RejectedKeyStopsTheApp()
+    public async Task RejectedKeyIsOnlyLogged()
     {
         this._site.Fail(Post, HttpStatusCode.Unauthorized);
 
-        await Assert.ThrowsAsync<ApiKeyRejectedException>(() => ReportBonus(Server.Fangbreaker, "Befallen", "loot"));
-        Assert.StartsWith("12:00:00 ERROR: Couldn't report Fangbreaker 'Befallen' is 'loot'.", Output());
+        await ReportBonus(Server.Fangbreaker, "Befallen", "loot");
+
+        Assert.StartsWith("12:00:00 ERROR: Couldn't report Fangbreaker 'Befallen' is 'loot', because the API key was rejected. Enter a new one in Settings.", Output());
+    }
+
+    [Fact]
+    public async Task DoesNotReportWithoutAnApiKey()
+    {
+        this._storedApiKey = null;
+
+        await ReportBonus(Server.Fangbreaker, "Befallen", "loot");
+
+        Assert.Empty(this._site.Requests);
+        Assert.Equal("12:00:00 ERROR: Couldn't report Fangbreaker 'Befallen' is 'loot', because there's no API key. Enter one in Settings.", Output());
     }
 
     [Fact]

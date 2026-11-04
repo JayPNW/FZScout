@@ -15,12 +15,15 @@ class TrayApplicationContext : ApplicationContext
     readonly System.Windows.Forms.Timer _showStatusWhenItChangesByItself = new();
 
     readonly TimeProvider _timeProvider;
+    readonly AppDependencies _dependencies;
     bool _hasExplainedHidingToTray;
+    SettingsWindow? _openSettingsWindow;
 
     /// <summary>The window isn't the context's main form, because Application.Run would show it.</summary>
     public TrayApplicationContext(MainWindow window, App app)
     {
         this._window = window;
+        this._dependencies = app.Dependencies;
         this._window.FormClosed += (_, _) => ExitThread();
         this._trayIcon = CreateTrayIconWithMenu();
         this._window.HiddenToTray += ExplainHidingToTrayTheFirstTime;
@@ -29,6 +32,7 @@ class TrayApplicationContext : ApplicationContext
         this._status = new AppStatus(this._timeProvider);
         ShowStatusNowAndWheneverItChanges(app);
         StartInTrayOrOnTaskbarAndSayWhere();
+        ShowSettingsIfThereIsNoApiKey();
         RunAppThenStop(app);
     }
 
@@ -37,7 +41,7 @@ class TrayApplicationContext : ApplicationContext
         var menu = new ContextMenuStrip();
         var showItem = menu.Items.Add("Show FZScout", null, (_, _) => this._window.ShowAndActivate());
         showItem.Font = new Font(showItem.Font, FontStyle.Bold);
-        menu.Items.Add("Settings...", null, (_, _) => this._window.ShowSettings());
+        menu.Items.Add("Settings...", null, (_, _) => ShowSettings());
         menu.Items.Add("Exit", null, (_, _) => this._window.RequestExit());
 
         var trayIcon = new NotifyIcon
@@ -64,7 +68,7 @@ class TrayApplicationContext : ApplicationContext
         this._showStatusWhenItChangesByItself.Tick += (_, _) => ShowStatus();
         ShowStatus();
         app.WaitingForBonusMessageUntilChanged += waitingUntil => UpdateStatus(status => status.WaitingForBonusMessageUntil = waitingUntil);
-        app.ScoutingStarted += () => UpdateStatus(StartScouting);
+        app.ScoutingStarted += () => UpdateStatus(status => status.IsScouting = true);
     }
 
     void StartInTrayOrOnTaskbarAndSayWhere()
@@ -81,6 +85,31 @@ class TrayApplicationContext : ApplicationContext
 
         this._window.ShowMinimizedOnTaskbar();
         this._trayIcon.ShowBalloonTip(5000, "FZScout is running", "Windows is hiding its tray icon, so it stays on the taskbar. To show the icon, go to Settings > Personalization > Taskbar > Other system tray icons.", ToolTipIcon.Info);
+    }
+
+    void ShowSettingsIfThereIsNoApiKey()
+    {
+        if (this._dependencies.ApiKeyStore.Load() is null)
+        {
+            ShowSettings();
+        }
+    }
+
+    /// <summary>Brings an already open Settings window to the front, instead of opening a second one.</summary>
+    void ShowSettings()
+    {
+        this._window.ShowAndActivate();
+        if (this._openSettingsWindow is not null)
+        {
+            this._openSettingsWindow.Activate();
+            return;
+        }
+
+        var settings = new SettingsWindow(new LaunchAtLogin(), this._dependencies.ApiKeyStore, this._dependencies.FangbreakerZoneClient, this._dependencies.Log);
+        settings.ApiKeySaved += () => UpdateStatus(status => status.HadProblemSinceLastSuccess = false);
+        settings.FormClosed += (_, _) => this._openSettingsWindow = null;
+        this._openSettingsWindow = settings;
+        settings.ShowCenteredOver(this._window);
     }
 
     protected override void ExitThreadCore()
@@ -110,13 +139,6 @@ class TrayApplicationContext : ApplicationContext
             update(this._status);
             ShowStatus();
         });
-    }
-
-    /// <summary>Any problems so far were with getting started, like a mistyped API key, and are over now.</summary>
-    static void StartScouting(AppStatus status)
-    {
-        status.IsScouting = true;
-        status.HadProblemSinceLastSuccess = false;
     }
 
     void ShowStatus()
