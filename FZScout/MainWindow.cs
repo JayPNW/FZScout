@@ -14,7 +14,7 @@ class MainWindow : Form, IUserInput
     public MainWindow()
     {
         Text = "FZScout";
-        Icon = SystemIcons.Application;
+        Icon = AppIcon.Load();
         ClientSize = new Size(900, 450);
         StartPosition = FormStartPosition.CenterScreen;
 

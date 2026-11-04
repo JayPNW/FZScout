@@ -13,7 +13,7 @@ class SettingsWindow : Form
     public SettingsWindow()
     {
         Text = "FZScout Settings";
-        Icon = SystemIcons.Application;
+        Icon = AppIcon.Load();
         FormBorderStyle = FormBorderStyle.FixedDialog;
         MaximizeBox = false;
         MinimizeBox = false;

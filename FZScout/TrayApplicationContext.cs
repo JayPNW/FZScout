@@ -23,7 +23,7 @@ class TrayApplicationContext : ApplicationContext
 
         this._trayIcon = new NotifyIcon
         {
-            Icon = window.Icon,
+            Icon = AppIcon.LoadForTray(),
             Text = "FZScout",
             ContextMenuStrip = menu,
             Visible = true,

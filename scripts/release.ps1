@@ -23,7 +23,7 @@ dotnet publish $project -c Release -o $publish -p:Version=$version -p:IncludeSou
 if ($LASTEXITCODE -ne 0) { throw 'publish failed' }
 
 # No deltas: there is nothing to diff against on the first Velopack release, and this app is small enough that full packages are fine.
-vpk pack --packId FZScout --packVersion $packVersion --packDir $publish --mainExe FZScout.exe --runtime win-x64 --outputDir $releases --delta None
+vpk pack --packId FZScout --packVersion $packVersion --packDir $publish --mainExe FZScout.exe --icon (Join-Path $project 'FZScout.ico') --runtime win-x64 --outputDir $releases --delta None
 if ($LASTEXITCODE -ne 0) { throw 'pack failed' }
 
 $uploadArgs = @(
