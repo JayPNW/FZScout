@@ -22,19 +22,8 @@ class Scout(ServerListCache serverListCache, BonusReporter bonusReporter)
 
         var character = new Character(logEvent.Character.Name, server);
         var serverLists = await serverListCache.GetAsync(character.Server, cancellationToken);
-        var scout = ScoutFor(character);
+        var scout = this._characters.GetOrAdd(character, new CharacterScout(character));
         await ExecuteAsync(scout.Handle(logEvent, now, serverLists), cancellationToken);
-    }
-
-    CharacterScout ScoutFor(Character character)
-    {
-        if (!this._characters.TryGetValue(character, out var scout))
-        {
-            scout = new CharacterScout(character);
-            this._characters[character] = scout;
-        }
-
-        return scout;
     }
 
     async Task ExecuteAsync(IReadOnlyList<ScoutAction> actions, CancellationToken cancellationToken)
