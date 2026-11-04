@@ -13,6 +13,7 @@ class GitHubUpdateChecker(IUpdateSource updateSource, IVelopackLocator? locator 
     public static readonly TimeSpan TimeBetweenChecks = TimeSpan.FromDays(1);
 
     readonly UpdateManager _updateManager = new(updateSource, locator: locator);
+    readonly SemaphoreSlim _oneCheckAtATime = new(1, 1);
 
     public GitHubUpdateChecker()
         : this(CreateGitHubSource(VelopackLocator.Current.CurrentlyInstalledVersion))
@@ -46,22 +47,45 @@ class GitHubUpdateChecker(IUpdateSource updateSource, IVelopackLocator? locator 
         }
     }
 
-    /// <summary>Keeps any earlier download when GitHub is unreachable or has nothing newer.</summary>
-    public async Task DownloadNewestRelease(CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Keeps any earlier download when GitHub is unreachable or has nothing newer. Waits for a check that's already running,
+    /// so the daily check and one the user asked for never download at the same time.
+    /// </summary>
+    public async Task<UpdateCheckResult> DownloadNewestRelease(CancellationToken cancellationToken = default)
+    {
+        if (!this._updateManager.IsInstalled)
+        {
+            return new NotInstalledSoCannotUpdate();
+        }
+
+        await this._oneCheckAtATime.WaitAsync(cancellationToken);
+        try
+        {
+            return await DownloadNewestReleaseWhileNoOtherCheckIsRunning(cancellationToken);
+        }
+        finally
+        {
+            this._oneCheckAtATime.Release();
+        }
+    }
+
+    async Task<UpdateCheckResult> DownloadNewestReleaseWhileNoOtherCheckIsRunning(CancellationToken cancellationToken)
     {
         try
         {
             var update = await this._updateManager.CheckForUpdatesAsync().WaitAsync(cancellationToken);
             if (update is null)
             {
-                return;
+                return new AlreadyOnNewestRelease();
             }
 
             await this._updateManager.DownloadUpdatesAsync(update, cancelToken: cancellationToken);
             this.DownloadedUpdateToInstallAfterExit = update;
+            return new DownloadedNewerRelease(update.TargetFullRelease.Version);
         }
-        catch (Exception) when (!cancellationToken.IsCancellationRequested)
+        catch (Exception exception) when (!cancellationToken.IsCancellationRequested)
         {
+            return new CouldNotCheckForUpdates(exception.Message);
         }
     }
 

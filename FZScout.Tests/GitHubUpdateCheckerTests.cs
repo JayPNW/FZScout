@@ -28,6 +28,52 @@ public class GitHubUpdateCheckerTests
     }
 
     [Fact]
+    public async Task SaysWhichVersionItDownloaded()
+    {
+        using var installDir = new TempDirectory();
+        var checker = CreateChecker("1.0.0", new FakeUpdateSource(FeedWithRelease("2.0.0")), installDir);
+
+        var result = await checker.DownloadNewestRelease(TestContext.Current.CancellationToken);
+
+        Assert.Equal(new DownloadedNewerRelease(SemanticVersion.Parse("2.0.0")), result);
+    }
+
+    [Fact]
+    public async Task SaysWhenAlreadyOnTheNewestRelease()
+    {
+        using var installDir = new TempDirectory();
+        var checker = CreateChecker("2.0.0", new FakeUpdateSource(FeedWithRelease("2.0.0")), installDir);
+
+        var result = await checker.DownloadNewestRelease(TestContext.Current.CancellationToken);
+
+        Assert.Equal(new AlreadyOnNewestRelease(), result);
+    }
+
+    [Fact]
+    public async Task SaysWhyItCouldNotCheck()
+    {
+        using var installDir = new TempDirectory();
+        var checker = CreateChecker("1.0.0", new FakeUpdateSource(new VelopackAssetFeed(), new HttpRequestException("GitHub is down")), installDir);
+
+        var result = await checker.DownloadNewestRelease(TestContext.Current.CancellationToken);
+
+        Assert.Equal(new CouldNotCheckForUpdates("GitHub is down"), result);
+    }
+
+    [Fact]
+    public async Task ChecksOneAtATime()
+    {
+        using var installDir = new TempDirectory();
+        var checker = CreateChecker("1.0.0", new FakeUpdateSource(FeedWithRelease("2.0.0")), installDir);
+
+        var results = await Task.WhenAll(
+            checker.DownloadNewestRelease(TestContext.Current.CancellationToken),
+            checker.DownloadNewestRelease(TestContext.Current.CancellationToken));
+
+        Assert.All(results, result => Assert.Equal(new DownloadedNewerRelease(SemanticVersion.Parse("2.0.0")), result));
+    }
+
+    [Fact]
     public async Task InstallsTheNewestOfSeveralDownloads()
     {
         using var installDir = new TempDirectory();
