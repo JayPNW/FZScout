@@ -111,8 +111,12 @@ public class AppTests
     public async Task ExitsWhenNoApiKeyIsEntered()
     {
         this._userInput.TypedApiKey = null;
+        var scoutingStarted = false;
+        this._app.ScoutingStarted += () => scoutingStarted = true;
 
         await this._app.RunAsync();
+
+        Assert.False(scoutingStarted);
 
         Assert.Equal(1, this._userInput.TimesAskedForApiKey);
         Assert.Empty(this._site.Requests);

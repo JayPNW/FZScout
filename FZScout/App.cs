@@ -16,6 +16,9 @@ class App(AppDependencies dependencies)
     /// </summary>
     public event Action<DateTimeOffset?>? WaitingForBonusMessageUntilChanged;
 
+    /// <summary>Raised once there's an accepted API key and the app starts watching the logs.</summary>
+    public event Action? ScoutingStarted;
+
     public AppDependencies Dependencies => dependencies;
 
     public async Task RunAsync()
@@ -37,6 +40,7 @@ class App(AppDependencies dependencies)
         var client = Dependencies.FangbreakerZoneClient;
         var scout = new Scout(new ServerListCache(client, Dependencies.Log), Dependencies.Log, new BonusReporter(client, apiKey, Dependencies.Log));
         scout.WaitingForBonusMessageUntilChanged += waitingUntil => WaitingForBonusMessageUntilChanged?.Invoke(waitingUntil);
+        ScoutingStarted?.Invoke();
         await WatchLogsAndReportBonusesAsync(scout, Dependencies.UserInput.ExitRequested);
     }
 
