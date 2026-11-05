@@ -11,7 +11,9 @@ partial class TrayIcon : TaskbarIcon
 {
     public TrayIcon(AppViewModel viewModel)
     {
-        InitializeComponent();
+        // Before InitializeComponent, so the menu gets the view model as soon as it's created.
+        // Otherwise TaskbarIcon gives the menu the TrayIcon itself, and its bindings fail until DataContext is set.
         DataContext = viewModel;
+        InitializeComponent();
     }
 }
