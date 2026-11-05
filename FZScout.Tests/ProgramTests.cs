@@ -1,4 +1,4 @@
-﻿namespace FZScout.Tests;
+namespace FZScout.Tests;
 
 public class ProgramTests
 {
@@ -6,8 +6,8 @@ public class ProgramTests
     [Fact]
     public Task RealDependencies()
     {
-        using var window = new MainWindow();
-        var dependencies = Program.CreateApp(window).Dependencies;
+        using var userInput = new MessageBoxUserInput();
+        var dependencies = Program.CreateApp(userInput).Dependencies;
 
         var description = typeof(AppDependencies)
             .GetProperties()

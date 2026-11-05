@@ -5,5 +5,5 @@
   Log: Log,
   TimeProvider: SystemTimeProvider,
   TryClaimSingleInstance: SingleInstance.TryClaim,
-  UserInput: MainWindow
+  UserInput: MessageBoxUserInput
 }

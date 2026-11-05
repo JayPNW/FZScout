@@ -1,0 +1,16 @@
+<tb:TaskbarIcon x:Class="FZScout.TrayIcon"
+                x:ClassModifier="internal"
+                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:tb="http://www.hardcodet.net/taskbar"
+                ToolTipText="{Binding StatusDescription}"
+                DoubleClickCommand="{Binding ShowLogCommand}">
+    <tb:TaskbarIcon.ContextMenu>
+        <ContextMenu>
+            <MenuItem Header="_Show FZScout" FontWeight="Bold" Command="{Binding ShowLogCommand}" />
+            <MenuItem Header="S_ettings..." Command="{Binding ShowSettingsCommand}" />
+            <MenuItem Header="_About FZScout..." Command="{Binding ShowAboutCommand}" />
+            <MenuItem Header="E_xit" Command="{Binding ExitCommand}" />
+        </ContextMenu>
+    </tb:TaskbarIcon.ContextMenu>
+</tb:TaskbarIcon>

@@ -1,47 +1,48 @@
-﻿using Microsoft.Extensions.Time.Testing;
+using Microsoft.Extensions.Time.Testing;
 
 namespace FZScout.Tests;
 
 public class LogTests
 {
-    readonly List<(string Line, ConsoleColor? Color)> _lines = [];
+    readonly List<(string Line, LogLineSeverity Severity)> _lines = [];
     readonly Log _log;
 
     public LogTests()
     {
-        this._log = new Log((line, color) => this._lines.Add((line, color)), new FakeTimeProvider(new DateTimeOffset(2026, 10, 29, 12, 0, 0, TimeSpan.Zero)));
+        this._log = new Log(new FakeTimeProvider(new DateTimeOffset(2026, 10, 29, 12, 0, 0, TimeSpan.Zero)));
+        this._log.LineWritten += (line, severity) => this._lines.Add((line, severity));
     }
 
     [Fact]
-    public void InfoIsPlain()
+    public void InfoIsInfo()
     {
         this._log.Info("Watching a log");
 
-        Assert.Equal([("12:00:00 Watching a log", null)], this._lines);
+        Assert.Equal([("12:00:00 Watching a log", LogLineSeverity.Info)], this._lines);
     }
 
     [Fact]
-    public void SuccessIsCyan()
+    public void SuccessIsSuccess()
     {
         this._log.Success("Reported a bonus");
 
-        Assert.Equal([("12:00:00 Reported a bonus", ConsoleColor.Cyan)], this._lines);
+        Assert.Equal([("12:00:00 Reported a bonus", LogLineSeverity.Success)], this._lines);
     }
 
     [Fact]
-    public void WarningIsYellow()
+    public void WarningIsWarning()
     {
         this._log.Warning("Hmm");
 
-        Assert.Equal([("12:00:00 WARNING: Hmm", ConsoleColor.Yellow)], this._lines);
+        Assert.Equal([("12:00:00 WARNING: Hmm", LogLineSeverity.Warning)], this._lines);
     }
 
     [Fact]
-    public void ErrorIsRed()
+    public void ErrorIsError()
     {
         this._log.Error("Broken");
 
-        Assert.Equal([("12:00:00 ERROR: Broken", ConsoleColor.Red)], this._lines);
+        Assert.Equal([("12:00:00 ERROR: Broken", LogLineSeverity.Error)], this._lines);
     }
 
     [Fact]

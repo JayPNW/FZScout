@@ -1,0 +1,27 @@
+<Window x:Class="FZScout.MainWindow"
+        x:ClassModifier="internal"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:FZScout"
+        Title="FZScout"
+        Width="1200"
+        Height="450"
+        WindowStartupLocation="CenterScreen">
+    <Window.Resources>
+        <local:ScoutingStatusToWindowIcon x:Key="ScoutingStatusToWindowIcon" />
+    </Window.Resources>
+    <Window.Icon>
+        <Binding Path="ScoutingStatus" Converter="{StaticResource ScoutingStatusToWindowIcon}" />
+    </Window.Icon>
+    <RichTextBox x:Name="LogView"
+                 IsReadOnly="True"
+                 IsDocumentEnabled="True"
+                 Background="Black"
+                 Foreground="Gainsboro"
+                 FontFamily="Consolas"
+                 FontSize="8"
+                 BorderThickness="0"
+                 VerticalScrollBarVisibility="Auto">
+        <FlowDocument x:Name="LogDocument" PagePadding="2" />
+    </RichTextBox>
+</Window>

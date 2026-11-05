@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <UseWindowsForms>true</UseWindowsForms>
+    <UseWPF>true</UseWPF>
     <ApplicationIcon>FZScout.ico</ApplicationIcon>
     <TargetFramework>net10.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -22,6 +22,12 @@
     <PublishDocumentationFile>false</PublishDocumentationFile>
   </PropertyGroup>
 
+  <!-- WPF drops these from the implicit usings, though nothing here clashes with them. -->
+  <ItemGroup>
+    <Using Include="System.IO" />
+    <Using Include="System.Net.Http" />
+  </ItemGroup>
+
   <ItemGroup>
     <InternalsVisibleTo Include="FZScout.Tests" />
   </ItemGroup>
@@ -36,7 +42,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="EverQuestLogWatcher" />
+    <PackageReference Include="Hardcodet.NotifyIcon.Wpf" />
     <PackageReference Include="Velopack" />
   </ItemGroup>
 

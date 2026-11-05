@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+using System.Reflection;
+using System.Windows;
 using FZScout.Site;
 using Velopack;
 
@@ -12,9 +13,11 @@ static class Program
         InstallUpdates();
         using var updates = new WatchForNewUpdates(TimeProvider.System);
 
-        ApplicationConfiguration.Initialize();
-        using var window = new MainWindow();
-        Application.Run(new TrayApplicationContext(window, CreateApp(window), updates.UpdateChecker));
+        var application = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
+        using var userInput = new MessageBoxUserInput();
+        using var trayApplication = new TrayApplication(CreateApp(userInput), userInput, updates.UpdateChecker);
+        application.Startup += (_, _) => trayApplication.Start();
+        application.Run();
     }
 
     /// <summary>Returns without doing anything on a normal launch, when Velopack hasn't started us to handle one of these.</summary>
@@ -27,12 +30,12 @@ static class Program
             .Run();
     }
 
-    internal static App CreateApp(MainWindow window)
+    internal static App CreateApp(IUserInput userInput)
     {
         var timeProvider = TimeProvider.System;
         return new App(new AppDependencies(
-            window,
-            new Log(window.WriteLine, timeProvider),
+            userInput,
+            new Log(timeProvider),
             GetVersion: GetVersion,
             timeProvider,
             TryClaimSingleInstance: SingleInstance.TryClaim,

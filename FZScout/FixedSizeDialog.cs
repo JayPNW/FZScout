@@ -1,29 +1,16 @@
-﻿namespace FZScout;
+using System.Windows;
 
-/// <summary>A dialog the user can't resize, which opens over another window without blocking it.</summary>
-class FixedSizeDialog : Form
+namespace FZScout;
+
+/// <summary>A dialog sized to its content that the user can't resize, which opens over its owner without blocking it.</summary>
+class FixedSizeDialog : Window
 {
     public FixedSizeDialog()
     {
-        Icon = AppIcon.Load();
-        FormBorderStyle = FormBorderStyle.FixedDialog;
-        MaximizeBox = false;
-        MinimizeBox = false;
+        Icon = WindowIcon.Gem;
+        SizeToContent = SizeToContent.WidthAndHeight;
+        ResizeMode = ResizeMode.NoResize;
         ShowInTaskbar = false;
-        AutoSize = true;
-        AutoSizeMode = AutoSizeMode.GrowAndShrink;
-        StartPosition = FormStartPosition.Manual;
-    }
-
-    /// <summary>Shows the window over <paramref name="owner"/> without blocking it, so the log stays readable and scrollable.</summary>
-    public void ShowCenteredOver(Form owner)
-    {
-        Owner = owner;
-        CreateControl();
-        Location = new Point(
-            owner.Left + ((owner.Width - Width) / 2),
-            owner.Top + ((owner.Height - Height) / 2));
-        Show();
-        Activate();
+        WindowStartupLocation = WindowStartupLocation.CenterOwner;
     }
 }
