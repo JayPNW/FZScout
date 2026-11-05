@@ -5,7 +5,7 @@ App that watches your EverQuest logs for Resource Hunter zone bonuses and report
 # Getting Started
 
 1. In EverQuest enable logging by typing `/log on`.
-1. [Download](https://github.com/JayPNW/FZScout/releases/latest) and run `FZScout-win-Setup.exe` to install FZScout.
+1. [Download](https://github.com/JayPNW/FZScout/releases/latest/download/FZScout-win-Setup.exe) and run `FZScout-win-Setup.exe` to install FZScout.
     - If Windows says it protected your PC, click **More info**, then **Run anyway**. This only happens on the first install.
     - If this doesn't work for you, please report a bug to this project.
 1. [Create an API key](docs/create-api-key.md).
