@@ -1,6 +1,6 @@
 ﻿namespace FZScout;
 
-/// <summary>What the app is doing, as its icon and tooltip show it. Some of that changes just because time passes.</summary>
+/// <summary>What the app is doing, as the UI shows it. Some of that changes just because time passes.</summary>
 class AppStatus(TimeProvider timeProvider)
 {
     const string ProblemDescription = "something went wrong; its window shows what";
@@ -15,36 +15,36 @@ class AppStatus(TimeProvider timeProvider)
 
     public bool HadProblemSinceLastSuccess { get; set; }
 
-    public StatusIcon Icon
+    public ScoutingStatus ScoutingStatus
     {
         get
         {
             if (HasStopped)
             {
-                return StatusIcon.Stopped;
+                return ScoutingStatus.Stopped;
             }
 
             if (!IsScouting)
             {
-                return StatusIcon.NotScouting;
+                return ScoutingStatus.NotScouting;
             }
 
             if (IsWaitingForBonusMessage && HadProblemSinceLastSuccess)
             {
-                return StatusIcon.WaitingForBonusMessageAfterProblem;
+                return ScoutingStatus.WaitingForBonusMessageAfterProblem;
             }
 
             if (IsWaitingForBonusMessage)
             {
-                return StatusIcon.WaitingForBonusMessage;
+                return ScoutingStatus.WaitingForBonusMessage;
             }
 
             if (HadProblemSinceLastSuccess)
             {
-                return StatusIcon.GemAfterProblem;
+                return ScoutingStatus.ScoutingAfterProblem;
             }
 
-            return StatusIcon.Gem;
+            return ScoutingStatus.Scouting;
         }
     }
 

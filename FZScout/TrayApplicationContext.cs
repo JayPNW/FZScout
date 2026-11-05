@@ -8,8 +8,8 @@ class TrayApplicationContext : ApplicationContext
 {
     readonly MainWindow _window;
     readonly NotifyIcon _trayIcon;
-    readonly Dictionary<StatusIcon, Icon> _trayIcons = Enum.GetValues<StatusIcon>().ToDictionary(statusIcon => statusIcon, AppIcon.LoadForTray);
-    readonly Dictionary<StatusIcon, Icon> _windowIcons = Enum.GetValues<StatusIcon>().ToDictionary(statusIcon => statusIcon, AppIcon.Load);
+    readonly Dictionary<ScoutingStatus, Icon> _trayIcons = Enum.GetValues<ScoutingStatus>().ToDictionary(scoutingStatus => scoutingStatus, AppIcon.LoadForTray);
+    readonly Dictionary<ScoutingStatus, Icon> _windowIcons = Enum.GetValues<ScoutingStatus>().ToDictionary(scoutingStatus => scoutingStatus, AppIcon.Load);
     readonly AppStatus _status;
 
     readonly System.Windows.Forms.Timer _showStatusWhenItChangesByItself = new();
@@ -51,7 +51,7 @@ class TrayApplicationContext : ApplicationContext
 
         var trayIcon = new NotifyIcon
         {
-            Icon = this._trayIcons[StatusIcon.NotScouting],
+            Icon = this._trayIcons[ScoutingStatus.NotScouting],
             Text = "FZScout",
             ContextMenuStrip = menu,
             Visible = true,
@@ -178,8 +178,8 @@ class TrayApplicationContext : ApplicationContext
 
     void ShowStatus()
     {
-        this._trayIcon.Icon = this._trayIcons[this._status.Icon];
-        this._window.Icon = this._windowIcons[this._status.Icon];
+        this._trayIcon.Icon = this._trayIcons[this._status.ScoutingStatus];
+        this._window.Icon = this._windowIcons[this._status.ScoutingStatus];
         this._trayIcon.Text = this._status.Description;
         this._showStatusWhenItChangesByItself.Stop();
         if (this._status.ChangesByItselfAt is { } changesAt)
