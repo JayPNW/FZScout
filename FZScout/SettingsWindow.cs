@@ -147,6 +147,7 @@ class SettingsWindow : FixedSizeDialog
 
         if (!result.IsSuccess)
         {
+            this._log.Warning($"Couldn't check the API key with the site: {result.Error}");
             return $"Couldn't check the API key. {result.Error}";
         }
 
@@ -156,6 +157,7 @@ class SettingsWindow : FixedSizeDialog
         }
         catch (Exception exception)
         {
+            this._log.Warning($"Couldn't save the API key to {this._apiKeyStore.StorageLocationForDisplay}: {exception.Message}");
             return $"Couldn't save the API key: {exception.Message}";
         }
 
