@@ -7,10 +7,22 @@ namespace FZScout;
 
 static class Program
 {
+    extension(VelopackApp)
+    {
+        public static void InstallPendingUpdates()
+        {
+            VelopackApp.Build()
+                .OnAfterInstallFastCallback(_ => new LaunchAtLogin().AddToStartupApps(Environment.ProcessPath!))
+                .OnBeforeUninstallFastCallback(_ => new LaunchAtLogin().RemoveFromStartupApps())
+                .Run();
+        }
+    }
+
+
     [STAThread]
     static void Main()
     {
-        InstallUpdates();
+        VelopackApp.InstallPendingUpdates();
         using var updates = new WatchForNewUpdates(TimeProvider.System);
 
         var application = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
@@ -18,16 +30,6 @@ static class Program
         using var trayApplication = new TrayApplication(CreateApp(userInput), userInput, updates.UpdateChecker);
         application.Startup += (_, _) => trayApplication.Start();
         application.Run();
-    }
-
-    /// <summary>Returns without doing anything on a normal launch, when Velopack hasn't started us to handle one of these.</summary>
-    static void InstallUpdates()
-    {
-        VelopackApp.Build()
-            .OnAfterInstallFastCallback(_ => new LaunchAtLogin().AddToStartupApps(Environment.ProcessPath!))
-            .OnAfterUpdateFastCallback(_ => new LaunchAtLogin().AddToStartupApps(Environment.ProcessPath!))
-            .OnBeforeUninstallFastCallback(_ => new LaunchAtLogin().RemoveFromStartupApps())
-            .Run();
     }
 
     internal static App CreateApp(IUserInput userInput)
