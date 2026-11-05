@@ -10,7 +10,25 @@ static class WpfThread
 {
     static readonly Dispatcher Dispatcher = StartDispatcherThread();
 
-    public static T Invoke<T>(Func<T> function) => Dispatcher.Invoke(function);
+    static readonly SemaphoreSlim OneTestAtATime = new(1, 1);
+
+    /// <summary>
+    /// Runs one test's function at a time, waiting on the test's own thread.
+    /// Without that, waiting in <see cref="RunQueuedWork"/> would run other tests' functions in the middle of this one.
+    /// Don't call on the WPF thread.
+    /// </summary>
+    public static T Invoke<T>(Func<T> function)
+    {
+        OneTestAtATime.Wait();
+        try
+        {
+            return Dispatcher.Invoke(function);
+        }
+        finally
+        {
+            OneTestAtATime.Release();
+        }
+    }
 
     /// <summary>Lets bindings and layout queued on the dispatcher finish. Call on the WPF thread.</summary>
     public static void RunQueuedWork() => Dispatcher.Invoke(() => { }, DispatcherPriority.ApplicationIdle);
