@@ -1,0 +1,15 @@
+---
+---
+
+@import "jekyll-theme-primer";
+
+// Bootstrap 5 dark mode, to match fangbreaker.zone
+:root { color-scheme: dark; }
+body { background: #212529; color: #dee2e6; }
+.markdown-body { color: #dee2e6; }
+a { color: #6ea8fe; }
+.markdown-body code, .markdown-body pre { background: #2b3035; }
+.markdown-body table tr { background: #212529; }
+.markdown-body table tr:nth-child(2n) { background: #2b3035; }
+.markdown-body h1, .markdown-body h2, .markdown-body hr, .markdown-body th,
+.markdown-body td, .markdown-body blockquote, .footer { border-color: #495057; }
