@@ -1,8 +1,8 @@
-﻿using FZScout.Site;
+using FZScout.Site;
 
 namespace FZScout;
 
-/// <summary>Saves only an API key the site accepts. Stays open showing what went wrong otherwise.</summary>
+/// <summary>Checkboxes apply as soon as they change. The API key is saved only when Verify finds the site accepts it.</summary>
 class SettingsWindow : FixedSizeDialog
 {
     const string GetApiKeyUrl = "https://fangbreaker.zone/account";
@@ -14,10 +14,9 @@ class SettingsWindow : FixedSizeDialog
     readonly FangbreakerZoneClient _fangbreakerZoneClient;
     readonly Log _log;
     readonly TextBox _apiKeyBox;
-    readonly Label _apiKeyProblem;
-    readonly CheckBox _launchAtLoginBox;
-    readonly CheckBox _showToastNotificationsBox;
-    readonly Button _saveButton;
+    readonly Button _verifyButton;
+    readonly Label _apiKeyVerificationResult;
+    string _savedApiKeyText;
 
     public SettingsWindow(LaunchAtLogin launchAtLogin, ShowToastNotifications showToastNotifications, IApiKeyStore apiKeyStore, FangbreakerZoneClient fangbreakerZoneClient, Log log)
     {
@@ -28,16 +27,22 @@ class SettingsWindow : FixedSizeDialog
         this._log = log;
         Text = "FZScout Settings";
 
-        var layout = new TableLayoutPanel { AutoSize = true, ColumnCount = 2, Padding = new Padding(12) };
-        this._apiKeyBox = new TextBox { Anchor = AnchorStyles.Left | AnchorStyles.Right, UseSystemPasswordChar = true, Text = apiKeyStore.Load()?.Value ?? "" };
-        var help = AddApiKeyRows(layout, this._apiKeyBox);
-        this._apiKeyProblem = new Label { AutoSize = true, MaximumSize = new Size(help.PreferredSize.Width, 0), ForeColor = Color.Firebrick, Visible = false };
-        layout.Controls.Add(this._apiKeyProblem, 1, 2);
-        this._launchAtLoginBox = AddLaunchAtLoginRow(layout, launchAtLogin);
-        this._showToastNotificationsBox = AddShowToastNotificationsRow(layout, showToastNotifications);
-        this._saveButton = AddSaveAndCancelButtonsRow(layout);
-        this._apiKeyBox.TextChanged += (_, _) => AllowSavingOnlyWithAnApiKey();
-        AllowSavingOnlyWithAnApiKey();
+        var layout = new TableLayoutPanel { AutoSize = true, ColumnCount = 1, Padding = new Padding(12) };
+        this._savedApiKeyText = apiKeyStore.Load()?.Value ?? "";
+        this._apiKeyBox = new TextBox { Dock = DockStyle.Fill, UseSystemPasswordChar = true, Text = this._savedApiKeyText };
+        this._verifyButton = new Button { Text = "Verify", AutoSize = true };
+        this._verifyButton.Click += async (_, _) => await VerifyAndSaveApiKeyAsync();
+        AcceptButton = this._verifyButton;
+        layout.Controls.Add(ApiKeyRowWithTheBoxFillingTheSpaceBetween(this._apiKeyBox, this._verifyButton), 0, 0);
+        var help = AddApiKeyHelpRow(layout);
+        this._apiKeyVerificationResult = new Label { AutoSize = true, MaximumSize = new Size(help.PreferredSize.Width, 0), Visible = false };
+        layout.Controls.Add(this._apiKeyVerificationResult, 0, 2);
+        AddLaunchAtLoginRow(layout);
+        AddShowToastNotificationsRow(layout);
+        AddCloseButtonRow(layout);
+        this._apiKeyBox.TextChanged += (_, _) => OnApiKeyBoxTextChanged();
+        AllowVerifyingOnlyANewApiKey();
+        layout.MinimumSize = new Size(layout.PreferredSize.Width * 13 / 10, 0);
         Controls.Add(layout);
     }
 
@@ -52,64 +57,70 @@ class SettingsWindow : FixedSizeDialog
         this._apiKeyBox.Focus();
     }
 
-    void AllowSavingOnlyWithAnApiKey() => this._saveButton.Enabled = ApiKeyBoxText.Length > 0;
+    void OnApiKeyBoxTextChanged()
+    {
+        this._apiKeyVerificationResult.Visible = false;
+        AllowVerifyingOnlyANewApiKey();
+    }
 
-    /// <returns>The help line, whose width sets how wide the API key column is.</returns>
-    static LinkLabel AddApiKeyRows(TableLayoutPanel layout, TextBox apiKeyBox)
+    void AllowVerifyingOnlyANewApiKey() => this._verifyButton.Enabled = ApiKeyBoxText.Length > 0 && ApiKeyBoxText != this._savedApiKeyText;
+
+    /// <summary>Stretches across the window, so the box grows to push Verify to the right edge.</summary>
+    static TableLayoutPanel ApiKeyRowWithTheBoxFillingTheSpaceBetween(TextBox apiKeyBox, Button verifyButton)
     {
         var apiKeyLabel = new Label { Text = "API key:", Anchor = AnchorStyles.Left, AutoSize = true };
+        var row = new TableLayoutPanel { ColumnCount = 3, RowCount = 1, AutoSize = true, Dock = DockStyle.Fill, Margin = Padding.Empty };
+        row.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        row.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        row.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        row.Controls.Add(apiKeyLabel, 0, 0);
+        row.Controls.Add(apiKeyBox, 1, 0);
+        row.Controls.Add(verifyButton, 2, 0);
+        return row;
+    }
 
+    /// <returns>The help line, whose width sets how wide the window is.</returns>
+    static LinkLabel AddApiKeyHelpRow(TableLayoutPanel layout)
+    {
         var helpText = "Get an API key from fangbreaker.zone/account. Need help?";
         var help = new LinkLabel { Text = helpText, AutoSize = true };
         help.Links.Add(helpText.IndexOf("fangbreaker.zone/account", StringComparison.Ordinal), "fangbreaker.zone/account".Length, GetApiKeyUrl);
         help.Links.Add(helpText.IndexOf("Need help?", StringComparison.Ordinal), "Need help?".Length, ApiKeyHelpUrl);
         help.LinkClicked += (_, e) => Browser.Open((string)e.Link!.LinkData!);
-
-        layout.Controls.Add(apiKeyLabel, 0, 0);
-        layout.Controls.Add(apiKeyBox, 1, 0);
-        layout.Controls.Add(help, 1, 1);
+        layout.Controls.Add(help, 0, 1);
         return help;
     }
 
-    static CheckBox AddLaunchAtLoginRow(TableLayoutPanel layout, LaunchAtLogin launchAtLogin)
+    void AddLaunchAtLoginRow(TableLayoutPanel layout)
     {
-        var launchAtLoginBox = new CheckBox { Text = "Launch FZScout when I log in to Windows", AutoSize = true, Checked = launchAtLogin.IsOn };
+        var launchAtLoginBox = new CheckBox { Text = "Launch FZScout when I log in to Windows", AutoSize = true, Checked = this._launchAtLogin.IsOn };
+        launchAtLoginBox.CheckedChanged += (_, _) => ApplyLaunchAtLogin(launchAtLoginBox.Checked);
         layout.Controls.Add(launchAtLoginBox, 0, 3);
-        layout.SetColumnSpan(launchAtLoginBox, 2);
-        return launchAtLoginBox;
     }
 
-    static CheckBox AddShowToastNotificationsRow(TableLayoutPanel layout, ShowToastNotifications showToastNotifications)
+    void AddShowToastNotificationsRow(TableLayoutPanel layout)
     {
-        var showToastNotificationsBox = new CheckBox { Text = "Show toast notifications", AutoSize = true, Checked = showToastNotifications.IsOn };
+        var showToastNotificationsBox = new CheckBox { Text = "Show toast notifications", AutoSize = true, Checked = this._showToastNotifications.IsOn };
+        showToastNotificationsBox.CheckedChanged += (_, _) => ApplyShowToastNotifications(showToastNotificationsBox.Checked);
         layout.Controls.Add(showToastNotificationsBox, 0, 4);
-        layout.SetColumnSpan(showToastNotificationsBox, 2);
-        return showToastNotificationsBox;
     }
 
-    Button AddSaveAndCancelButtonsRow(TableLayoutPanel layout)
+    void AddCloseButtonRow(TableLayoutPanel layout)
     {
-        var saveButton = new Button { Text = "Save", AutoSize = true };
-        saveButton.Click += async (_, _) => await SaveIfApiKeyIsAcceptedAsync();
-        var cancelButton = new Button { Text = "Cancel", AutoSize = true };
-        cancelButton.Click += (_, _) => Close();
+        var closeButton = new Button { Text = "Close", AutoSize = true };
+        closeButton.Click += (_, _) => Close();
         var buttons = new FlowLayoutPanel { FlowDirection = FlowDirection.RightToLeft, Dock = DockStyle.Fill, AutoSize = true, Margin = new Padding(0, 12, 0, 0) };
-        buttons.Controls.Add(cancelButton);
-        buttons.Controls.Add(saveButton);
-        AcceptButton = saveButton;
-        CancelButton = cancelButton;
-
+        buttons.Controls.Add(closeButton);
+        CancelButton = closeButton;
         layout.Controls.Add(buttons, 0, 5);
-        layout.SetColumnSpan(buttons, 2);
-        return saveButton;
     }
 
-    async Task SaveIfApiKeyIsAcceptedAsync()
+    async Task VerifyAndSaveApiKeyAsync()
     {
         var apiKey = new ApiKey(ApiKeyBoxText);
         this._apiKeyBox.Enabled = false;
-        this._saveButton.Enabled = false;
-        this._apiKeyProblem.Visible = false;
+        this._verifyButton.Enabled = false;
+        this._apiKeyVerificationResult.Visible = false;
         var problem = await CheckAndSaveApiKeyAsync(apiKey);
         if (IsDisposed)
         {
@@ -118,13 +129,11 @@ class SettingsWindow : FixedSizeDialog
 
         if (problem is not null)
         {
-            ShowApiKeyProblem(problem);
+            ShowApiKeyVerificationResult(problem, Color.Firebrick);
             return;
         }
 
-        SaveLaunchAtLogin();
-        SaveShowToastNotifications();
-        Close();
+        ShowApiKeyVerificationResult("API key verified and saved.", Color.ForestGreen);
     }
 
     /// <returns>What went wrong, or null if the key was saved.</returns>
@@ -150,23 +159,24 @@ class SettingsWindow : FixedSizeDialog
             return $"Couldn't save the API key: {exception.Message}";
         }
 
+        this._savedApiKeyText = apiKey.Value;
         this._log.Info($"API key verified and saved to {this._apiKeyStore.StorageLocationForDisplay}.");
         ApiKeySaved?.Invoke();
         return null;
     }
 
-    void ShowApiKeyProblem(string problem)
+    void ShowApiKeyVerificationResult(string message, Color color)
     {
-        this._apiKeyProblem.Text = problem;
-        this._apiKeyProblem.Visible = true;
         this._apiKeyBox.Enabled = true;
-        AllowSavingOnlyWithAnApiKey();
+        AllowVerifyingOnlyANewApiKey();
+        this._apiKeyVerificationResult.Text = message;
+        this._apiKeyVerificationResult.ForeColor = color;
+        this._apiKeyVerificationResult.Visible = true;
         this._apiKeyBox.Focus();
     }
 
-    void SaveLaunchAtLogin()
+    void ApplyLaunchAtLogin(bool wantsLaunchAtLogin)
     {
-        var wantsLaunchAtLogin = this._launchAtLoginBox.Checked;
         if (wantsLaunchAtLogin == this._launchAtLogin.IsOn)
         {
             return;
@@ -181,9 +191,9 @@ class SettingsWindow : FixedSizeDialog
         this._launchAtLogin.TurnOff();
     }
 
-    void SaveShowToastNotifications()
+    void ApplyShowToastNotifications(bool wantsToastNotifications)
     {
-        if (this._showToastNotificationsBox.Checked)
+        if (wantsToastNotifications)
         {
             this._showToastNotifications.TurnOn();
             return;
