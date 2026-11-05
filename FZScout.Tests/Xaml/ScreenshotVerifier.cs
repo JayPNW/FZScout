@@ -1,4 +1,4 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System.Windows;
 
 namespace FZScout.Tests.Xaml;
@@ -16,6 +16,6 @@ static class ScreenshotVerifier
     {
         var (png, bindingErrors) = WpfThread.Invoke(() => BindingErrorRecorder.RecordBindingErrorsWhile(takePngOnWpfThread));
         Assert.True(bindingErrors.Count == 0, string.Join(Environment.NewLine + Environment.NewLine, bindingErrors));
-        await Verifier.Verify(new MemoryStream(png), "png", sourceFile: sourceFile);
+        await Verify(new MemoryStream(png), "png", sourceFile: sourceFile);
     }
 }

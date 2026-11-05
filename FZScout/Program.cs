@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.Windows;
 using FZScout.Site;
 using Velopack;
@@ -17,7 +17,6 @@ static class Program
                 .Run();
         }
     }
-
 
     [STAThread]
     static void Main()

@@ -1,4 +1,4 @@
-namespace FZScout;
+﻿namespace FZScout;
 
 /// <summary>The app's log: timestamped lines, each with a severity. Never pass it the API key.</summary>
 class Log(TimeProvider timeProvider)

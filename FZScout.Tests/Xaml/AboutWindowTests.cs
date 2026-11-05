@@ -1,4 +1,4 @@
-using FZScout.ViewModels;
+﻿using FZScout.ViewModels;
 using Velopack;
 using static FZScout.Tests.Xaml.ScreenshotVerifier;
 

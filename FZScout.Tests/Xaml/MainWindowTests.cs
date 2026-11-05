@@ -1,4 +1,4 @@
-using FZScout.ViewModels;
+﻿using FZScout.ViewModels;
 using static FZScout.Tests.Xaml.ScreenshotVerifier;
 
 namespace FZScout.Tests.Xaml;
