@@ -1,6 +1,6 @@
 # FZScout
 
-App that watches your EverQuest logs for Resource Hunter zone bonuses and automatically reports them to [fangbreaker.zone](https://fangbreaker.zone) and [frostreaver.zone](https://frostreaver.zone) as you travel. Every player who runs it helps fill in the day's bonus list for everyone.
+Set-and-forget app that watches Everquest Resource Hunter zone bonuses and automatically reports them to [fangbreaker.zone](https://fangbreaker.zone) and [frostreaver.zone](https://frostreaver.zone). Every player who runs it helps fill in the day's bonus list for everyone.
 
 # Getting Started
 
