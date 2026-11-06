@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Drawing;
 using System.Windows;
 using System.Windows.Threading;
@@ -59,7 +59,7 @@ class TrayApplication : IDisposable
         app.ScoutingStarted += () => UpdateStatus(status => status.IsScouting = true);
     }
 
-    string ApiKeyBeingEdited => this._viewModel.ApiKey.Trim();
+    string ApiKeyBeingEdited => this._viewModel.ApiKeyBeingEdited.Trim();
 
     /// <summary>Call once WPF is running, so the app's work can come back to the UI thread.</summary>
     public void Start()
@@ -81,7 +81,7 @@ class TrayApplication : IDisposable
 
     AppViewModel CreateViewModel()
     {
-        return new AppViewModel(this._dependencies.GetVersion(), this._apiKeyVerifier.SavedApiKey, this._launchAtLogin.IsOn, this._showToastNotifications.IsOn)
+        return new AppViewModel(this._dependencies.GetVersion(), this._launchAtLogin.IsOn, this._showToastNotifications.IsOn)
         {
             DownloadedVersionToInstallAfterExit = this._updateChecker.DownloadedVersionToInstallAfterExit,
             ShowLogCommand = new RelayCommand(ShowLog),
@@ -135,7 +135,7 @@ class TrayApplication : IDisposable
     void ShowLog() => this._window.ShowAndActivate();
 
     /// <summary>
-    /// Brings an already open Settings window to the front, instead of opening a second one. A new one starts from the saved API key,
+    /// Brings an already open Settings window to the front, instead of opening a second one. A new one starts with an empty API key box
     /// rather than one typed earlier that was never saved, and doesn't show how an earlier Verify went.
     /// </summary>
     void ShowSettings()
@@ -147,7 +147,8 @@ class TrayApplication : IDisposable
             return;
         }
 
-        this._viewModel.ApiKey = this._apiKeyVerifier.SavedApiKey;
+        this._viewModel.SavedApiKeyAbbreviation = this._apiKeyVerifier.SavedApiKey?.AbbreviatedForDisplay ?? "";
+        this._viewModel.ApiKeyBeingEdited = "";
         this._viewModel.ApiKeyVerificationStatus = ApiKeyVerificationStatus.NotVerified;
         var settings = new SettingsWindow(this._viewModel) { Owner = this._window };
         settings.Closed += (_, _) => this._openSettingsWindow = null;
@@ -173,7 +174,7 @@ class TrayApplication : IDisposable
 
     void ApplyChangedSetting(PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(AppViewModel.ApiKey))
+        if (e.PropertyName == nameof(AppViewModel.ApiKeyBeingEdited))
         {
             this._verifyApiKeyCommand.NotifyCanExecuteChanged();
         }
@@ -216,7 +217,7 @@ class TrayApplication : IDisposable
         this._showToastNotifications.TurnOff();
     }
 
-    bool CanVerifyApiKey() => ApiKeyBeingEdited.Length > 0 && ApiKeyBeingEdited != this._apiKeyVerifier.SavedApiKey;
+    bool CanVerifyApiKey() => ApiKeyBeingEdited.Length > 0 && ApiKeyBeingEdited != this._apiKeyVerifier.SavedApiKey?.Value;
 
     async Task VerifyThenSaveApiKeyAsync()
     {

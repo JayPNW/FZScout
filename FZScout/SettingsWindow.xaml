@@ -8,17 +8,32 @@
         <DockPanel>
             <Label DockPanel.Dock="Left" Content="_API key:" Target="{Binding ElementName=ApiKeyBox}" Padding="0,0,6,0" VerticalAlignment="Center" />
             <Button DockPanel.Dock="Right" Content="_Verify" IsDefault="True" Command="{Binding VerifyApiKeyCommand}" Padding="12,2" Margin="6,0,0,0" />
-            <PasswordBox x:Name="ApiKeyBox" PasswordChanged="CopyApiKeyToViewModel" VerticalContentAlignment="Center">
-                <PasswordBox.Style>
-                    <Style TargetType="PasswordBox">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding ApiKeyVerificationStatus}" Value="Verifying">
-                                <Setter Property="IsEnabled" Value="False" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </PasswordBox.Style>
-            </PasswordBox>
+            <Grid>
+                <PasswordBox x:Name="ApiKeyBox" PasswordChanged="CopyApiKeyToViewModel" VerticalContentAlignment="Center">
+                    <PasswordBox.Style>
+                        <Style TargetType="PasswordBox">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ApiKeyVerificationStatus}" Value="Verifying">
+                                    <Setter Property="IsEnabled" Value="False" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </PasswordBox.Style>
+                </PasswordBox>
+                <!-- Shows which key is saved, without ever putting the whole key on screen. Typing a new key hides it. -->
+                <TextBlock Text="{Binding SavedApiKeyAbbreviation}" Foreground="{x:Static SystemColors.GrayTextBrush}" Margin="4,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ApiKeyBeingEdited}" Value="">
+                                    <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Grid>
         </DockPanel>
 
         <TextBlock Margin="0,8,0,0">

@@ -10,7 +10,7 @@ public class AboutWindowTests
     public Task AfterDownloadingAnUpdate() => VerifyScreenshot(() =>
     {
         var downloadedVersion = SemanticVersion.Parse("8.0.0");
-        var viewModel = new AppViewModel("7.0.0", apiKey: "", launchesAtLogin: true, showsToastNotifications: true)
+        var viewModel = new AppViewModel("7.0.0", launchesAtLogin: true, showsToastNotifications: true)
         {
             LatestUpdateCheckResult = new DownloadedNewerRelease(downloadedVersion),
             DownloadedVersionToInstallAfterExit = downloadedVersion,

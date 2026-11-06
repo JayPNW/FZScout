@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -9,7 +9,6 @@ namespace FZScout.ViewModels;
 /// <summary>Everything the windows show. Holds no behavior of its own: whoever creates it supplies the commands.</summary>
 partial class AppViewModel(
     string? runningVersion,
-    string apiKey,
     bool launchesAtLogin,
     bool showsToastNotifications) : ObservableObject
 {
@@ -36,10 +35,15 @@ partial class AppViewModel(
     [ObservableProperty]
     public partial SemanticVersion? DownloadedVersionToInstallAfterExit { get; set; }
 
+    /// <summary>Like fangbreaker.zone/account, enough of the saved key to recognize it, but never the whole thing. Empty if there's no saved key.</summary>
     [ObservableProperty]
-    public partial string ApiKey { get; set; } = apiKey;
+    public partial string SavedApiKeyAbbreviation { get; set; } = "";
 
-    /// <summary>About <see cref="ApiKey"/> as it is now, so editing it forgets how an earlier key did.</summary>
+    /// <summary>Starts empty: the saved key is never put back in the box, only <see cref="SavedApiKeyAbbreviation"/> is shown.</summary>
+    [ObservableProperty]
+    public partial string ApiKeyBeingEdited { get; set; } = "";
+
+    /// <summary>About <see cref="ApiKeyBeingEdited"/> as it is now, so editing it forgets how an earlier key did.</summary>
     [ObservableProperty]
     public partial ApiKeyVerificationStatus ApiKeyVerificationStatus { get; set; } = ApiKeyVerificationStatus.NotVerified;
 
@@ -63,5 +67,5 @@ partial class AppViewModel(
 
     public ICommand ExitCommand { get; init; } = new RelayCommand(() => { });
 
-    partial void OnApiKeyChanged(string value) => ApiKeyVerificationStatus = ApiKeyVerificationStatus.NotVerified;
+    partial void OnApiKeyBeingEditedChanged(string value) => ApiKeyVerificationStatus = ApiKeyVerificationStatus.NotVerified;
 }

@@ -8,9 +8,20 @@ public class SettingsWindowTests
     [Fact]
     public Task AfterVerifyingTheApiKey() => VerifyScreenshot(() =>
     {
-        var viewModel = new AppViewModel("7.0.0", apiKey: "fz_live_not_a_real_key", launchesAtLogin: true, showsToastNotifications: false)
+        var viewModel = new AppViewModel("7.0.0", launchesAtLogin: true, showsToastNotifications: false)
         {
+            ApiKeyBeingEdited = "fz_live_not_a_real_key",
             ApiKeyVerificationStatus = ApiKeyVerificationStatus.VerifiedAndSaved,
+        };
+        return new SettingsWindow(viewModel);
+    });
+
+    [Fact]
+    public Task ShowsWhichApiKeyIsSavedWithoutRevealingIt() => VerifyScreenshot(() =>
+    {
+        var viewModel = new AppViewModel("7.0.0", launchesAtLogin: true, showsToastNotifications: false)
+        {
+            SavedApiKeyAbbreviation = "fz_live_qa81...cUMfgC",
         };
         return new SettingsWindow(viewModel);
     });

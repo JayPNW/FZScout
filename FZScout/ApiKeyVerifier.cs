@@ -8,7 +8,7 @@ class ApiKeyVerifier(IApiKeyStore apiKeyStore, FangbreakerZoneClient fangbreaker
     /// <summary>Raised only after the site accepted the key.</summary>
     public event Action? ApiKeySaved;
 
-    public string SavedApiKey { get; private set; } = apiKeyStore.Load()?.Value ?? "";
+    public ApiKey? SavedApiKey { get; private set; } = apiKeyStore.Load();
 
     public async Task<ApiKeyVerificationResult> VerifyThenSaveAsync(ApiKey apiKey)
     {
@@ -34,7 +34,7 @@ class ApiKeyVerifier(IApiKeyStore apiKeyStore, FangbreakerZoneClient fangbreaker
             return ApiKeyVerificationResult.CouldNotSave;
         }
 
-        SavedApiKey = apiKey.Value;
+        SavedApiKey = apiKey;
         log.Info($"API key verified and saved to {apiKeyStore.StorageLocationForDisplay}.");
         ApiKeySaved?.Invoke();
         return ApiKeyVerificationResult.VerifiedAndSaved;

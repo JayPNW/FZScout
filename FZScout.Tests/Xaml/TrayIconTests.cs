@@ -9,7 +9,7 @@ public class TrayIconTests
     [Fact]
     public Task Menu() => VerifyPng(() =>
     {
-        var viewModel = new AppViewModel("7.0.0", apiKey: "", launchesAtLogin: true, showsToastNotifications: true);
+        var viewModel = new AppViewModel("7.0.0", launchesAtLogin: true, showsToastNotifications: true);
         using var trayIcon = new TrayIcon(viewModel);
         return Screenshot.TakePng(trayIcon.ContextMenu);
     });

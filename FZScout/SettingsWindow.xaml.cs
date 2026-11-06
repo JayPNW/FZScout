@@ -9,13 +9,13 @@ partial class SettingsWindow : FixedSizeDialog
 {
     readonly AppViewModel _viewModel;
 
-    /// <summary>A PasswordBox can't be bound, so its text is copied to <see cref="AppViewModel.ApiKey"/> by hand.</summary>
+    /// <summary>A PasswordBox can't be bound, so its text is copied to <see cref="AppViewModel.ApiKeyBeingEdited"/> by hand.</summary>
     public SettingsWindow(AppViewModel viewModel)
     {
         InitializeComponent();
         this._viewModel = viewModel;
         DataContext = viewModel;
-        this.ApiKeyBox.Password = viewModel.ApiKey;
+        this.ApiKeyBox.Password = viewModel.ApiKeyBeingEdited;
         Loaded += (_, _) => this.ApiKeyBox.Focus();
         this.ApiKeyBox.IsEnabledChanged += RefocusApiKeyBoxWhenVerificationFinishes;
     }
@@ -29,7 +29,7 @@ partial class SettingsWindow : FixedSizeDialog
         }
     }
 
-    void CopyApiKeyToViewModel(object sender, RoutedEventArgs e) => this._viewModel.ApiKey = this.ApiKeyBox.Password;
+    void CopyApiKeyToViewModel(object sender, RoutedEventArgs e) => this._viewModel.ApiKeyBeingEdited = this.ApiKeyBox.Password;
 
     void OpenLinkInBrowser(object sender, RequestNavigateEventArgs e) => Browser.Open(e.Uri.AbsoluteUri);
 
