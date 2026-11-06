@@ -41,7 +41,7 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, Func<ApiKey?> l
             return;
         }
 
-        await PostAsync(report, $"Reported {report} because no bonus message arrived in time.", cancellationToken);
+        await PostAsync(report, $"Reported {report}.", cancellationToken);
     }
 
     async Task PostAsync(BonusReport report, string successMessage, CancellationToken cancellationToken)

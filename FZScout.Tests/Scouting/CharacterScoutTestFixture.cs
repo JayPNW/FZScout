@@ -42,7 +42,7 @@ public abstract class CharacterScoutTestFixture
 
     private protected static string Report(string zone, string bonus) => $"Reported Frostreaver '{zone}' is '{bonus}'.";
 
-    private protected static string ReportNone(string zone) => $"Reported Frostreaver '{zone}' is 'none' because no bonus message arrived in time.";
+    private protected static string ReportNone(string zone) => $"Reported Frostreaver '{zone}' is 'none'.";
 
     private protected Task<IReadOnlyList<string>> Log(int seconds, string message) => Handle(seconds, message, ListsWithoutTributeLikeFrostreaver);
 
