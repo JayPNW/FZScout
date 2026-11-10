@@ -14,4 +14,4 @@ The `run` script starts the application.
 
 # Thanks
 
-Extra super thanks to Winter.xo for creating the site and the API that this modest client posts to.
+Extra super thanks to Winter.xo for creating the fangbreaker.zone and frostreaver.zone sites and the API that this modest client posts to.
