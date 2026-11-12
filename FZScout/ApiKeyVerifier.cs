@@ -1,4 +1,5 @@
 ﻿using FZScout.Site;
+using FZScout.ViewModels;
 
 namespace FZScout;
 
@@ -10,18 +11,18 @@ class ApiKeyVerifier(IApiKeyStore apiKeyStore, FangbreakerZoneClient fangbreaker
 
     public ApiKey? SavedApiKey { get; private set; } = apiKeyStore.Load();
 
-    public async Task<ApiKeyVerificationResult> VerifyThenSaveAsync(ApiKey apiKey)
+    public async Task<ApiKeyVerificationStatus> VerifyThenSaveAsync(ApiKey apiKey)
     {
         var result = await fangbreakerZoneClient.CheckApiKeyAsync(apiKey);
         if (result.Outcome == ApiOutcome.KeyRejected)
         {
-            return ApiKeyVerificationResult.RejectedBySite;
+            return ApiKeyVerificationStatus.RejectedBySite;
         }
 
         if (!result.IsSuccess)
         {
             log.Warning($"Couldn't check the API key with the site: {result.Error}");
-            return ApiKeyVerificationResult.CouldNotCheckWithSite;
+            return ApiKeyVerificationStatus.CouldNotCheckWithSite;
         }
 
         try
@@ -31,12 +32,12 @@ class ApiKeyVerifier(IApiKeyStore apiKeyStore, FangbreakerZoneClient fangbreaker
         catch (Exception exception)
         {
             log.Warning($"Couldn't save the API key to {apiKeyStore.StorageLocationForDisplay}: {exception.Message}");
-            return ApiKeyVerificationResult.CouldNotSave;
+            return ApiKeyVerificationStatus.CouldNotSave;
         }
 
         SavedApiKey = apiKey;
         log.Info($"API key verified and saved to {apiKeyStore.StorageLocationForDisplay}.");
         ApiKeySaved?.Invoke();
-        return ApiKeyVerificationResult.VerifiedAndSaved;
+        return ApiKeyVerificationStatus.VerifiedAndSaved;
     }
 }

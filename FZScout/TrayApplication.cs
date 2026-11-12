@@ -222,18 +222,8 @@ class TrayApplication : IDisposable
     async Task VerifyThenSaveApiKeyAsync()
     {
         this._viewModel.ApiKeyVerificationStatus = ApiKeyVerificationStatus.Verifying;
-        var result = await this._apiKeyVerifier.VerifyThenSaveAsync(new ApiKey(ApiKeyBeingEdited));
-        this._viewModel.ApiKeyVerificationStatus = ToApiKeyVerificationStatus(result);
+        this._viewModel.ApiKeyVerificationStatus = await this._apiKeyVerifier.VerifyThenSaveAsync(new ApiKey(ApiKeyBeingEdited));
     }
-
-    static ApiKeyVerificationStatus ToApiKeyVerificationStatus(ApiKeyVerificationResult result) => result switch
-    {
-        ApiKeyVerificationResult.VerifiedAndSaved => ApiKeyVerificationStatus.VerifiedAndSaved,
-        ApiKeyVerificationResult.RejectedBySite => ApiKeyVerificationStatus.RejectedBySite,
-        ApiKeyVerificationResult.CouldNotCheckWithSite => ApiKeyVerificationStatus.CouldNotCheckWithSite,
-        ApiKeyVerificationResult.CouldNotSave => ApiKeyVerificationStatus.CouldNotSave,
-        _ => throw new ArgumentOutOfRangeException(nameof(result), result, null),
-    };
 
     /// <summary>Lets the download finish even if the About window closes first, so it still gets installed when FZScout exits.</summary>
     async Task CheckForUpdatesAsync()
