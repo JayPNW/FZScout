@@ -95,17 +95,13 @@ class CharacterScout(Character character, Log log, BonusReporter bonusReporter)
     Task OnZoneEntered(string logZone, DateTimeOffset now, ServerLists? lists)
     {
         CurrentZone = ZoneNames.Resolve(logZone, lists?.Zones);
-        this._alreadyReported = false;
-        this._killDeadline = null;
-        this._idleDeadline = null;
-
         if (IsReportable(CurrentZone))
         {
-            var deadline = SetIdleDeadline(now);
-            log.Info($"{character} entered {logZone}, waiting until {deadline.ToLocalTime():HH:mm:ss} for a bonus message.");
+            StartWaitingForBonusMessage(now, $"entered {logZone}");
             return Task.CompletedTask;
         }
 
+        StopWaitingAndAllowANewReport();
         log.Info($"{character} entered {logZone}.");
         return Task.CompletedTask;
     }
@@ -173,10 +169,7 @@ class CharacterScout(Character character, Log log, BonusReporter bonusReporter)
             return Task.CompletedTask;
         }
 
-        this._alreadyReported = false;
-        this._killDeadline = null;
-        var deadline = SetIdleDeadline(now);
-        log.Info($"{character} saw the daily reset, waiting until {deadline.ToLocalTime():HH:mm:ss} for a bonus message.");
+        StartWaitingForBonusMessage(now, "saw the daily reset");
         return Task.CompletedTask;
     }
 
@@ -187,11 +180,18 @@ class CharacterScout(Character character, Log log, BonusReporter bonusReporter)
         return Task.CompletedTask;
     }
 
-    DateTimeOffset SetIdleDeadline(DateTimeOffset now)
+    void StartWaitingForBonusMessage(DateTimeOffset now, string whatTheCharacterDid)
     {
-        var deadline = now + IdleTimeout;
-        this._idleDeadline = deadline;
-        return deadline;
+        StopWaitingAndAllowANewReport();
+        this._idleDeadline = now + IdleTimeout;
+        log.Info($"{character} {whatTheCharacterDid}, waiting until {this._idleDeadline.Value.ToLocalTime():HH:mm:ss} for a bonus message.");
+    }
+
+    void StopWaitingAndAllowANewReport()
+    {
+        this._alreadyReported = false;
+        this._killDeadline = null;
+        this._idleDeadline = null;
     }
 
     void MarkAlreadyReportedThisZone()
