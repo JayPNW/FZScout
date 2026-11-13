@@ -1,4 +1,4 @@
-# Draws FZScout's icons at every size Windows asks for: an emerald gem into FZScout/FZScout.ico,
+﻿# Draws FZScout's icons at every size Windows asks for: an emerald gem into FZScout/FZScout.ico,
 # an emerald hourglass, for while waiting for a bonus message, into FZScout/FZScoutWaiting.ico,
 # a grey gem, for before scouting starts, into FZScout/FZScoutNotScouting.ico,
 # a grey gem with a red problem badge, for once the app has stopped on its own, into FZScout/FZScoutStopped.ico,
@@ -105,52 +105,26 @@ function Draw($picture, [int]$size) {
     ,$bitmap
 }
 
-# Small sizes as 32-bit BMPs, which everything reads; 256 as PNG, which is what Windows expects at that size.
-function ToBmpEntry($bitmap) {
-    $size = $bitmap.Width
-    $stream = New-Object System.IO.MemoryStream
-    $w = New-Object System.IO.BinaryWriter $stream
-    $maskRowBytes = [int]([Math]::Ceiling($size / 32.0) * 4)
-    $w.Write([int]40); $w.Write([int]$size); $w.Write([int]($size * 2)); $w.Write([int16]1); $w.Write([int16]32)
-    $w.Write([int]0); $w.Write([int]($size * $size * 4 + $maskRowBytes * $size)); $w.Write([int]0); $w.Write([int]0); $w.Write([int]0); $w.Write([int]0)
-    for ($y = $size - 1; $y -ge 0; $y--) {
-        for ($x = 0; $x -lt $size; $x++) {
-            $c = $bitmap.GetPixel($x, $y)
-            $w.Write([byte]$c.B); $w.Write([byte]$c.G); $w.Write([byte]$c.R); $w.Write([byte]$c.A)
-        }
-    }
-    $w.Write((New-Object byte[] ($maskRowBytes * $size)))
-    $w.Flush()
-    $stream.ToArray()
-}
-
-function ToPngEntry($bitmap) {
-    $stream = New-Object System.IO.MemoryStream
-    $bitmap.Save($stream, [System.Drawing.Imaging.ImageFormat]::Png)
-    $stream.ToArray()
-}
-
+# ImageMagick stores the small sizes as 32-bit BMPs, which everything reads, and 256 as PNG, which is what Windows expects at that size.
 function WriteIcon($picture, [string]$fileName) {
     $sizes = 16, 20, 24, 32, 40, 48, 64, 256
-    $entries = foreach ($size in $sizes) {
-        $bitmap = Draw $picture $size
-        if ($size -eq 256) { $data = ToPngEntry $bitmap } else { $data = ToBmpEntry $bitmap }
-        @{ Size = $size; Data = $data }
+    $workDirectory = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
+    New-Item -ItemType Directory $workDirectory | Out-Null
+    try {
+        $pngPaths = foreach ($size in $sizes) {
+            $pngPath = Join-Path $workDirectory "$size.png"
+            $bitmap = Draw $picture $size
+            $bitmap.Save($pngPath, [System.Drawing.Imaging.ImageFormat]::Png)
+            $bitmap.Dispose()
+            $pngPath
+        }
+        $iconPath = Join-Path (Resolve-Path (Join-Path $PSScriptRoot '..\FZScout')).Path $fileName
+        & dotnet run (Join-Path $PSScriptRoot 'pngs-to-ico.cs') -- $iconPath @pngPaths
+        if ($LASTEXITCODE -ne 0) { throw "pngs-to-ico failed writing $fileName" }
     }
-
-    $file = New-Object System.IO.MemoryStream
-    $w = New-Object System.IO.BinaryWriter $file
-    $w.Write([int16]0); $w.Write([int16]1); $w.Write([int16]$entries.Count)
-    $offset = 6 + 16 * $entries.Count
-    foreach ($entry in $entries) {
-        $dimension = $entry.Size % 256
-        $w.Write([byte]$dimension); $w.Write([byte]$dimension); $w.Write([byte]0); $w.Write([byte]0)
-        $w.Write([int16]1); $w.Write([int16]32); $w.Write([int]$entry.Data.Length); $w.Write([int]$offset)
-        $offset += $entry.Data.Length
+    finally {
+        Remove-Item -Recurse -Force $workDirectory
     }
-    foreach ($entry in $entries) { $w.Write([byte[]]$entry.Data) }
-    $w.Flush()
-    [System.IO.File]::WriteAllBytes((Join-Path (Resolve-Path (Join-Path $PSScriptRoot '..' 'FZScout')).Path $fileName), $file.ToArray())
 }
 
 WriteIcon $gem 'FZScout.ico'
