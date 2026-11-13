@@ -45,6 +45,7 @@
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="EverQuestLogWatcher" />
     <PackageReference Include="Hardcodet.NotifyIcon.Wpf" />
+    <PackageReference Include="NotificationTrayIconVisibility" />
     <PackageReference Include="Velopack" />
   </ItemGroup>
 

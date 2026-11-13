@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.Input;
 using FZScout.Site;
 using FZScout.ViewModels;
 using Hardcodet.Wpf.TaskbarNotification;
+using NotificationTrayIconVisibility;
 
 namespace FZScout;
 
@@ -110,8 +111,7 @@ class TrayApplication : IDisposable
 
     void StartInTrayOrOnTaskbarAndSayWhere()
     {
-        var trayIconReachability = new TrayIconReachability();
-        this._window.CanUserReachTrayIcon = () => trayIconReachability.CanUserReachTrayIcon(Environment.ProcessPath!);
+        this._window.CanUserReachTrayIcon = () => TrayIconReachability.CanUserReachTrayIcon(Environment.ProcessPath!);
         this._hasExplainedHidingToTray = true;
         if (this._window.CanUserReachTrayIcon())
         {
