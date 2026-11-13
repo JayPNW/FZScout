@@ -1,4 +1,4 @@
-﻿using System.Windows.Media;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace FZScout;
@@ -6,11 +6,11 @@ namespace FZScout;
 /// <summary><see cref="AppIcon"/>'s icons, for WPF windows. Every size is kept, so Windows picks the one it needs.</summary>
 static class WindowIcon
 {
-    static readonly Dictionary<ScoutingStatus, ImageSource> ForScoutingStatus = Enum.GetValues<ScoutingStatus>().ToDictionary(scoutingStatus => scoutingStatus, scoutingStatus => Decode(AppIcon.OpenResource(scoutingStatus)));
+    /// <summary>Decoded on each call, because an <see cref="IconBitmapDecoder"/> can only be used on the thread that created it.</summary>
+    public static ImageSource Gem => Decode(AppIcon.OpenGemResource());
 
-    public static ImageSource Gem { get; } = Decode(AppIcon.OpenGemResource());
-
-    public static ImageSource For(ScoutingStatus scoutingStatus) => ForScoutingStatus[scoutingStatus];
+    /// <summary>Decoded on each call, because an <see cref="IconBitmapDecoder"/> can only be used on the thread that created it.</summary>
+    public static ImageSource For(ScoutingStatus scoutingStatus) => Decode(AppIcon.OpenResource(scoutingStatus));
 
     static ImageSource Decode(Stream stream)
     {
