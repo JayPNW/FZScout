@@ -1,8 +1,5 @@
-﻿using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using FZScout.ViewModels;
+﻿using FZScout.ViewModels;
+using Hardcodet.Wpf.TaskbarNotification;
 
 namespace FZScout.Tests.Xaml;
 
@@ -14,22 +11,11 @@ public class TrayIconTests
     {
         var viewModel = new AppViewModel("7.0.0", launchesAtLogin: true, showsToastNotifications: true);
         using var trayIcon = new TrayIcon(viewModel);
-        var png = TakePngOfOpenMenu(trayIcon.ContextMenu);
-        await Verify(png, "png");
-    }
+        var menu = trayIcon.ContextMenu;
 
-    /// <summary>Verify.Xaml can't draw a ContextMenu, because it puts what it draws in a window, and a ContextMenu can't have a parent.</summary>
-    static MemoryStream TakePngOfOpenMenu(ContextMenu menu)
-    {
-        menu.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
-        menu.Arrange(new Rect(menu.DesiredSize));
-        var bitmap = new RenderTargetBitmap((int)Math.Ceiling(menu.ActualWidth), (int)Math.Ceiling(menu.ActualHeight), 96, 96, PixelFormats.Pbgra32);
-        bitmap.Render(menu);
-        var encoder = new PngBitmapEncoder();
-        encoder.Frames.Add(BitmapFrame.Create(bitmap));
-        var png = new MemoryStream();
-        encoder.Save(png);
-        png.Position = 0;
-        return png;
+        // TaskbarIcon points its menu back at itself with this attached property, and Verify.Xaml's XAML serializer follows that cycle until the stack overflows.
+        TaskbarIcon.SetParentTaskbarIcon(menu, null);
+
+        await Verify(menu);
     }
 }

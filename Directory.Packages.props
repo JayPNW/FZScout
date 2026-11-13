@@ -16,7 +16,7 @@
     <PackageVersion Include="Velopack" Version="1.2.161" />
     <PackageVersion Include="WpfBindingErrors" Version="1.2.0" />
     <PackageVersion Include="Verify.XunitV3" Version="33.3.4" />
-    <PackageVersion Include="Verify.Xaml" Version="5.0.0" />
+    <PackageVersion Include="Verify.Xaml" Version="5.0.1" />
     <PackageVersion Include="xunit.v3" Version="4.0.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.1" />
     <PackageVersion Include="Xunit.StaFact" Version="4.0.24" />
