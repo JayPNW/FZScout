@@ -1,0 +1,30 @@
+<!-- An emerald hourglass, for while waiting for a bonus message, on a 32-unit grid.
+     draw-icons.ps1 switches which of the <use>s at the bottom are shown to make the problem icon too. -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32">
+  <defs>
+    <!-- In the gem's colors: a cap at each end, and two glass bulbs meeting at the waist, lit from the upper left. -->
+    <g id="picture">
+      <polygon points="6,2 26,2 26,6 6,6" fill="#36C47A"/>     <!-- top cap -->
+      <polygon points="6,6 16,6 16,16" fill="#C8FADF"/>        <!-- top bulb left -->
+      <polygon points="16,6 26,6 16,16" fill="#76E3A6"/>       <!-- top bulb right -->
+      <polygon points="16,16 16,26 6,26" fill="#25A363"/>      <!-- bottom bulb left -->
+      <polygon points="16,16 26,26 16,26" fill="#17804B"/>     <!-- bottom bulb right -->
+      <polygon points="6,26 26,26 26,30 6,30" fill="#0E5F37"/> <!-- bottom cap -->
+      <g fill="none" stroke="#05301B" stroke-width="1.6" stroke-linejoin="round">
+        <polygon points="6,2 26,2 26,6 6,6"/>
+        <polygon points="6,6 26,6 16,16"/>
+        <polygon points="16,16 26,26 6,26"/>
+        <polygon points="6,26 26,26 26,30 6,30"/>
+      </g>
+    </g>
+    <!-- A red circle with a white exclamation mark in the bottom right corner. -->
+    <g id="badge">
+      <circle cx="24" cy="24" r="8" fill="#3A0505"/>                     <!-- rim -->
+      <circle cx="24" cy="24" r="6.5" fill="#E02424"/>                   <!-- badge -->
+      <rect x="22.75" y="19" width="2.5" height="6" fill="#FFFFFF"/>     <!-- exclamation mark -->
+      <rect x="22.75" y="26.5" width="2.5" height="2.5" fill="#FFFFFF"/> <!-- its dot -->
+    </g>
+  </defs>
+  <use id="colored-picture" xlink:href="#picture"/>
+  <use id="problem-badge" xlink:href="#badge" display="none"/>
+</svg>

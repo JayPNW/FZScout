@@ -1,0 +1,30 @@
+<!-- FZScout's main icon, an emerald gem, on a 32-unit grid.
+     draw-icons.ps1 switches which of the <use>s at the bottom are shown to make the grey and problem icons too. -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32">
+  <defs>
+    <!-- Flat table on top, crown down to the girdle, pavilion down to a point. -->
+    <g id="picture">
+      <polygon points="10,4 2,12 11,12" fill="#76E3A6"/>        <!-- crown left -->
+      <polygon points="10,4 22,4 21,12 11,12" fill="#C8FADF"/>  <!-- table -->
+      <polygon points="22,4 30,12 21,12" fill="#36C47A"/>       <!-- crown right -->
+      <polygon points="2,12 11,12 16,29" fill="#25A363"/>       <!-- pavilion left -->
+      <polygon points="11,12 21,12 16,29" fill="#17804B"/>      <!-- pavilion middle -->
+      <polygon points="21,12 30,12 16,29" fill="#0E5F37"/>      <!-- pavilion right -->
+      <polygon points="10,4 22,4 30,12 16,29 2,12" fill="none" stroke="#05301B" stroke-width="1.6" stroke-linejoin="round"/>
+    </g>
+    <!-- Each color as bright as before, but grey. -->
+    <filter id="grey" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="0.299 0.587 0.114 0 0  0.299 0.587 0.114 0 0  0.299 0.587 0.114 0 0  0 0 0 1 0"/>
+    </filter>
+    <!-- A red circle with a white exclamation mark in the bottom right corner. -->
+    <g id="badge">
+      <circle cx="24" cy="24" r="8" fill="#3A0505"/>                     <!-- rim -->
+      <circle cx="24" cy="24" r="6.5" fill="#E02424"/>                   <!-- badge -->
+      <rect x="22.75" y="19" width="2.5" height="6" fill="#FFFFFF"/>     <!-- exclamation mark -->
+      <rect x="22.75" y="26.5" width="2.5" height="2.5" fill="#FFFFFF"/> <!-- its dot -->
+    </g>
+  </defs>
+  <use id="colored-picture" xlink:href="#picture"/>
+  <use id="grey-picture" xlink:href="#picture" filter="url(#grey)" display="none"/>
+  <use id="problem-badge" xlink:href="#badge" display="none"/>
+</svg>
