@@ -1,28 +1,27 @@
-﻿using FZScout.ViewModels;
-using static FZScout.Tests.Xaml.ScreenshotVerifier;
+using FZScout.ViewModels;
 
 namespace FZScout.Tests.Xaml;
 
 public class SettingsWindowTests
 {
-    [Fact]
-    public Task AfterVerifyingTheApiKey() => VerifyScreenshot(() =>
+    [WpfFact]
+    public Task AfterVerifyingTheApiKey()
     {
         var viewModel = new AppViewModel("7.0.0", launchesAtLogin: true, showsToastNotifications: false)
         {
             ApiKeyBeingEdited = "fz_live_not_a_real_key",
             ApiKeyVerificationStatus = ApiKeyVerificationStatus.VerifiedAndSaved,
         };
-        return new SettingsWindow(viewModel);
-    });
+        return Verify(new SettingsWindow(viewModel));
+    }
 
-    [Fact]
-    public Task ShowsWhichApiKeyIsSavedWithoutRevealingIt() => VerifyScreenshot(() =>
+    [WpfFact]
+    public Task ShowsWhichApiKeyIsSavedWithoutRevealingIt()
     {
         var viewModel = new AppViewModel("7.0.0", launchesAtLogin: true, showsToastNotifications: false)
         {
             SavedApiKeyAbbreviation = "fz_live_qa81...cUMfgC",
         };
-        return new SettingsWindow(viewModel);
-    });
+        return Verify(new SettingsWindow(viewModel));
+    }
 }

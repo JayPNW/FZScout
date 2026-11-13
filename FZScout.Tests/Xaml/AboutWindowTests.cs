@@ -1,13 +1,12 @@
-﻿using FZScout.ViewModels;
+using FZScout.ViewModels;
 using Velopack;
-using static FZScout.Tests.Xaml.ScreenshotVerifier;
 
 namespace FZScout.Tests.Xaml;
 
 public class AboutWindowTests
 {
-    [Fact]
-    public Task AfterDownloadingAnUpdate() => VerifyScreenshot(() =>
+    [WpfFact]
+    public Task AfterDownloadingAnUpdate()
     {
         var downloadedVersion = SemanticVersion.Parse("8.0.0");
         var viewModel = new AppViewModel("7.0.0", launchesAtLogin: true, showsToastNotifications: true)
@@ -15,6 +14,6 @@ public class AboutWindowTests
             LatestUpdateCheckResult = new DownloadedNewerRelease(downloadedVersion),
             DownloadedVersionToInstallAfterExit = downloadedVersion,
         };
-        return new AboutWindow(viewModel);
-    });
+        return Verify(new AboutWindow(viewModel));
+    }
 }

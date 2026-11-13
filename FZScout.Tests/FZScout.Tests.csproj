@@ -14,8 +14,11 @@
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Verify.XunitV3" />
+    <PackageReference Include="Verify.Xaml" />
+    <PackageReference Include="WpfBindingErrors" />
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Xunit.StaFact" />
   </ItemGroup>
 
   <!-- WPF drops these from the implicit usings, though nothing here clashes with them. -->
