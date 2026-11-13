@@ -1,13 +1,13 @@
 ﻿using System.Net;
-using System.Net.Http.Json;
 using System.Text.Json;
+using FZApi;
 
 namespace FZScout.Site;
 
-/// <summary>Talks to fangbreaker.zone and frostreaver.zone. See InternalDocumentation/API.md.</summary>
+/// <summary>Talks to fangbreaker.zone and frostreaver.zone through <see cref="FZApiClient"/>, turning its exceptions into <see cref="ApiResult{T}"/>.</summary>
 class FangbreakerZoneClient(HttpMessageHandler httpMessageHandler)
 {
-    static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
+    const string UserAgent = "FZScout";
 
     /// <summary>Checks a key by posting 'none' for a zone that never has a bonus.</summary>
     static readonly BonusReport ApiKeyCheck = new(Server.Fangbreaker, "The Nexus", BonusKey.None);
@@ -21,63 +21,67 @@ class FangbreakerZoneClient(HttpMessageHandler httpMessageHandler)
 
     public async Task<ApiResult<IReadOnlySet<BonusKey>>> GetBonusTypesAsync(Server server, CancellationToken cancellationToken = default)
     {
-        var result = await GetAsync<TypeDto[]>(server, "types", cancellationToken);
-        return Map(result, types => (IReadOnlySet<BonusKey>)types.Select(t => new BonusKey(t.Key)).ToHashSet());
+        return await CallAsync(
+            $"GET {BonusListUri(server, "types")}",
+            async () => (IReadOnlySet<BonusKey>)(await ClientFor(server).GetBonusTypesAsync(Slug(server), cancellationToken)).Select(t => new BonusKey(t.Key)).ToHashSet(),
+            cancellationToken);
     }
 
     public async Task<ApiResult<IReadOnlySet<string>>> GetZonesAsync(Server server, CancellationToken cancellationToken = default)
     {
-        var result = await GetAsync<ZoneDto[]>(server, "zones", cancellationToken);
-        return Map(result, zones => (IReadOnlySet<string>)zones.Select(z => z.Name).ToHashSet());
+        return await CallAsync(
+            $"GET {BonusListUri(server, "zones")}",
+            async () => (IReadOnlySet<string>)(await ClientFor(server).GetZonesAsync(Slug(server), cancellationToken)).Select(z => z.Name).ToHashSet(),
+            cancellationToken);
     }
 
     /// <summary>Today's bonus for each zone, keyed by the site's zone name. Zones nobody has reported are <see cref="BonusKey.Unconfirmed"/>.</summary>
     public async Task<ApiResult<IReadOnlyDictionary<string, BonusKey>>> GetTodayAsync(Server server, CancellationToken cancellationToken = default)
     {
-        var result = await GetAsync<TodayDto[]>(server, "today", cancellationToken);
-        return Map(result, zones => (IReadOnlyDictionary<string, BonusKey>)zones.DistinctBy(z => z.Name).ToDictionary(z => z.Name, z => new BonusKey(z.Bonus)));
+        return await CallAsync(
+            $"GET {BonusListUri(server, "today")}",
+            async () => (IReadOnlyDictionary<string, BonusKey>)(await ClientFor(server).GetTodaysBonusesAsync(Slug(server), cancellationToken)).DistinctBy(z => z.Name).ToDictionary(z => z.Name, z => new BonusKey(z.Bonus)),
+            cancellationToken);
     }
 
     public async Task<ApiResult<bool>> ReportBonusAsync(BonusReport report, ApiKey apiKey, CancellationToken cancellationToken = default)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Post, new Uri(report.Server.Site, "/api/client/bonuses"));
-        request.Headers.Add("X-API-Key", apiKey.Value);
-        request.Content = JsonContent.Create(new ReportDto(report.Server.Name, report.Zone, report.Bonus.Value), options: Json);
-        var result = await SendAsync<ReportResponseDto>(request, cancellationToken);
-        return Map(result, r => r.Updated);
+        var siteReport = new FZApi.Models.BonusReport { ServerName = report.Server.Name, ZoneName = report.Zone, BonusKey = report.Bonus.Value };
+        return await CallAsync(
+            $"POST {new Uri(report.Server.Site, "/api/client/bonuses")}",
+            async () => (await ClientFor(report.Server, apiKey).ReportBonusAsync(siteReport, cancellationToken)).Updated,
+            cancellationToken);
     }
 
     public Task<ApiResult<bool>> CheckApiKeyAsync(ApiKey apiKey, CancellationToken cancellationToken = default) => ReportBonusAsync(ApiKeyCheck, apiKey, cancellationToken);
 
-    async Task<ApiResult<T>> GetAsync<T>(Server server, string list, CancellationToken cancellationToken)
-    {
-        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(server.Site, $"/api/servers/{server.Name.ToLowerInvariant()}/bonuses/{list}"));
-        return await SendAsync<T>(request, cancellationToken);
-    }
+    static string Slug(Server server) => server.Name.ToLowerInvariant();
 
-    async Task<ApiResult<T>> SendAsync<T>(HttpRequestMessage request, CancellationToken cancellationToken)
+    static Uri BonusListUri(Server server, string list) => new(server.Site, $"/api/servers/{Slug(server)}/bonuses/{list}");
+
+    static async Task<ApiResult<T>> CallAsync<T>(string requestDescription, Func<Task<T>> call, CancellationToken cancellationToken)
     {
-        var description = $"{request.Method} {request.RequestUri}";
         try
         {
-            using var response = await this._httpClient.SendAsync(request, cancellationToken);
-            var body = await response.Content.ReadAsStringAsync(cancellationToken);
-            if (response.StatusCode != HttpStatusCode.OK)
+            var value = await call();
+            if (value is null)
             {
-                return ApiResult<T>.Failure(OutcomeFor(response.StatusCode), $"{description} returned {(int)response.StatusCode}: {body}");
+                return ApiResult<T>.Failure(ApiOutcome.Failed, $"{requestDescription} returned no data.");
             }
 
-            var envelope = JsonSerializer.Deserialize<EnvelopeDto<T>>(body, Json);
-            if (envelope is not { Ok: true, Data: not null })
-            {
-                return ApiResult<T>.Failure(ApiOutcome.Failed, $"{description} returned an unexpected body: {body}");
-            }
-
-            return ApiResult<T>.Success(envelope.Data);
+            return ApiResult<T>.Success(value);
+        }
+        catch (FZApiException exception) when (exception.StatusCode != HttpStatusCode.OK)
+        {
+            return ApiResult<T>.Failure(OutcomeFor(exception.StatusCode), $"{requestDescription} returned {(int)exception.StatusCode}: {exception.ResponseBody}");
+        }
+        catch (FZApiException exception)
+        {
+            return ApiResult<T>.Failure(ApiOutcome.Failed, $"{requestDescription} returned an unexpected body: {exception.ResponseBody}");
         }
         catch (Exception exception) when (exception is HttpRequestException or JsonException or TaskCanceledException && !cancellationToken.IsCancellationRequested)
         {
-            return ApiResult<T>.Failure(ApiOutcome.Failed, $"{description} failed: {exception.Message}");
+            return ApiResult<T>.Failure(ApiOutcome.Failed, $"{requestDescription} failed: {exception.Message}");
         }
     }
 
@@ -87,25 +91,5 @@ class FangbreakerZoneClient(HttpMessageHandler httpMessageHandler)
         _ => ApiOutcome.Failed,
     };
 
-    static ApiResult<TOut> Map<TIn, TOut>(ApiResult<TIn> result, Func<TIn, TOut> map)
-    {
-        if (result.IsSuccess)
-        {
-            return ApiResult<TOut>.Success(map(result.Value!));
-        }
-
-        return ApiResult<TOut>.Failure(result.Outcome, result.Error!);
-    }
-
-    record EnvelopeDto<T>(bool Ok, T? Data);
-
-    record TypeDto(string Key);
-
-    record ZoneDto(string Name);
-
-    record TodayDto(string Name, string Bonus);
-
-    record ReportDto(string ServerName, string ZoneName, string BonusKey);
-
-    record ReportResponseDto(bool Updated);
+    FZApiClient ClientFor(Server server, ApiKey? apiKey = null) => new(this._httpClient, new FZApiClientOptions { BaseAddress = server.Site, ApiKey = apiKey?.Value, UserAgent = UserAgent });
 }
