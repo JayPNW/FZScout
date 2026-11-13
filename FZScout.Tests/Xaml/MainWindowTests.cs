@@ -1,4 +1,4 @@
-using FZScout.ViewModels;
+﻿using FZScout.ViewModels;
 
 namespace FZScout.Tests.Xaml;
 

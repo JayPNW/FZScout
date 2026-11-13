@@ -1,4 +1,4 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using WpfBindingErrors;
 
 namespace FZScout.Tests.Xaml;
