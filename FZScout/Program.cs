@@ -7,13 +7,15 @@ namespace FZScout;
 
 static class Program
 {
+    static readonly LaunchAtLogin.StartupApp StartupApp = new("FZScout");
+
     extension(VelopackApp)
     {
         public static void InstallPendingUpdates()
         {
             VelopackApp.Build()
-                .OnAfterInstallFastCallback(_ => new LaunchAtLogin.StartupApp("FZScout").AddToStartupApps())
-                .OnBeforeUninstallFastCallback(_ => new LaunchAtLogin.StartupApp("FZScout").RemoveFromStartupApps())
+                .OnAfterInstallFastCallback(_ => StartupApp.AddToStartupApps())
+                .OnBeforeUninstallFastCallback(_ => StartupApp.RemoveFromStartupApps())
                 .Run();
         }
     }
@@ -26,7 +28,7 @@ static class Program
 
         var application = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
         using var userInput = new MessageBoxUserInput();
-        using var trayApplication = new TrayApplication(CreateApp(userInput), userInput, updates.UpdateChecker);
+        using var trayApplication = new TrayApplication(CreateApp(userInput), userInput, updates.UpdateChecker, StartupApp);
         application.Startup += (_, _) => trayApplication.Start();
         application.Run();
     }

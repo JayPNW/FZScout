@@ -27,7 +27,7 @@ class TrayApplication : IDisposable
     readonly Dictionary<ScoutingStatus, Icon> _trayIcons = Enum.GetValues<ScoutingStatus>().ToDictionary(scoutingStatus => scoutingStatus, AppIcon.LoadForTray);
     readonly AppStatus _status;
     readonly DispatcherTimer _showStatusWhenItChangesByItself = new();
-    readonly LaunchAtLogin.StartupApp _launchAtLogin = new("FZScout");
+    readonly LaunchAtLogin.StartupApp _launchAtLogin;
     readonly ShowToastNotifications _showToastNotifications = new();
     readonly ApiKeyVerifier _apiKeyVerifier;
     readonly AsyncRelayCommand _verifyApiKeyCommand;
@@ -36,12 +36,13 @@ class TrayApplication : IDisposable
     AboutWindow? _openAboutWindow;
 
     /// <summary>Call on the UI thread, before WPF starts running. Nothing happens until <see cref="Start"/>.</summary>
-    public TrayApplication(App app, MessageBoxUserInput userInput, GitHubUpdateChecker updateChecker)
+    public TrayApplication(App app, MessageBoxUserInput userInput, GitHubUpdateChecker updateChecker, LaunchAtLogin.StartupApp launchAtLogin)
     {
         this._app = app;
         this._dependencies = app.Dependencies;
         this._userInput = userInput;
         this._updateChecker = updateChecker;
+        this._launchAtLogin = launchAtLogin;
         this._status = new AppStatus(this._dependencies.TimeProvider);
         this._apiKeyVerifier = new ApiKeyVerifier(this._dependencies.ApiKeyStore, this._dependencies.FangbreakerZoneClient, this._dependencies.Log);
         this._apiKeyVerifier.ApiKeySaved += () => UpdateStatus(status => status.HadProblemSinceLastSuccess = false);
