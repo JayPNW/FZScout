@@ -12,7 +12,7 @@ static class Program
         public static void InstallPendingUpdates()
         {
             VelopackApp.Build()
-                .OnAfterInstallFastCallback(_ => new LaunchAtLogin.StartupApp("FZScout").AddToStartupApps(Environment.ProcessPath!))
+                .OnAfterInstallFastCallback(_ => new LaunchAtLogin.StartupApp("FZScout").AddToStartupApps())
                 .OnBeforeUninstallFastCallback(_ => new LaunchAtLogin.StartupApp("FZScout").RemoveFromStartupApps())
                 .Run();
         }

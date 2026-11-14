@@ -199,7 +199,7 @@ class TrayApplication : IDisposable
 
         if (wantsLaunchAtLogin)
         {
-            this._launchAtLogin.TurnOn(Environment.ProcessPath!);
+            this._launchAtLogin.TurnOn();
             return;
         }
 
