@@ -27,7 +27,7 @@ class TrayApplication : IDisposable
     readonly Dictionary<ScoutingStatus, Icon> _trayIcons = Enum.GetValues<ScoutingStatus>().ToDictionary(scoutingStatus => scoutingStatus, AppIcon.LoadForTray);
     readonly AppStatus _status;
     readonly DispatcherTimer _showStatusWhenItChangesByItself = new();
-    readonly LaunchAtLogin _launchAtLogin = new();
+    readonly LaunchAtLogin.StartupApp _launchAtLogin = new("FZScout");
     readonly ShowToastNotifications _showToastNotifications = new();
     readonly ApiKeyVerifier _apiKeyVerifier;
     readonly AsyncRelayCommand _verifyApiKeyCommand;
