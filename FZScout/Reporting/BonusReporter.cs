@@ -6,6 +6,8 @@ namespace FZScout.Reporting;
 /// <param name="loadApiKey">Called for each report, so a key the user saves in Settings takes effect right away.</param>
 class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, Func<ApiKey?> loadApiKey, Log log)
 {
+    public event Action? ApiKeyRejected;
+
     public async Task ReportBonusAsync(BonusReport report, CancellationToken cancellationToken = default)
     {
         var shownOnSite = await GetBonusShownOnSiteAsync(report, cancellationToken);
@@ -62,6 +64,7 @@ class BonusReporter(FangbreakerZoneClient fangbreakerZoneClient, Func<ApiKey?> l
         if (result.Outcome == ApiOutcome.KeyRejected)
         {
             log.Error($"Couldn't report {report}, because the API key was rejected. Enter a new one in Settings. {result.Error}");
+            ApiKeyRejected?.Invoke();
             return;
         }
 

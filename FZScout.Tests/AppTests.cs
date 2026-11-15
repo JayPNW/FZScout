@@ -63,8 +63,12 @@ public class AppTests
     {
         this._apiKeyStore.Save(StoredApiKey);
         this._site.RejectApiKey(StoredApiKey);
+        var rejections = 0;
+        this._app.ApiKeyRejected += () => rejections++;
 
         await this._app.LogProblemWithStoredApiKeyAsync(Cancel);
+
+        Assert.Equal(1, rejections);
 
         Assert.Contains("""ERROR: API key rejected. Enter a new one in Settings. POST https://fangbreaker.zone/api/client/bonuses returned 401: {"ok":false,"error":"Nope"}""", Output);
         Assert.Equal(StoredApiKey, this._apiKeyStore.Load());

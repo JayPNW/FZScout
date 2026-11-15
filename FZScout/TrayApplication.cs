@@ -45,7 +45,7 @@ class TrayApplication : IDisposable
         this._launchAtLogin = launchAtLogin;
         this._status = new AppStatus(this._dependencies.TimeProvider);
         this._apiKeyVerifier = new ApiKeyVerifier(this._dependencies.ApiKeyStore, this._dependencies.FangbreakerZoneClient, this._dependencies.Log);
-        this._apiKeyVerifier.ApiKeySaved += () => UpdateStatus(status => status.HadProblemSinceLastSuccess = false);
+        this._apiKeyVerifier.ApiKeySaved += () => UpdateStatus(ForgetProblems);
         this._verifyApiKeyCommand = new AsyncRelayCommand(VerifyThenSaveApiKeyAsync, CanVerifyApiKey);
         this._viewModel = CreateViewModel();
         this._viewModel.PropertyChanged += (_, e) => ApplyChangedSetting(e);
@@ -58,7 +58,14 @@ class TrayApplication : IDisposable
         this._showStatusWhenItChangesByItself.Tick += (_, _) => ShowStatus();
         ShowStatus();
         app.WaitingForBonusMessageUntilChanged += waitingUntil => UpdateStatus(status => status.WaitingForBonusMessageUntil = waitingUntil);
+        app.ApiKeyRejected += () => UpdateStatus(status => status.IsApiKeyRejected = true);
         app.ScoutingStarted += () => UpdateStatus(status => status.IsScouting = true);
+    }
+
+    static void ForgetProblems(AppStatus status)
+    {
+        status.HadProblemSinceLastSuccess = false;
+        status.IsApiKeyRejected = false;
     }
 
     string ApiKeyBeingEdited => this._viewModel.ApiKeyBeingEdited.Trim();
@@ -106,7 +113,7 @@ class TrayApplication : IDisposable
     {
         log.SuccessWritten += message => ShowToast(message, BalloonIcon.Info);
         log.ErrorWritten += message => ShowToast(message, BalloonIcon.Error);
-        log.SuccessWritten += _ => UpdateStatus(status => status.HadProblemSinceLastSuccess = false);
+        log.SuccessWritten += _ => UpdateStatus(ForgetProblems);
         log.ErrorWritten += _ => UpdateStatus(status => status.HadProblemSinceLastSuccess = true);
     }
 

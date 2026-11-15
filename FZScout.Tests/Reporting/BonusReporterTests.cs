@@ -135,12 +135,15 @@ public class BonusReporterTests
     }
 
     [Fact]
-    public async Task RejectedKeyIsOnlyLogged()
+    public async Task RejectedKeyIsLoggedAndAnnounced()
     {
         this._site.Fail(Post, HttpStatusCode.Unauthorized);
+        var rejections = 0;
+        this._reporter.ApiKeyRejected += () => rejections++;
 
         await ReportBonus(Server.Fangbreaker, "Befallen", "loot");
 
+        Assert.Equal(1, rejections);
         Assert.StartsWith("12:00:00 ERROR: Couldn't report Fangbreaker 'Befallen' is 'loot', because the API key was rejected. Enter a new one in Settings.", Output());
     }
 

@@ -15,6 +15,8 @@ class App(AppDependencies dependencies)
 
     public event Action? ScoutingStarted;
 
+    public event Action? ApiKeyRejected;
+
     public AppDependencies Dependencies => dependencies;
 
     public async Task RunAsync()
@@ -48,6 +50,7 @@ class App(AppDependencies dependencies)
         if (result.Outcome == ApiOutcome.KeyRejected)
         {
             Dependencies.Log.Error($"API key rejected. Enter a new one in Settings. {result.Error}");
+            ApiKeyRejected?.Invoke();
         }
     }
 
@@ -55,6 +58,7 @@ class App(AppDependencies dependencies)
     {
         var client = Dependencies.FangbreakerZoneClient;
         var bonusReporter = new BonusReporter(client, Dependencies.ApiKeyStore.Load, Dependencies.Log);
+        bonusReporter.ApiKeyRejected += () => ApiKeyRejected?.Invoke();
         var scout = new Scout(new ServerListCache(client, Dependencies.Log), Dependencies.Log, bonusReporter);
         scout.WaitingForBonusMessageUntilChanged += waitingUntil => WaitingForBonusMessageUntilChanged?.Invoke(waitingUntil);
         return scout;

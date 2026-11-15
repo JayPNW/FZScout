@@ -3,6 +3,7 @@
 /// <summary>What the app is doing, as the UI shows it. Some of that changes just because time passes.</summary>
 class AppStatus(TimeProvider timeProvider)
 {
+    const string ApiKeyRejectedDescription = "API Key rejected; enter a new one in settings";
     const string ProblemDescription = "hit a problem. Open the main window for details.";
 
     public bool IsScouting { get; set; }
@@ -14,6 +15,8 @@ class AppStatus(TimeProvider timeProvider)
     public DateTimeOffset? WaitingForBonusMessageUntil { get; set; }
 
     public bool HadProblemSinceLastSuccess { get; set; }
+
+    public bool IsApiKeyRejected { get; set; }
 
     public ScoutingStatus ScoutingStatus
     {
@@ -65,7 +68,7 @@ class AppStatus(TimeProvider timeProvider)
 
             if (IsWaitingForBonusMessage && HadProblemSinceLastSuccess)
             {
-                return $"FZScout: {WaitingForBonusMessageDescription}; {ProblemDescription}";
+                return $"FZScout: {WaitingForBonusMessageDescription}; {MostUsefulProblemDescription}";
             }
 
             if (IsWaitingForBonusMessage)
@@ -75,7 +78,7 @@ class AppStatus(TimeProvider timeProvider)
 
             if (HadProblemSinceLastSuccess)
             {
-                return $"FZScout: {ProblemDescription}";
+                return $"FZScout: {MostUsefulProblemDescription}";
             }
 
             return "FZScout";
@@ -97,6 +100,19 @@ class AppStatus(TimeProvider timeProvider)
             }
 
             return null;
+        }
+    }
+
+    string MostUsefulProblemDescription
+    {
+        get
+        {
+            if (IsApiKeyRejected)
+            {
+                return ApiKeyRejectedDescription;
+            }
+
+            return ProblemDescription;
         }
     }
 

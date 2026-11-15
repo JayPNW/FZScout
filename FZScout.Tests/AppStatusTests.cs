@@ -77,9 +77,19 @@ public class AppStatusTests
     }
 
     [Fact]
+    public void SaysToEnterANewApiKeyWhenTheProblemIsThatItWasRejected()
+    {
+        this._status.HadProblemSinceLastSuccess = true;
+        this._status.IsApiKeyRejected = true;
+
+        Assert.Equal((ScoutingStatus.ScoutingAfterProblem, "FZScout: API Key rejected; enter a new one in settings", null), Shown());
+    }
+
+    [Fact]
     public void DescriptionsFitInATrayIconTooltip()
     {
         this._status.HadProblemSinceLastSuccess = true;
+        this._status.IsApiKeyRejected = true;
         this._status.WaitingForBonusMessageUntil = Start.AddMinutes(5);
 
         Assert.InRange(this._status.Description.Length, 1, 127);
