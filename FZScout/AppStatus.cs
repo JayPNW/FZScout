@@ -3,7 +3,7 @@
 /// <summary>What the app is doing, as the UI shows it. Some of that changes just because time passes.</summary>
 class AppStatus(TimeProvider timeProvider)
 {
-    const string ProblemDescription = "something went wrong; its window shows what";
+    const string ProblemDescription = "hit a problem. Open the main window for details.";
 
     public bool IsScouting { get; set; }
 
@@ -65,7 +65,7 @@ class AppStatus(TimeProvider timeProvider)
 
             if (IsWaitingForBonusMessage && HadProblemSinceLastSuccess)
             {
-                return $"FZScout: {WaitingForBonusMessageDescription}, and {ProblemDescription}";
+                return $"FZScout: {WaitingForBonusMessageDescription}; {ProblemDescription}";
             }
 
             if (IsWaitingForBonusMessage)

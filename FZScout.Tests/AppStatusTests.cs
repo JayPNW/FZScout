@@ -62,7 +62,7 @@ public class AppStatusTests
     {
         this._status.HadProblemSinceLastSuccess = true;
 
-        Assert.Equal((ScoutingStatus.ScoutingAfterProblem, "FZScout: something went wrong; its window shows what", null), Shown());
+        Assert.Equal((ScoutingStatus.ScoutingAfterProblem, "FZScout: hit a problem. Open the main window for details.", null), Shown());
     }
 
     [Fact]
@@ -72,7 +72,7 @@ public class AppStatusTests
         this._status.WaitingForBonusMessageUntil = Start.AddMinutes(5);
 
         Assert.Equal(
-            (ScoutingStatus.WaitingForBonusMessageAfterProblem, "FZScout: waiting until 12:05:00 for a bonus message, and something went wrong; its window shows what", Start.AddMinutes(5)),
+            (ScoutingStatus.WaitingForBonusMessageAfterProblem, "FZScout: waiting until 12:05:00 for a bonus message; hit a problem. Open the main window for details.", Start.AddMinutes(5)),
             Shown());
     }
 
