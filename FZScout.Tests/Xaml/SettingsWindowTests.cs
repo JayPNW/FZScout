@@ -12,7 +12,7 @@ public class SettingsWindowTests
             ApiKeyBeingEdited = "fz_live_not_a_real_key",
             ApiKeyVerificationStatus = ApiKeyVerificationStatus.VerifiedAndSaved,
         };
-        return Verify(new SettingsWindow(viewModel));
+        return Verify(new SettingsWindow(viewModel).WithPinnedSystemHighlightColor());
     }
 
     [WpfFact]
@@ -22,6 +22,6 @@ public class SettingsWindowTests
         {
             SavedApiKeyAbbreviation = "fz_live_qa81...cUMfgC",
         };
-        return Verify(new SettingsWindow(viewModel));
+        return Verify(new SettingsWindow(viewModel).WithPinnedSystemHighlightColor());
     }
 }

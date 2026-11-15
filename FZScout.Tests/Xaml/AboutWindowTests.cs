@@ -14,6 +14,6 @@ public class AboutWindowTests
             LatestUpdateCheckResult = new DownloadedNewerRelease(downloadedVersion),
             DownloadedVersionToInstallAfterExit = downloadedVersion,
         };
-        return Verify(new AboutWindow(viewModel));
+        return Verify(new AboutWindow(viewModel).WithPinnedSystemHighlightColor());
     }
 }

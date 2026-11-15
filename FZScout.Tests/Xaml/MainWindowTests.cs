@@ -12,6 +12,6 @@ public class MainWindowTests
         viewModel.LogLines.Add(new LogLine("2026-11-05 12:00:01 Reported a bonus. See https://fangbreaker.zone/bonuses", LogLineSeverity.Success));
         viewModel.LogLines.Add(new LogLine("2026-11-05 12:00:02 Couldn't tell which zone this is.", LogLineSeverity.Warning));
         viewModel.LogLines.Add(new LogLine("2026-11-05 12:00:03 ERROR: API key rejected. Enter a new one in Settings.", LogLineSeverity.Error));
-        return Verify(new MainWindow(viewModel));
+        return Verify(new MainWindow(viewModel) { Width = MachineIndependentRendering.WidthThatFitsOnAnyScreen }.WithPinnedSystemHighlightColor());
     }
 }
