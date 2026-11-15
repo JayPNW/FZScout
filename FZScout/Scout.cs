@@ -35,7 +35,7 @@ class Scout(ServerListCache serverListCache, Log log, BonusReporter bonusReporte
         {
             WaitingForBonusMessageUntilChanged?.Invoke(WaitingForBonusMessageUntil);
         }
- 
+
         var characterStoppedWaitingForBonusMessage = characterWaitingForBonusMessageUntilBefore is not null && scout.WaitingForBonusMessageUntil is null;
         var siteMayShowSomethingNew = scout.CurrentZone != zoneBefore || characterStoppedWaitingForBonusMessage || logEvent is EverQuestLogWatcher.DailyResetLogEvent;
         if (siteMayShowSomethingNew && BonusShownOnSiteForCurrentZoneChanged is { } notifyBonusShownOnSiteChanged)
