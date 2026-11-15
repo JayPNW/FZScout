@@ -8,11 +8,11 @@ namespace FZScout.Tests.Xaml;
 /// </summary>
 static class MachineIndependentRendering
 {
-    /// <summary>The highlight color on a typical Windows 11 dev machine; CI's Windows Server is a shade different.</summary>
-    static Color WindowsHighlightColor { get; } = Color.FromRgb(0, 120, 215);
-
     /// <summary>Narrow enough that WPF doesn't shrink the window to fit a small screen, like CI's 1024 pixels.</summary>
     public const double WidthThatFitsOnAnyScreen = 1000;
+
+    /// <summary>The highlight color on a typical Windows 11 dev machine; CI's Windows Server is a shade different.</summary>
+    static Color WindowsHighlightColor { get; } = Color.FromRgb(0, 120, 215);
 
     public static T WithPinnedSystemHighlightColor<T>(this T element)
         where T : FrameworkElement
