@@ -1,13 +1,17 @@
 ﻿using FZScout.Reporting;
 using FZScout.Scouting;
+using FZScout.Site;
 
 namespace FZScout;
 
-class Scout(ServerListCache serverListCache, Log log, BonusReporter bonusReporter)
+class Scout(ServerListCache serverListCache, Log log, BonusReporter bonusReporter, FangbreakerZoneClient fangbreakerZoneClient)
 {
     readonly Dictionary<Character, CharacterScout> _characters = [];
 
     public event Action<DateTimeOffset?>? WaitingForBonusMessageUntilChanged;
+
+    /// <summary>For the zone of the character with the latest message; null when that zone isn't on the site or the site couldn't be reached.</summary>
+    public event Action<BonusShownOnSite?>? BonusShownOnSiteForCurrentZoneChanged;
 
     /// <summary>Like <see cref="CharacterScout.WaitingForBonusMessageUntil"/>, this can already have passed.</summary>
     public DateTimeOffset? WaitingForBonusMessageUntil => this._characters.Values.Max(character => character.WaitingForBonusMessageUntil);
@@ -24,10 +28,35 @@ class Scout(ServerListCache serverListCache, Log log, BonusReporter bonusReporte
         var serverLists = await serverListCache.GetAsync(character.Server, cancellationToken);
         var scout = this._characters.GetOrAdd(character, new CharacterScout(character, log, bonusReporter));
         var waitingForBonusMessageUntilBefore = WaitingForBonusMessageUntil;
+        var zoneBefore = scout.CurrentZone;
+        var characterWaitingForBonusMessageUntilBefore = scout.WaitingForBonusMessageUntil;
         await scout.HandleAsync(logEvent, now, serverLists, cancellationToken);
         if (WaitingForBonusMessageUntil != waitingForBonusMessageUntilBefore)
         {
             WaitingForBonusMessageUntilChanged?.Invoke(WaitingForBonusMessageUntil);
         }
+ 
+        var characterStoppedWaitingForBonusMessage = characterWaitingForBonusMessageUntilBefore is not null && scout.WaitingForBonusMessageUntil is null;
+        var siteMayShowSomethingNew = scout.CurrentZone != zoneBefore || characterStoppedWaitingForBonusMessage || logEvent is EverQuestLogWatcher.DailyResetLogEvent;
+        if (siteMayShowSomethingNew && BonusShownOnSiteForCurrentZoneChanged is { } notifyBonusShownOnSiteChanged)
+        {
+            notifyBonusShownOnSiteChanged(await GetBonusShownOnSiteAsync(server, scout.CurrentZone, cancellationToken));
+        }
+    }
+
+    async Task<BonusShownOnSite?> GetBonusShownOnSiteAsync(Server server, Zone? zone, CancellationToken cancellationToken)
+    {
+        if (zone is not KnownZone knownZone)
+        {
+            return null;
+        }
+
+        var today = await fangbreakerZoneClient.GetTodayAsync(server, cancellationToken);
+        if (!today.IsSuccess)
+        {
+            return null;
+        }
+
+        return new BonusShownOnSite(server, knownZone.SiteName, today.Value!.GetValueOrDefault(knownZone.SiteName, BonusKey.Unconfirmed));
     }
 }

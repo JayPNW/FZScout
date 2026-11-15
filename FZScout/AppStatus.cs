@@ -1,9 +1,12 @@
-﻿namespace FZScout;
+﻿using FZScout.Site;
+
+namespace FZScout;
 
 /// <summary>What the app is doing, as the UI shows it. Some of that changes just because time passes.</summary>
 class AppStatus(TimeProvider timeProvider)
 {
     const string ApiKeyRejectedDescription = "API Key rejected; enter a new one in settings";
+    const int MaxTooltipLength = 127;
     const string ProblemDescription = "hit a problem. Open the main window for details.";
 
     public bool IsScouting { get; set; }
@@ -17,6 +20,8 @@ class AppStatus(TimeProvider timeProvider)
     public bool HadProblemSinceLastSuccess { get; set; }
 
     public bool IsApiKeyRejected { get; set; }
+
+    public BonusShownOnSite? BonusShownOnSiteForCurrentZone { get; set; }
 
     public ScoutingStatus ScoutingStatus
     {
@@ -53,6 +58,25 @@ class AppStatus(TimeProvider timeProvider)
 
     /// <summary>Short enough for a tray icon's tooltip.</summary>
     public string Description
+    {
+        get
+        {
+            if (HasStopped || BonusShownOnSiteForCurrentZone is not { } shown)
+            {
+                return ScoutingDescription;
+            }
+
+            var withZoneAndSite = $"{ScoutingDescription}\n{shown.Zone}: '{shown.Bonus}' on {shown.Server.Site.Host}";
+            if (withZoneAndSite.Length <= MaxTooltipLength)
+            {
+                return withZoneAndSite;
+            }
+
+            return $"{ScoutingDescription}\nSite shows '{shown.Bonus}'";
+        }
+    }
+
+    string ScoutingDescription
     {
         get
         {

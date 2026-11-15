@@ -60,6 +60,7 @@ class TrayApplication : IDisposable
         app.WaitingForBonusMessageUntilChanged += waitingUntil => UpdateStatus(status => status.WaitingForBonusMessageUntil = waitingUntil);
         app.ApiKeyRejected += () => UpdateStatus(status => status.IsApiKeyRejected = true);
         app.ScoutingStarted += () => UpdateStatus(status => status.IsScouting = true);
+        app.BonusShownOnSiteForCurrentZoneChanged += shown => UpdateStatus(status => status.BonusShownOnSiteForCurrentZone = shown);
     }
 
     string ApiKeyBeingEdited => this._viewModel.ApiKeyBeingEdited.Trim();

@@ -15,6 +15,8 @@ class App(AppDependencies dependencies)
 
     public event Action? ScoutingStarted;
 
+    public event Action<BonusShownOnSite?>? BonusShownOnSiteForCurrentZoneChanged;
+
     public event Action? ApiKeyRejected;
 
     public AppDependencies Dependencies => dependencies;
@@ -59,8 +61,9 @@ class App(AppDependencies dependencies)
         var client = Dependencies.FangbreakerZoneClient;
         var bonusReporter = new BonusReporter(client, Dependencies.ApiKeyStore.Load, Dependencies.Log);
         bonusReporter.ApiKeyRejected += () => ApiKeyRejected?.Invoke();
-        var scout = new Scout(new ServerListCache(client, Dependencies.Log), Dependencies.Log, bonusReporter);
+        var scout = new Scout(new ServerListCache(client, Dependencies.Log), Dependencies.Log, bonusReporter, client);
         scout.WaitingForBonusMessageUntilChanged += waitingUntil => WaitingForBonusMessageUntilChanged?.Invoke(waitingUntil);
+        scout.BonusShownOnSiteForCurrentZoneChanged += shown => BonusShownOnSiteForCurrentZoneChanged?.Invoke(shown);
         return scout;
     }
 

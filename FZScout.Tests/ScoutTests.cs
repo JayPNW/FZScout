@@ -23,7 +23,7 @@ public class ScoutTests
         var fangbreakerZoneClient = this._site.Client;
         var serverListCache = new ServerListCache(fangbreakerZoneClient, log);
         var bonusReporter = new BonusReporter(fangbreakerZoneClient, () => new ApiKey("fz_live_test"), log);
-        this._scout = new Scout(serverListCache, log, bonusReporter);
+        this._scout = new Scout(serverListCache, log, bonusReporter, fangbreakerZoneClient);
     }
 
     static CancellationToken Cancel => TestContext.Current.CancellationToken;
@@ -145,6 +145,31 @@ public class ScoutTests
         await Handle(1, new EverQuestLogWatcher.SayChatMessageFromYou(Bob, Start.UtcDateTime, ""));
 
         Assert.Empty(changes);
+    }
+
+    [Fact]
+    public async Task ShowsWhatTheSiteShowsForTheZoneTheCharacterEnters()
+    {
+        var shown = new List<BonusShownOnSite?>();
+        this._scout.BonusShownOnSiteForCurrentZoneChanged += shown.Add;
+        this._site.SetToday("Crushbone", "loot");
+
+        await Handle(0, new EverQuestLogWatcher.ZoneEntered(Bob, Start.UtcDateTime, "", "Clan Crushbone"));
+
+        Assert.Equal([new BonusShownOnSite(Server.Fangbreaker, "Crushbone", new BonusKey("loot"))], shown);
+    }
+
+    [Fact]
+    public async Task ShowsTheSiteAgainAfterReporting()
+    {
+        var shown = new List<BonusShownOnSite?>();
+        await Handle(0, new EverQuestLogWatcher.ZoneEntered(Bob, Start.UtcDateTime, "", "Clan Crushbone"));
+        this._scout.BonusShownOnSiteForCurrentZoneChanged += shown.Add;
+        this._site.SetToday("Crushbone", "loot");
+
+        await Handle(1, new EverQuestLogWatcher.AreaIsSaturatedWithUnstableMagic(Bob, Start.UtcDateTime, "", "multiplying the loot that may be found here"));
+
+        Assert.Equal([new BonusShownOnSite(Server.Fangbreaker, "Crushbone", new BonusKey("loot"))], shown);
     }
 
     List<DateTimeOffset?> RecordWaitingForBonusMessageUntilChanges()

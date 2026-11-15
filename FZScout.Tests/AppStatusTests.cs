@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Time.Testing;
+﻿using FZScout.Site;
+using Microsoft.Extensions.Time.Testing;
 
 namespace FZScout.Tests;
 
@@ -86,11 +87,20 @@ public class AppStatusTests
     }
 
     [Fact]
+    public void ShowsWhatTheSiteShowsForTheCurrentZone()
+    {
+        this._status.BonusShownOnSiteForCurrentZone = new BonusShownOnSite(Server.Fangbreaker, "Crushbone", new BonusKey("loot"));
+
+        Assert.Equal((ScoutingStatus.Scouting, "FZScout\nCrushbone: 'loot' on fangbreaker.zone", null), Shown());
+    }
+
+    [Fact]
     public void DescriptionsFitInATrayIconTooltip()
     {
         this._status.HadProblemSinceLastSuccess = true;
         this._status.IsApiKeyRejected = true;
         this._status.WaitingForBonusMessageUntil = Start.AddMinutes(5);
+        this._status.BonusShownOnSiteForCurrentZone = new BonusShownOnSite(Server.Fangbreaker, "Temple of Cazic-Thule", new BonusKey("unconfirmed"));
 
         Assert.InRange(this._status.Description.Length, 1, 127);
     }
