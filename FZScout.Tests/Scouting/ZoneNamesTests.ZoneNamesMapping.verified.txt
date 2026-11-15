@@ -16,6 +16,7 @@
 | Mistmoore Catacombs: Scion Lair of Fury          | Mistmoore Catacombs                            |
 | Mistmoore Catacombs: The Asylum of Invoked Stone | Mistmoore Catacombs                            |
 | Nagafen's Lair                                   | Nagafen's Lair (SolB)                          |
+| Natimbi, the Broken Shores                       | Natimbi, The Broken Shores                     |
 | Neriak - Commons                                 | Neriak                                         |
 | Neriak - Foreign Quarter                         | Neriak                                         |
 | Neriak - Third Gate                              | Neriak                                         |
@@ -147,7 +148,6 @@
 | <same>                                           | Mons Letalis                                   |
 | <same>                                           | Muramite Proving Grounds                       |
 | <same>                                           | Najena                                         |
-| <same>                                           | Natimbi, The Broken Shores                     |
 | <same>                                           | Nektulos Forest                                |
 | <same>                                           | Netherbian Lair                                |
 | <same>                                           | Nobles' Causeway                               |

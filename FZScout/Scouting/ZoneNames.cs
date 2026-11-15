@@ -24,6 +24,7 @@ static class ZoneNames
         ["Mistmoore Catacombs: Scion Lair of Fury"] = "Mistmoore Catacombs",
         ["Mistmoore Catacombs: The Asylum of Invoked Stone"] = "Mistmoore Catacombs",
         ["Nagafen's Lair"] = "Nagafen's Lair (SolB)",
+        ["Natimbi, the Broken Shores"] = "Natimbi, The Broken Shores",
         ["North Desert of Ro"] = "North Ro",
         ["North Kaladim"] = "Kaladim",
         ["Northern Felwithe"] = "Felwithe",
