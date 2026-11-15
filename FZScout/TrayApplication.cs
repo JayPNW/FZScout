@@ -62,12 +62,6 @@ class TrayApplication : IDisposable
         app.ScoutingStarted += () => UpdateStatus(status => status.IsScouting = true);
     }
 
-    static void ForgetProblems(AppStatus status)
-    {
-        status.HadProblemSinceLastSuccess = false;
-        status.IsApiKeyRejected = false;
-    }
-
     string ApiKeyBeingEdited => this._viewModel.ApiKeyBeingEdited.Trim();
 
     /// <summary>Call once WPF is running, so the app's work can come back to the UI thread.</summary>
@@ -86,6 +80,12 @@ class TrayApplication : IDisposable
         {
             icon.Dispose();
         }
+    }
+
+    static void ForgetProblems(AppStatus status)
+    {
+        status.HadProblemSinceLastSuccess = false;
+        status.IsApiKeyRejected = false;
     }
 
     AppViewModel CreateViewModel()
