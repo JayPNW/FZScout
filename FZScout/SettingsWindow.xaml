@@ -5,8 +5,10 @@
         xmlns:local="clr-namespace:FZScout"
         Title="FZScout Settings">
     <StackPanel Margin="12" Width="440">
+        <GroupBox Header="API Key" Padding="6">
+        <StackPanel>
         <DockPanel>
-            <Label DockPanel.Dock="Left" Content="_API key:" Target="{Binding ElementName=ApiKeyBox}" Padding="0,0,6,0" VerticalAlignment="Center" />
+            <Label DockPanel.Dock="Left" Content="_Key:" Target="{Binding ElementName=ApiKeyBox}" Padding="0,0,6,0" VerticalAlignment="Center" />
             <Button DockPanel.Dock="Right" Content="_Verify" IsDefault="True" Command="{Binding VerifyApiKeyCommand}" Padding="12,2" Margin="6,0,0,0" />
             <Grid>
                 <PasswordBox x:Name="ApiKeyBox" PasswordChanged="CopyApiKeyToViewModel" VerticalContentAlignment="Center">
@@ -71,6 +73,8 @@
                 </Style>
             </TextBlock.Style>
         </TextBlock>
+        </StackPanel>
+        </GroupBox>
 
         <CheckBox Margin="0,12,0,0" Content="_Launch FZScout when I log in to Windows" IsChecked="{Binding LaunchesAtLogin}" />
         <CheckBox Margin="0,6,0,0" Content="Show _toast notifications" IsChecked="{Binding ShowsToastNotifications}" />
