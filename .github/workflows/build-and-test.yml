@@ -17,10 +17,15 @@ jobs:
         with:
           global-json-file: global.json
       - run: ./build-and-test.cmd
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: received-screenshots
+          path: '**/*.received.*'
       - run: dotnet tool restore
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       - name: Publish prerelease
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: ./scripts/release.ps1 -Prerelease ci.${{ github.run_number }} -GitHubToken ${{ secrets.GITHUB_TOKEN }}
 
   dependabot-merge:
