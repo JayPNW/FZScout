@@ -11,3 +11,11 @@ Set-and-forget app that watches for Everquest Resource Hunter zone bonuses and a
 1. Paste the API key into Settings, which opens the first time FZScout runs.
 
 Leave it running while you play. It will publish zone bonuses to the sites automatically.
+
+# Tray Icons
+
+| Icon                                            | Meaning                                                             |
+|-------------------------------------------------|---------------------------------------------------------------------|
+| ![Emerald gem](assets/FZScout.png)              | Scouting: FZScout is watching your log and ready to report bonuses. |
+| ![Emerald hourglass](assets/FZScoutWaiting.png) | Waiting for timeout to report "none".                               |
+| ![Grey gem](assets/FZScoutNotScouting.png)      | Waiting for EQ to start.                                            |
