@@ -5,6 +5,7 @@
 # a grey gem with a red problem badge, for once the app has stopped on its own, into FZScout/FZScoutStopped.ico,
 # and the gem and hourglass with that badge, for after a problem until the next success, into FZScout/FZScoutProblem.ico
 # and FZScout/FZScoutWaitingProblem.ico.
+# Each icon's 32px rendering also goes into docs/assets as a PNG of the same name, for the docs' tray icon table.
 # Each size is rendered from the SVG rather than scaled, so the small ones stay crisp.
 $ErrorActionPreference = 'Stop'
 
@@ -28,6 +29,11 @@ function WriteIcon([string]$svgName, [string[]]$shownElementIds, [string]$iconNa
         $iconPath = Join-Path (Resolve-Path (Join-Path $PSScriptRoot '..\FZScout')).Path $iconName
         & dotnet run (Join-Path $PSScriptRoot 'pngs-to-ico.cs') -- $iconPath @pngPaths
         if ($LASTEXITCODE -ne 0) { throw "pngs-to-ico failed writing $iconName" }
+
+        # The docs show each icon at the tray's size.
+        $docsPngName = [System.IO.Path]::ChangeExtension($iconName, '.png')
+        $docsPngPath = Join-Path (Resolve-Path (Join-Path $PSScriptRoot '..\docs\assets')).Path $docsPngName
+        Copy-Item (Join-Path $workDirectory '32.png') $docsPngPath
     }
     finally {
         Remove-Item -Recurse -Force $workDirectory
