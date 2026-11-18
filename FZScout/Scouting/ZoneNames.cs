@@ -28,6 +28,7 @@ static class ZoneNames
         ["North Desert of Ro"] = "North Ro",
         ["North Kaladim"] = "Kaladim",
         ["Northern Felwithe"] = "Felwithe",
+        ["Riftseekers' Sanctum"] = "Riftseeker's Sanctum",
         ["Ruins of Lxanvom"] = "Crypt of Decay",
         ["Rujarkin Hills: Prison Break"] = "Rujarkin Hills",
         ["Rujarkin Hills: The Hidden Vale"] = "Rujarkin Hills",

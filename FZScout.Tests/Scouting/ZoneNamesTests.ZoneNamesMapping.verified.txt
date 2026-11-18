@@ -23,6 +23,7 @@
 | North Desert of Ro                               | North Ro                                       |
 | North Kaladim                                    | Kaladim                                        |
 | Northern Felwithe                                | Felwithe                                       |
+| Riftseekers' Sanctum                             | Riftseeker's Sanctum                           |
 | Ruins of Lxanvom                                 | Crypt of Decay                                 |
 | Rujarkin Hills: Prison Break                     | Rujarkin Hills                                 |
 | Rujarkin Hills: The Hidden Vale                  | Rujarkin Hills                                 |
@@ -187,7 +188,6 @@
 | <same>                                           | Qvic, Prayer Grounds of Calling                |
 | <same>                                           | Ragrax, Stronghold of the Twelve               |
 | <same>                                           | Rathe Mountains                                |
-| <same>                                           | Riftseeker's Sanctum                           |
 | <same>                                           | Rivervale                                      |
 | <same>                                           | Riwwi, Coliseum of Games                       |
 | <same>                                           | Ruined City of Dranik                          |
