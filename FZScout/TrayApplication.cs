@@ -281,6 +281,7 @@ class TrayApplication : IDisposable
         this._viewModel.ApplicationHasStopped = this._status.HasStopped;
         this._trayIcon.Icon = this._trayIcons[this._status.ScoutingStatus];
         this._viewModel.StatusDescription = this._status.Description;
+        this._viewModel.DownloadedVersionToInstallAfterExit = this._updateChecker.DownloadedVersionToInstallAfterExit;
         this._showStatusWhenItChangesByItself.Stop();
         if (this._status.ChangesByItselfAt is { } changesAt)
         {

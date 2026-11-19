@@ -8,6 +8,17 @@
     <tb:TaskbarIcon.ContextMenu>
         <ContextMenu>
             <MenuItem Header="_Show FZScout" FontWeight="Bold" Command="{Binding ShowLogCommand}" />
+            <MenuItem Header="_Restart to update" Command="{Binding RestartToUpdateCommand}">
+                <MenuItem.Style>
+                    <Style TargetType="MenuItem">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding DownloadedVersionToInstallAfterExit}" Value="{x:Null}">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </MenuItem.Style>
+            </MenuItem>
             <MenuItem Header="S_ettings..." Command="{Binding ShowSettingsCommand}" />
             <MenuItem Header="_About FZScout..." Command="{Binding ShowAboutCommand}" />
             <MenuItem Header="E_xit" Command="{Binding ExitCommand}" />

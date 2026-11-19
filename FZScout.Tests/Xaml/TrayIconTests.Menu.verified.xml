@@ -12,6 +12,33 @@
     </MenuItem.Command>
   </MenuItem>
   <MenuItem
+    Header="_Restart to update">
+    <MenuItem.Command>
+      <ctmi:RelayCommand />
+    </MenuItem.Command>
+    <MenuItem.Style>
+      <Style
+        TargetType="MenuItem">
+        <Style.Triggers>
+          <DataTrigger
+            Binding="{Binding Path=DownloadedVersionToInstallAfterExit}"
+            Value="{x:Null}">
+            <Setter
+              Property="UIElement.Visibility">
+              <Setter.Value>
+                <x:Static
+                  Member="Visibility.Collapsed" />
+              </Setter.Value>
+            </Setter>
+          </DataTrigger>
+        </Style.Triggers>
+        <Style.Resources>
+          <ResourceDictionary />
+        </Style.Resources>
+      </Style>
+    </MenuItem.Style>
+  </MenuItem>
+  <MenuItem
     Header="S_ettings...">
     <MenuItem.Command>
       <ctmi:RelayCommand />
