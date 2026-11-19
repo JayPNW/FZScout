@@ -13,7 +13,7 @@ partial class AboutWindow : FixedSizeDialog
     {
         InitializeComponent();
         DataContext = viewModel;
-        Loaded += (_, _) => viewModel.CheckForUpdatesCommand.Execute(null);
+        ContentRendered += (_, _) => viewModel.CheckForUpdatesCommand.Execute(null);
     }
 
     void CloseWindow(object sender, RoutedEventArgs e) => Close();
