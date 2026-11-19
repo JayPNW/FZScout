@@ -82,6 +82,10 @@ class RunningEverQuestMonitor(Func<IReadOnlyList<RunningEverQuestInstall>> findR
         {
             CheckRunningEverQuests();
         }
+        catch (IOException)
+        {
+            // EverQuest briefly locks eqclient.ini while writing it. The next check, a few seconds from now, will see it.
+        }
         catch (Exception exception)
         {
             log.Error($"Unexpected problem checking the running EverQuest clients: {exception}");
