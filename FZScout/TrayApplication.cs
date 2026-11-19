@@ -188,23 +188,23 @@ class TrayApplication : IDisposable
             this._verifyApiKeyCommand.NotifyCanExecuteChanged();
         }
 
-        if (e.PropertyName is nameof(AppViewModel.LaunchesAtLogin) or nameof(AppViewModel.ShowsToastNotifications) or nameof(AppViewModel.DownloadsUpdatesAutomatically))
+        if (e.PropertyName is nameof(AppViewModel.LaunchesAtLogin) or nameof(AppViewModel.ShowsToastNotifications) or nameof(AppViewModel.UpdateAutomatically))
         {
             SettingsChosenInViewModel().Save(this._launchAtLogin);
         }
 
-        if (e.PropertyName == nameof(AppViewModel.DownloadsUpdatesAutomatically))
+        if (e.PropertyName == nameof(AppViewModel.UpdateAutomatically))
         {
-            CheckForUpdatesNowIfTurnedOn(this._viewModel.DownloadsUpdatesAutomatically);
+            CheckForUpdatesNowIfTurnedOn(this._viewModel.UpdateAutomatically);
         }
     }
 
-    Settings SettingsChosenInViewModel() => new(this._viewModel.LaunchesAtLogin, this._viewModel.ShowsToastNotifications, this._viewModel.DownloadsUpdatesAutomatically);
+    Settings SettingsChosenInViewModel() => new(this._viewModel.LaunchesAtLogin, this._viewModel.ShowsToastNotifications, this._viewModel.UpdateAutomatically);
 
     /// <summary>So turning automatic updates on doesn't wait for the next periodic check.</summary>
-    void CheckForUpdatesNowIfTurnedOn(bool downloadsUpdatesAutomatically)
+    void CheckForUpdatesNowIfTurnedOn(bool updateAutomatically)
     {
-        if (downloadsUpdatesAutomatically)
+        if (updateAutomatically)
         {
             _ = CheckForUpdatesAsync();
         }

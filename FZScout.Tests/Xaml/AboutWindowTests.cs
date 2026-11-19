@@ -9,7 +9,7 @@ public class AboutWindowTests
     public Task AfterDownloadingAnUpdate()
     {
         var downloadedVersion = SemanticVersion.Parse("8.0.0");
-        var viewModel = new AppViewModel("7.0.0", new Settings(LaunchesAtLogin: true, ShowsToastNotifications: true, DownloadsUpdatesAutomatically: true))
+        var viewModel = new AppViewModel("7.0.0", new Settings(LaunchesAtLogin: true, ShowsToastNotifications: true, UpdateAutomatically: true))
         {
             LatestUpdateCheckResult = new DownloadedNewerRelease(downloadedVersion),
             DownloadedVersionToInstallAfterExit = downloadedVersion,

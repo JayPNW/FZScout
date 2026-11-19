@@ -53,7 +53,7 @@ partial class AppViewModel(
     public partial bool ShowsToastNotifications { get; set; } = settings.ShowsToastNotifications;
 
     [ObservableProperty]
-    public partial bool DownloadsUpdatesAutomatically { get; set; } = settings.DownloadsUpdatesAutomatically;
+    public partial bool UpdateAutomatically { get; set; } = settings.UpdateAutomatically;
 
     public ICommand ShowLogCommand { get; init; } = new RelayCommand(() => { });
 

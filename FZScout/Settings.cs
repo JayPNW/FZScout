@@ -5,11 +5,11 @@ namespace FZScout;
 /// <summary>
 /// The choices the user makes in the Settings window, other than the API key. 
 /// </summary>
-record Settings(bool LaunchesAtLogin, bool ShowsToastNotifications, bool DownloadsUpdatesAutomatically)
+record Settings(bool LaunchesAtLogin, bool ShowsToastNotifications, bool UpdateAutomatically)
 {
     const string DefaultSettingsKeyPath = @"Software\FZScout";
     const string ShowToastNotificationsValueName = "ShowToastNotifications";
-    const string DownloadUpdatesAutomaticallyValueName = "DownloadUpdatesAutomatically";
+    const string UpdateAutomaticallyValueName = "UpdateAutomatically";
 
     public static Settings Load(LaunchAtLogin.StartupApp launchAtLogin, string settingsKeyPath = DefaultSettingsKeyPath)
     {
@@ -17,7 +17,7 @@ record Settings(bool LaunchesAtLogin, bool ShowsToastNotifications, bool Downloa
         return new Settings(
             LaunchesAtLogin: launchAtLogin.IsOn,
             ShowsToastNotifications: IsOnUnlessTurnedOff(key, ShowToastNotificationsValueName),
-            DownloadsUpdatesAutomatically: IsOnUnlessTurnedOff(key, DownloadUpdatesAutomaticallyValueName));
+            UpdateAutomatically: IsOnUnlessTurnedOff(key, UpdateAutomaticallyValueName));
     }
 
     public void Save(LaunchAtLogin.StartupApp launchAtLogin, string settingsKeyPath = DefaultSettingsKeyPath)
@@ -25,7 +25,7 @@ record Settings(bool LaunchesAtLogin, bool ShowsToastNotifications, bool Downloa
         SaveLaunchAtLogin(launchAtLogin);
         using var key = Registry.CurrentUser.CreateSubKey(settingsKeyPath);
         SaveOnOrOff(key, ShowToastNotificationsValueName, ShowsToastNotifications);
-        SaveOnOrOff(key, DownloadUpdatesAutomaticallyValueName, DownloadsUpdatesAutomatically);
+        SaveOnOrOff(key, UpdateAutomaticallyValueName, UpdateAutomatically);
     }
 
     static bool IsOnUnlessTurnedOff(RegistryKey? key, string valueName) => key?.GetValue(valueName) is not 0;

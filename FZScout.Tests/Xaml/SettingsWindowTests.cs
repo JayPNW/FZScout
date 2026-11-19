@@ -7,7 +7,7 @@ public class SettingsWindowTests
     [WpfFact]
     public Task AfterVerifyingTheApiKey()
     {
-        var viewModel = new AppViewModel("7.0.0", new Settings(LaunchesAtLogin: true, ShowsToastNotifications: false, DownloadsUpdatesAutomatically: true))
+        var viewModel = new AppViewModel("7.0.0", new Settings(LaunchesAtLogin: true, ShowsToastNotifications: false, UpdateAutomatically: true))
         {
             ApiKeyBeingEdited = "fz_live_not_a_real_key",
             ApiKeyVerificationStatus = ApiKeyVerificationStatus.VerifiedAndSaved,
@@ -18,7 +18,7 @@ public class SettingsWindowTests
     [WpfFact]
     public Task ShowsWhichApiKeyIsSavedWithoutRevealingIt()
     {
-        var viewModel = new AppViewModel("7.0.0", new Settings(LaunchesAtLogin: true, ShowsToastNotifications: false, DownloadsUpdatesAutomatically: true))
+        var viewModel = new AppViewModel("7.0.0", new Settings(LaunchesAtLogin: true, ShowsToastNotifications: false, UpdateAutomatically: true))
         {
             SavedApiKeyAbbreviation = "fz_live_qa81...cUMfgC",
         };

@@ -15,7 +15,7 @@ public class SettingsTests : IDisposable
     {
         var settings = Settings.Load(this._neverLaunchedStartupApp, this._testKeyPath);
 
-        Assert.Equal(new Settings(LaunchesAtLogin: false, ShowsToastNotifications: true, DownloadsUpdatesAutomatically: true), settings);
+        Assert.Equal(new Settings(LaunchesAtLogin: false, ShowsToastNotifications: true, UpdateAutomatically: true), settings);
     }
 
     [Theory]
@@ -23,9 +23,9 @@ public class SettingsTests : IDisposable
     [InlineData(false, true)]
     [InlineData(true, false)]
     [InlineData(true, true)]
-    public void LoadsWhatWasSaved(bool showsToastNotifications, bool downloadsUpdatesAutomatically)
+    public void LoadsWhatWasSaved(bool showsToastNotifications, bool updateAutomatically)
     {
-        var saved = new Settings(LaunchesAtLogin: false, showsToastNotifications, downloadsUpdatesAutomatically);
+        var saved = new Settings(LaunchesAtLogin: false, showsToastNotifications, updateAutomatically);
 
         saved.Save(this._neverLaunchedStartupApp, this._testKeyPath);
 
