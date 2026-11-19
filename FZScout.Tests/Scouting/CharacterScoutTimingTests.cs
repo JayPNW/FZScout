@@ -22,13 +22,13 @@ public class CharacterScoutTimingTests : CharacterScoutTestFixture
     }
 
     [Fact]
-    public async Task NoBonusFiveSecondsAfterAKillIsReportedAsNone()
+    public async Task NoBonusThreeSecondsAfterAKillIsReportedAsNone()
     {
         await Log(0, Befallen);
         await Log(20, Kill);
 
-        Assert.Empty(await Log(24, Chat));
-        Assert.Equal([ReportNone("Befallen")], await Log(25, Chat));
+        Assert.Empty(await Log(22, Chat));
+        Assert.Equal([ReportNone("Befallen")], await Log(23, Chat));
         Assert.Empty(await Log(300, Chat));
     }
 
@@ -64,9 +64,9 @@ public class CharacterScoutTimingTests : CharacterScoutTestFixture
     {
         await Log(0, Befallen);
         await Log(20, Kill);
-        await Log(23, Kill);
+        await Log(22, Kill);
 
-        Assert.Equal([ReportNone("Befallen")], await Log(25, Chat));
+        Assert.Equal([ReportNone("Befallen")], await Log(23, Chat));
     }
 
     [Fact]
