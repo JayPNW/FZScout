@@ -5,17 +5,17 @@ Set-and-forget app that watches for Everquest Resource Hunter zone bonuses and a
 # Getting Started
 
 1. In EverQuest enable logging by typing `/log on`.
-1. [Download](https://github.com/JayPNW/FZScout/releases/latest/download/FZScout-win-Setup.exe) and run `FZScout-win-Setup.exe` to install FZScout.
-    - If Windows says it protected your PC, click **More info**, then **Run anyway**. This only happens on the first install. If this doesn't work for you, please [report a bug](https://github.com/JayPNW/FZScout/issues).
+1. [Download](https://github.com/JayPNW/FZScout/releases/latest/download/FZScout-win-Setup.exe) and run `FZScout-win-Setup.exe`. (You may need to bypass a Windows SmartScreen warning.)
 1. [Create an API key](create-api-key.md) for Fangbreaker.zone/Frostreaver.zone.
-1. Paste the API key into Settings, which opens the first time FZScout runs.
+1. Paste the API key into FZScout Settings.
 
-Leave it running while you play. It will publish zone bonuses to the sites automatically.
+The FZScout icon should appear in your system tray notification area. 
+Leave it running while you play and it will automatically report zone bonuses as you play.
 
 # Tray Icons
 
 | Icon                                            | Meaning                                                             |
 |-------------------------------------------------|---------------------------------------------------------------------|
-| ![Emerald gem](assets/FZScout.png)              | Scouting: FZScout is watching your log and ready to report bonuses. |
+| ![Emerald gem](assets/FZScout.png)              | FZScout is watching your log and ready to report bonuses.           |
 | ![Emerald hourglass](assets/FZScoutWaiting.png) | Waiting for timeout to report "none".                               |
 | ![Grey gem](assets/FZScoutNotScouting.png)      | Waiting for EQ to start.                                            |
