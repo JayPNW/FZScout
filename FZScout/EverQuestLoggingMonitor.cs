@@ -1,4 +1,4 @@
-using EverQuestLogWatcher;
+﻿using EverQuestLogWatcher;
 
 namespace FZScout;
 

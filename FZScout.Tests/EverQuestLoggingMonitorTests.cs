@@ -1,4 +1,4 @@
-using EverQuestLogWatcher;
+﻿using EverQuestLogWatcher;
 using Microsoft.Extensions.Time.Testing;
 
 namespace FZScout.Tests;
