@@ -38,9 +38,9 @@ class App(AppDependencies dependencies)
 
         var scout = CreateScout();
         ScoutingStarted?.Invoke();
-        var watchingEverQuestLogging = CreateEverQuestLoggingMonitor().CheckRepeatedlyAsync(Dependencies.UserInput.ExitRequested);
+        var watchingRunningEverQuest = CreateRunningEverQuestMonitor().CheckRepeatedlyAsync(Dependencies.UserInput.ExitRequested);
         await WatchLogsAndReportBonusesAsync(scout, Dependencies.UserInput.ExitRequested);
-        await watchingEverQuestLogging;
+        await watchingRunningEverQuest;
     }
 
     /// <summary>The only time the key is checked without the user asking, so a bad one shows up before the first report.</summary>
@@ -60,9 +60,9 @@ class App(AppDependencies dependencies)
         }
     }
 
-    EverQuestLoggingMonitor CreateEverQuestLoggingMonitor()
+    RunningEverQuestMonitor CreateRunningEverQuestMonitor()
     {
-        var monitor = new EverQuestLoggingMonitor(Dependencies.FindRunningEverQuestInstalls, Dependencies.Log, Dependencies.TimeProvider);
+        var monitor = new RunningEverQuestMonitor(Dependencies.FindRunningEverQuestInstalls, Dependencies.Log, Dependencies.TimeProvider);
         monitor.IsEverQuestLoggingEnabledChanged += isEnabled => IsEverQuestLoggingEnabledChanged?.Invoke(isEnabled);
         return monitor;
     }

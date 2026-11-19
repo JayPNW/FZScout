@@ -2,8 +2,8 @@
 
 namespace FZScout;
 
-/// <summary>Notices when a running EverQuest has logging turned off, since FZScout can't see its messages then.</summary>
-class EverQuestLoggingMonitor(Func<IReadOnlyList<RunningEverQuestInstall>> findRunningEverQuestInstalls, Log log, TimeProvider timeProvider)
+/// <summary>Checks the running EverQuest clients, like whether any has logging turned off, since FZScout can't see its messages then.</summary>
+class RunningEverQuestMonitor(Func<IReadOnlyList<RunningEverQuestInstall>> findRunningEverQuestInstalls, Log log, TimeProvider timeProvider)
 {
     static readonly TimeSpan CheckInterval = TimeSpan.FromSeconds(5);
 

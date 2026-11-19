@@ -3,16 +3,16 @@ using Microsoft.Extensions.Time.Testing;
 
 namespace FZScout.Tests;
 
-public class EverQuestLoggingMonitorTests
+public class RunningEverQuestMonitorTests
 {
     readonly StringWriter _output = new();
-    readonly EverQuestLoggingMonitor _monitor;
+    readonly RunningEverQuestMonitor _monitor;
     IReadOnlyList<RunningEverQuestInstall> _runningEverQuestInstalls = [];
 
-    public EverQuestLoggingMonitorTests()
+    public RunningEverQuestMonitorTests()
     {
         var time = new FakeTimeProvider();
-        this._monitor = new EverQuestLoggingMonitor(() => this._runningEverQuestInstalls, new Log(this._output, time), time);
+        this._monitor = new RunningEverQuestMonitor(() => this._runningEverQuestInstalls, new Log(this._output, time), time);
     }
 
     string Output => this._output.ToString();
