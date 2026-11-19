@@ -24,7 +24,7 @@ static class Program
     static void Main()
     {
         VelopackApp.InstallPendingUpdates();
-        using var updates = new WatchForNewUpdates(() => OnUnlessTurnedOffSetting.DownloadUpdatesAutomatically().IsOn, TimeProvider.System);
+        using var updates = new WatchForNewUpdates(() => Settings.Load(StartupApp).DownloadsUpdatesAutomatically, TimeProvider.System);
 
         var application = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
         using var userInput = new MessageBoxUserInput();

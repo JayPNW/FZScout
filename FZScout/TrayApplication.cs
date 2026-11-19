@@ -28,8 +28,6 @@ class TrayApplication : IDisposable
     readonly AppStatus _status;
     readonly DispatcherTimer _showStatusWhenItChangesByItself = new();
     readonly LaunchAtLogin.StartupApp _launchAtLogin;
-    readonly OnUnlessTurnedOffSetting _showToastNotifications = OnUnlessTurnedOffSetting.ShowToastNotifications();
-    readonly OnUnlessTurnedOffSetting _downloadUpdatesAutomatically = OnUnlessTurnedOffSetting.DownloadUpdatesAutomatically();
     readonly ApiKeyVerifier _apiKeyVerifier;
     readonly AsyncRelayCommand _verifyApiKeyCommand;
     bool _hasExplainedHidingToTray;
@@ -93,7 +91,7 @@ class TrayApplication : IDisposable
 
     AppViewModel CreateViewModel()
     {
-        return new AppViewModel(this._dependencies.GetVersion(), LoadSettings())
+        return new AppViewModel(this._dependencies.GetVersion(), Settings.Load(this._launchAtLogin))
         {
             DownloadedVersionToInstallAfterExit = this._updateChecker.DownloadedVersionToInstallAfterExit,
             ShowLogCommand = new RelayCommand(ShowLog),
@@ -105,8 +103,6 @@ class TrayApplication : IDisposable
             ExitCommand = new RelayCommand(Exit),
         };
     }
-
-    Settings LoadSettings() => new(this._launchAtLogin.IsOn, this._showToastNotifications.IsOn, this._downloadUpdatesAutomatically.IsOn);
 
     /// <summary>Safe to write from any thread, since each line is added on the UI thread.</summary>
     void ShowLogLinesInWindow(Log log)
@@ -192,43 +188,23 @@ class TrayApplication : IDisposable
             this._verifyApiKeyCommand.NotifyCanExecuteChanged();
         }
 
-        if (e.PropertyName == nameof(AppViewModel.LaunchesAtLogin))
+        if (e.PropertyName is nameof(AppViewModel.LaunchesAtLogin) or nameof(AppViewModel.ShowsToastNotifications) or nameof(AppViewModel.DownloadsUpdatesAutomatically))
         {
-            ApplyLaunchAtLogin(this._viewModel.LaunchesAtLogin);
-        }
-
-        if (e.PropertyName == nameof(AppViewModel.ShowsToastNotifications))
-        {
-            this._showToastNotifications.TurnOnOrOff(this._viewModel.ShowsToastNotifications);
+            SettingsChosenInViewModel().Save(this._launchAtLogin);
         }
 
         if (e.PropertyName == nameof(AppViewModel.DownloadsUpdatesAutomatically))
         {
-            ApplyDownloadUpdatesAutomatically(this._viewModel.DownloadsUpdatesAutomatically);
+            CheckForUpdatesNowIfTurnedOn(this._viewModel.DownloadsUpdatesAutomatically);
         }
     }
 
-    void ApplyLaunchAtLogin(bool wantsLaunchAtLogin)
+    Settings SettingsChosenInViewModel() => new(this._viewModel.LaunchesAtLogin, this._viewModel.ShowsToastNotifications, this._viewModel.DownloadsUpdatesAutomatically);
+
+    /// <summary>So turning automatic updates on doesn't wait for the next periodic check.</summary>
+    void CheckForUpdatesNowIfTurnedOn(bool downloadsUpdatesAutomatically)
     {
-        if (wantsLaunchAtLogin == this._launchAtLogin.IsOn)
-        {
-            return;
-        }
-
-        if (wantsLaunchAtLogin)
-        {
-            this._launchAtLogin.TurnOn();
-            return;
-        }
-
-        this._launchAtLogin.TurnOff();
-    }
-
-    /// <summary>Checks right away when turned on, instead of waiting for the next periodic check.</summary>
-    void ApplyDownloadUpdatesAutomatically(bool wantsAutomaticUpdates)
-    {
-        this._downloadUpdatesAutomatically.TurnOnOrOff(wantsAutomaticUpdates);
-        if (wantsAutomaticUpdates)
+        if (downloadsUpdatesAutomatically)
         {
             _ = CheckForUpdatesAsync();
         }
