@@ -1,4 +1,5 @@
-﻿using FZScout.Reporting;
+using System.Text.RegularExpressions;
+using FZScout.Reporting;
 using FZScout.Site;
 
 namespace FZScout.Scouting;
@@ -25,6 +26,12 @@ class CharacterScout(Character character, Log log, BonusReporter bonusReporter)
 
     public Zone? CurrentZone { get; private set; }
 
+    /// <summary>
+    /// Null until the character logs something, and once they've logged out. <see cref="DateTimeOffset.MaxValue"/> while they're playing.
+    /// While camping it's when the camp finishes, since EverQuest logs nothing then. Can already have passed.
+    /// </summary>
+    public DateTimeOffset? LoggedInUntil { get; private set; }
+
     /// <summary>Since there's no clock, this can already have passed: the wait is only over once the character's next message arrives.</summary>
     public DateTimeOffset? WaitingForBonusMessageUntil => new[] { this._killDeadline, this._idleDeadline }.Min();
 
@@ -33,6 +40,24 @@ class CharacterScout(Character character, Log log, BonusReporter bonusReporter)
         ResolveZone(lists);
         await ReportNoneIfADeadlinePassedBeforeThisMessageAsync(now, cancellationToken);
         await DispatchLogEventAsync(logEvent, now, lists, cancellationToken);
+        LoggedInUntil = WhenCharacterLogsOutAfter(logEvent, now);
+    }
+
+    /// <summary>For when EverQuest exits, since that logs nothing.</summary>
+    public void ForgetBeingLoggedIn()
+    {
+        LoggedInUntil = null;
+    }
+
+    static DateTimeOffset WhenCharacterLogsOutAfter(EverQuestLogWatcher.EverQuestLogEvent logEvent, DateTimeOffset now)
+    {
+        if (logEvent is not EverQuestLogWatcher.CampingCountdownProgressed)
+        {
+            return DateTimeOffset.MaxValue;
+        }
+
+        var secondsUntilCampFinishes = int.Parse(Regex.Match(logEvent.RawLogLine, @"about (\d+)").Groups[1].Value);
+        return now + TimeSpan.FromSeconds(secondsUntilCampFinishes);
     }
 
     /// <summary>

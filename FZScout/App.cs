@@ -1,4 +1,4 @@
-﻿using FZScout.Reporting;
+using FZScout.Reporting;
 using FZScout.Scouting;
 using FZScout.Site;
 
@@ -21,6 +21,11 @@ class App(AppDependencies dependencies)
 
     public event Action<bool>? IsEverQuestLoggingEnabledChanged;
 
+    public event Action<bool>? IsEverQuestRunningChanged;
+
+    /// <summary>See <see cref="Scout.AnyCharacterLoggedInUntil"/>.</summary>
+    public event Action<DateTimeOffset?>? AnyCharacterLoggedInUntilChanged;
+
     public AppDependencies Dependencies => dependencies;
 
     public async Task RunAsync()
@@ -38,7 +43,7 @@ class App(AppDependencies dependencies)
 
         var scout = CreateScout();
         ScoutingStarted?.Invoke();
-        var watchingRunningEverQuest = CreateRunningEverQuestMonitor().CheckRepeatedlyAsync(Dependencies.UserInput.ExitRequested);
+        var watchingRunningEverQuest = CreateRunningEverQuestMonitor(scout).CheckRepeatedlyAsync(Dependencies.UserInput.ExitRequested);
         await WatchLogsAndReportBonusesAsync(scout, Dependencies.UserInput.ExitRequested);
         await watchingRunningEverQuest;
     }
@@ -60,11 +65,22 @@ class App(AppDependencies dependencies)
         }
     }
 
-    RunningEverQuestMonitor CreateRunningEverQuestMonitor()
+    RunningEverQuestMonitor CreateRunningEverQuestMonitor(Scout scout)
     {
         var monitor = new RunningEverQuestMonitor(Dependencies.FindRunningEverQuestInstalls, Dependencies.Log, Dependencies.TimeProvider);
         monitor.IsEverQuestLoggingEnabledChanged += isEnabled => IsEverQuestLoggingEnabledChanged?.Invoke(isEnabled);
+        monitor.IsEverQuestRunningChanged += isRunning => OnIsEverQuestRunningChanged(scout, isRunning);
         return monitor;
+    }
+
+    void OnIsEverQuestRunningChanged(Scout scout, bool isRunning)
+    {
+        if (!isRunning)
+        {
+            scout.ForgetCharactersBeingLoggedIn();
+        }
+
+        IsEverQuestRunningChanged?.Invoke(isRunning);
     }
 
     Scout CreateScout()
@@ -75,6 +91,7 @@ class App(AppDependencies dependencies)
         var scout = new Scout(new ServerListCache(client, Dependencies.Log), Dependencies.Log, bonusReporter, client);
         scout.WaitingForBonusMessageUntilChanged += waitingUntil => WaitingForBonusMessageUntilChanged?.Invoke(waitingUntil);
         scout.BonusShownOnSiteForCurrentZoneChanged += shown => BonusShownOnSiteForCurrentZoneChanged?.Invoke(shown);
+        scout.AnyCharacterLoggedInUntilChanged += loggedInUntil => AnyCharacterLoggedInUntilChanged?.Invoke(loggedInUntil);
         return scout;
     }
 

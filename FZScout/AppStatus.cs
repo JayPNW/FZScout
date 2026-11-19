@@ -1,4 +1,4 @@
-﻿using FZScout.Site;
+using FZScout.Site;
 
 namespace FZScout;
 
@@ -18,6 +18,11 @@ class AppStatus(TimeProvider timeProvider)
     public DateTimeOffset? WaitingForBonusMessageUntil { get; set; }
 
     public bool IsEverQuestLoggingEnabled { get; set; } = true;
+
+    public bool IsEverQuestRunning { get; set; }
+
+    /// <summary>See <see cref="Scout.AnyCharacterLoggedInUntil"/>.</summary>
+    public DateTimeOffset? AnyCharacterLoggedInUntil { get; set; }
 
     public bool HadProblemSinceLastSuccess { get; set; }
 
@@ -59,6 +64,11 @@ class AppStatus(TimeProvider timeProvider)
             if (HadProblemSinceLastSuccess)
             {
                 return ScoutingStatus.ScoutingAfterProblem;
+            }
+
+            if (!IsEverQuestRunning || !IsAnyCharacterLoggedIn)
+            {
+                return ScoutingStatus.NotScouting;
             }
 
             if (IsUpdateDownloaded)
@@ -124,6 +134,16 @@ class AppStatus(TimeProvider timeProvider)
                 return $"FZScout: {MostUsefulProblemDescription}";
             }
 
+            if (!IsEverQuestRunning)
+            {
+                return "FZScout: waiting for EverQuest to start";
+            }
+
+            if (!IsAnyCharacterLoggedIn)
+            {
+                return "FZScout: waiting for a character to log in";
+            }
+
             if (IsUpdateDownloaded)
             {
                 return "FZScout: update downloaded; it installs when FZScout exits";
@@ -142,14 +162,24 @@ class AppStatus(TimeProvider timeProvider)
                 return null;
             }
 
-            if (IsWaitingForBonusMessage)
-            {
-                return WaitingForBonusMessageUntil;
-            }
-
-            return null;
+            return new[] { FutureOrNull(WaitingForBonusMessageUntil), FutureOrNull(CampFinishesAt) }.Min();
         }
     }
+
+    DateTimeOffset? CampFinishesAt
+    {
+        get
+        {
+            if (AnyCharacterLoggedInUntil == DateTimeOffset.MaxValue)
+            {
+                return null;
+            }
+
+            return AnyCharacterLoggedInUntil;
+        }
+    }
+
+    bool IsAnyCharacterLoggedIn => AnyCharacterLoggedInUntil > timeProvider.GetUtcNow();
 
     string MostUsefulProblemDescription
     {
@@ -162,6 +192,16 @@ class AppStatus(TimeProvider timeProvider)
 
             return ProblemDescription;
         }
+    }
+
+    DateTimeOffset? FutureOrNull(DateTimeOffset? time)
+    {
+        if (time > timeProvider.GetUtcNow())
+        {
+            return time;
+        }
+
+        return null;
     }
 
     bool IsWaitingForBonusMessage => WaitingForBonusMessageUntil > timeProvider.GetUtcNow();

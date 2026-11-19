@@ -18,4 +18,4 @@ Leave it running while you play and it will automatically report zone bonuses as
 |-------------------------------------------------|---------------------------------------------------------------------|
 | ![Emerald gem](assets/FZScout.png)              | FZScout is watching your log and ready to report bonuses.           |
 | ![Emerald hourglass](assets/FZScoutWaiting.png) | Waiting for timeout to report "none".                               |
-| ![Grey gem](assets/FZScoutNotScouting.png)      | Waiting for EQ to start.                                            |
+| ![Grey gem](assets/FZScoutNotScouting.png)      | Waiting for EQ.                                            |

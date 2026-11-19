@@ -1,4 +1,4 @@
-﻿using EverQuestLogWatcher;
+using EverQuestLogWatcher;
 using Microsoft.Extensions.Time.Testing;
 
 namespace FZScout.Tests;
@@ -24,8 +24,8 @@ public class RunningEverQuestMonitorTests
         this._monitor.IsEverQuestLoggingEnabledChanged += changes.Add;
         this._runningEverQuestInstalls = [new(@"C:\EverQuest", IsLoggingEnabled: false)];
 
-        this._monitor.CheckWhetherEverQuestLoggingIsEnabled();
-        this._monitor.CheckWhetherEverQuestLoggingIsEnabled();
+        this._monitor.CheckRunningEverQuests();
+        this._monitor.CheckRunningEverQuests();
 
         Assert.Equal([false], changes);
         Assert.Single(Output.Split('\n'), line => line.Contains(@"WARNING: EverQuest logging is off in C:\EverQuest"));
@@ -37,10 +37,10 @@ public class RunningEverQuestMonitorTests
         var changes = new List<bool>();
         this._monitor.IsEverQuestLoggingEnabledChanged += changes.Add;
         this._runningEverQuestInstalls = [new(@"C:\EverQuest", IsLoggingEnabled: false)];
-        this._monitor.CheckWhetherEverQuestLoggingIsEnabled();
+        this._monitor.CheckRunningEverQuests();
 
         this._runningEverQuestInstalls = [new(@"C:\EverQuest", IsLoggingEnabled: true)];
-        this._monitor.CheckWhetherEverQuestLoggingIsEnabled();
+        this._monitor.CheckRunningEverQuests();
 
         Assert.Equal([false, true], changes);
         Assert.Contains("EverQuest logging is on.", Output);
@@ -53,9 +53,25 @@ public class RunningEverQuestMonitorTests
         this._monitor.IsEverQuestLoggingEnabledChanged += changes.Add;
         this._runningEverQuestInstalls = [new(@"C:\EverQuest", IsLoggingEnabled: true)];
 
-        this._monitor.CheckWhetherEverQuestLoggingIsEnabled();
+        this._monitor.CheckRunningEverQuests();
 
         Assert.Empty(changes);
         Assert.Empty(Output);
+    }
+
+    [Fact]
+    public void SaysWhenEverQuestStartsAndStopsRunning()
+    {
+        var changes = new List<bool>();
+        this._monitor.IsEverQuestRunningChanged += changes.Add;
+
+        this._monitor.CheckRunningEverQuests();
+        this._runningEverQuestInstalls = [new(@"C:\EverQuest", IsLoggingEnabled: true)];
+        this._monitor.CheckRunningEverQuests();
+        this._monitor.CheckRunningEverQuests();
+        this._runningEverQuestInstalls = [];
+        this._monitor.CheckRunningEverQuests();
+
+        Assert.Equal([true, false], changes);
     }
 }

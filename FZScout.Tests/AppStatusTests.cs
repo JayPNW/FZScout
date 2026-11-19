@@ -1,4 +1,4 @@
-﻿using FZScout.Site;
+using FZScout.Site;
 using Microsoft.Extensions.Time.Testing;
 
 namespace FZScout.Tests;
@@ -13,7 +13,7 @@ public class AppStatusTests
     public AppStatusTests()
     {
         this._timeProvider.SetLocalTimeZone(TimeZoneInfo.Utc);
-        this._status = new AppStatus(this._timeProvider) { IsScouting = true };
+        this._status = new AppStatus(this._timeProvider) { IsScouting = true, IsEverQuestRunning = true, AnyCharacterLoggedInUntil = DateTimeOffset.MaxValue };
     }
 
     [Fact]
@@ -43,6 +43,49 @@ public class AppStatusTests
         this._status.IsEverQuestLoggingEnabled = false;
 
         Assert.Equal((ScoutingStatus.EverQuestLoggingDisabled, "FZScout: EverQuest logging is off. Type `/log` on in EverQuest.", Start.AddMinutes(5)), Shown());
+    }
+
+    [Fact]
+    public void IsNotScoutingWhileEverQuestIsNotRunning()
+    {
+        this._status.IsEverQuestRunning = false;
+
+        Assert.Equal((ScoutingStatus.NotScouting, "FZScout: waiting for EverQuest to start", null), Shown());
+    }
+
+    [Fact]
+    public void IsNotScoutingUntilACharacterLogsIn()
+    {
+        this._status.AnyCharacterLoggedInUntil = null;
+
+        Assert.Equal((ScoutingStatus.NotScouting, "FZScout: waiting for a character to log in", null), Shown());
+    }
+
+    [Fact]
+    public void IsScoutingUntilTheCampFinishes()
+    {
+        this._status.AnyCharacterLoggedInUntil = Start.AddSeconds(30);
+
+        Assert.Equal((ScoutingStatus.Scouting, "FZScout", Start.AddSeconds(30)), Shown());
+    }
+
+    [Fact]
+    public void IsNotScoutingOnceTheCampFinishes()
+    {
+        this._status.AnyCharacterLoggedInUntil = Start.AddSeconds(30);
+
+        this._timeProvider.Advance(TimeSpan.FromSeconds(30));
+
+        Assert.Equal((ScoutingStatus.NotScouting, "FZScout: waiting for a character to log in", null), Shown());
+    }
+
+    [Fact]
+    public void ShowsAProblemEvenWhenNoCharacterIsLoggedIn()
+    {
+        this._status.AnyCharacterLoggedInUntil = null;
+        this._status.HadProblemSinceLastSuccess = true;
+
+        Assert.Equal(ScoutingStatus.ScoutingAfterProblem, this._status.ScoutingStatus);
     }
 
     [Fact]

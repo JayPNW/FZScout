@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Drawing;
 using System.Windows;
 using System.Windows.Threading;
@@ -59,6 +59,8 @@ class TrayApplication : IDisposable
         app.WaitingForBonusMessageUntilChanged += waitingUntil => UpdateStatus(status => status.WaitingForBonusMessageUntil = waitingUntil);
         app.ApiKeyRejected += () => UpdateStatus(status => status.IsApiKeyRejected = true);
         app.IsEverQuestLoggingEnabledChanged += isEnabled => UpdateStatus(status => status.IsEverQuestLoggingEnabled = isEnabled);
+        app.IsEverQuestRunningChanged += isRunning => UpdateStatus(status => status.IsEverQuestRunning = isRunning);
+        app.AnyCharacterLoggedInUntilChanged += loggedInUntil => UpdateStatus(status => status.AnyCharacterLoggedInUntil = loggedInUntil);
         app.ScoutingStarted += () => UpdateStatus(status => status.IsScouting = true);
         updateChecker.NewerReleaseDownloaded += () => UpdateStatus(status => status.IsUpdateDownloaded = true);
         app.BonusShownOnSiteForCurrentZoneChanged += shown => UpdateStatus(status => status.BonusShownOnSiteForCurrentZone = shown);
