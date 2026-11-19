@@ -9,9 +9,7 @@ namespace FZScout.ViewModels;
 /// <summary>Everything the windows show. Holds no behavior of its own: whoever creates it supplies the commands.</summary>
 partial class AppViewModel(
     string? runningVersion,
-    bool launchesAtLogin,
-    bool showsToastNotifications,
-    bool downloadsUpdatesAutomatically) : ObservableObject
+    Settings settings) : ObservableObject
 {
     public ObservableCollection<LogLine> LogLines { get; } = [];
 
@@ -49,13 +47,13 @@ partial class AppViewModel(
     public partial ApiKeyVerificationStatus ApiKeyVerificationStatus { get; set; } = ApiKeyVerificationStatus.NotVerified;
 
     [ObservableProperty]
-    public partial bool LaunchesAtLogin { get; set; } = launchesAtLogin;
+    public partial bool LaunchesAtLogin { get; set; } = settings.LaunchesAtLogin;
 
     [ObservableProperty]
-    public partial bool ShowsToastNotifications { get; set; } = showsToastNotifications;
+    public partial bool ShowsToastNotifications { get; set; } = settings.ShowsToastNotifications;
 
     [ObservableProperty]
-    public partial bool DownloadsUpdatesAutomatically { get; set; } = downloadsUpdatesAutomatically;
+    public partial bool DownloadsUpdatesAutomatically { get; set; } = settings.DownloadsUpdatesAutomatically;
 
     public ICommand ShowLogCommand { get; init; } = new RelayCommand(() => { });
 

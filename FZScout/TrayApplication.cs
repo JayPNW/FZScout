@@ -93,7 +93,7 @@ class TrayApplication : IDisposable
 
     AppViewModel CreateViewModel()
     {
-        return new AppViewModel(this._dependencies.GetVersion(), this._launchAtLogin.IsOn, this._showToastNotifications.IsOn, this._downloadUpdatesAutomatically.IsOn)
+        return new AppViewModel(this._dependencies.GetVersion(), LoadSettings())
         {
             DownloadedVersionToInstallAfterExit = this._updateChecker.DownloadedVersionToInstallAfterExit,
             ShowLogCommand = new RelayCommand(ShowLog),
@@ -105,6 +105,8 @@ class TrayApplication : IDisposable
             ExitCommand = new RelayCommand(Exit),
         };
     }
+
+    Settings LoadSettings() => new(this._launchAtLogin.IsOn, this._showToastNotifications.IsOn, this._downloadUpdatesAutomatically.IsOn);
 
     /// <summary>Safe to write from any thread, since each line is added on the UI thread.</summary>
     void ShowLogLinesInWindow(Log log)
