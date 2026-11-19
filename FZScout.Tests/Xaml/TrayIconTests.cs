@@ -9,7 +9,7 @@ public class TrayIconTests
     [WpfFact]
     public async Task Menu()
     {
-        var viewModel = new AppViewModel("7.0.0", launchesAtLogin: true, showsToastNotifications: true);
+        var viewModel = new AppViewModel("7.0.0", launchesAtLogin: true, showsToastNotifications: true, downloadsUpdatesAutomatically: true);
         using var trayIcon = new TrayIcon(viewModel);
         var menu = trayIcon.ContextMenu;
 

@@ -1,4 +1,4 @@
-<local:FixedSizeDialog x:Class="FZScout.SettingsWindow"
+﻿<local:FixedSizeDialog x:Class="FZScout.SettingsWindow"
         x:ClassModifier="internal"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -78,6 +78,7 @@
 
         <CheckBox Margin="0,12,0,0" Content="_Launch FZScout when I log in to Windows" IsChecked="{Binding LaunchesAtLogin}" />
         <CheckBox Margin="0,6,0,0" Content="Show _toast notifications" IsChecked="{Binding ShowsToastNotifications}" />
+        <CheckBox Margin="0,6,0,0" Content="Automatically _update FZScout" IsChecked="{Binding DownloadsUpdatesAutomatically}" />
 
         <Button Margin="0,12,0,0" HorizontalAlignment="Right" Content="Close" IsCancel="True" Padding="12,2" Click="CloseWindow" />
     </StackPanel>

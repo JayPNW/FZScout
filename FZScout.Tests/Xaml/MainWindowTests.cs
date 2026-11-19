@@ -7,7 +7,7 @@ public class MainWindowTests
     [WpfFact]
     public Task WithEachKindOfLogLine()
     {
-        var viewModel = new AppViewModel("7.0.0", launchesAtLogin: true, showsToastNotifications: true);
+        var viewModel = new AppViewModel("7.0.0", launchesAtLogin: true, showsToastNotifications: true, downloadsUpdatesAutomatically: true);
         viewModel.LogLines.Add(new LogLine("2026-11-05 12:00:00 FZScout v7.0.0", LogLineSeverity.Info));
         viewModel.LogLines.Add(new LogLine("2026-11-05 12:00:01 Reported a bonus. See https://fangbreaker.zone/bonuses", LogLineSeverity.Success));
         viewModel.LogLines.Add(new LogLine("2026-11-05 12:00:02 Couldn't tell which zone this is.", LogLineSeverity.Warning));

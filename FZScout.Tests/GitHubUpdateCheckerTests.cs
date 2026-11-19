@@ -120,12 +120,26 @@ public class GitHubUpdateCheckerTests
         using var installDir = new TempDirectory();
         var checker = CreateChecker("1.0.0", new FakeUpdateSource(FeedWithRelease("2.0.0")), installDir);
         using var stopChecking = new CancellationTokenSource();
-        var checking = checker.DownloadNewestReleaseNowAndPeriodicallyUntilCancelled(new FakeTimeProvider(), stopChecking.Token);
+        var checking = checker.DownloadNewestReleaseNowAndPeriodicallyUntilCancelled(() => true, new FakeTimeProvider(), stopChecking.Token);
 
         stopChecking.Cancel();
         await checking;
 
         Assert.True(checking.IsCompletedSuccessfully);
+    }
+
+    [Fact]
+    public async Task DoesNotDownloadWhileTurnedOff()
+    {
+        using var installDir = new TempDirectory();
+        var checker = CreateChecker("1.0.0", new FakeUpdateSource(FeedWithRelease("2.0.0")), installDir);
+        using var stopChecking = new CancellationTokenSource();
+        var checking = checker.DownloadNewestReleaseNowAndPeriodicallyUntilCancelled(() => false, new FakeTimeProvider(), stopChecking.Token);
+
+        stopChecking.Cancel();
+        await checking;
+
+        Assert.Null(checker.DownloadedVersionToInstallAfterExit);
     }
 
     [Theory]

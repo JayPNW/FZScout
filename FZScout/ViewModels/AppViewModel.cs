@@ -10,7 +10,8 @@ namespace FZScout.ViewModels;
 partial class AppViewModel(
     string? runningVersion,
     bool launchesAtLogin,
-    bool showsToastNotifications) : ObservableObject
+    bool showsToastNotifications,
+    bool downloadsUpdatesAutomatically) : ObservableObject
 {
     public ObservableCollection<LogLine> LogLines { get; } = [];
 
@@ -52,6 +53,9 @@ partial class AppViewModel(
 
     [ObservableProperty]
     public partial bool ShowsToastNotifications { get; set; } = showsToastNotifications;
+
+    [ObservableProperty]
+    public partial bool DownloadsUpdatesAutomatically { get; set; } = downloadsUpdatesAutomatically;
 
     public ICommand ShowLogCommand { get; init; } = new RelayCommand(() => { });
 

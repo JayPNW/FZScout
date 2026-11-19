@@ -36,14 +36,21 @@ class GitHubUpdateChecker(IUpdateSource updateSource, IVelopackLocator? locator 
         return new GithubSource($"https://github.com/{GitHubRepository.OwnerAndName}", accessToken: null, prerelease: acceptPrereleases);
     }
 
-    /// <summary>Returns quietly once cancelled, dropping any download still in progress.</summary>
-    public async Task DownloadNewestReleaseNowAndPeriodicallyUntilCancelled(TimeProvider timeProvider, CancellationToken cancellationToken)
+    /// <summary>
+    /// Returns quietly once cancelled, dropping any download still in progress. Asks <paramref name="isTurnedOn"/> before each check,
+    /// so turning automatic updates off or on takes effect at the next check without restarting.
+    /// </summary>
+    public async Task DownloadNewestReleaseNowAndPeriodicallyUntilCancelled(Func<bool> isTurnedOn, TimeProvider timeProvider, CancellationToken cancellationToken)
     {
         try
         {
             while (true)
             {
-                await DownloadNewestRelease(cancellationToken);
+                if (isTurnedOn())
+                {
+                    await DownloadNewestRelease(cancellationToken);
+                }
+
                 await Task.Delay(TimeBetweenChecks, timeProvider, cancellationToken);
             }
         }

@@ -1,4 +1,4 @@
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 
 namespace FZScout;
 
@@ -15,6 +15,8 @@ class OnUnlessTurnedOffSetting(string valueName, string settingsKeyPath = @"Soft
     }
 
     public static OnUnlessTurnedOffSetting ShowToastNotifications() => new("ShowToastNotifications");
+
+    public static OnUnlessTurnedOffSetting DownloadUpdatesAutomatically() => new("DownloadUpdatesAutomatically");
 
     public void TurnOnOrOff(bool turnOn)
     {

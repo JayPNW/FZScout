@@ -29,6 +29,7 @@ class TrayApplication : IDisposable
     readonly DispatcherTimer _showStatusWhenItChangesByItself = new();
     readonly LaunchAtLogin.StartupApp _launchAtLogin;
     readonly OnUnlessTurnedOffSetting _showToastNotifications = OnUnlessTurnedOffSetting.ShowToastNotifications();
+    readonly OnUnlessTurnedOffSetting _downloadUpdatesAutomatically = OnUnlessTurnedOffSetting.DownloadUpdatesAutomatically();
     readonly ApiKeyVerifier _apiKeyVerifier;
     readonly AsyncRelayCommand _verifyApiKeyCommand;
     bool _hasExplainedHidingToTray;
@@ -92,7 +93,7 @@ class TrayApplication : IDisposable
 
     AppViewModel CreateViewModel()
     {
-        return new AppViewModel(this._dependencies.GetVersion(), this._launchAtLogin.IsOn, this._showToastNotifications.IsOn)
+        return new AppViewModel(this._dependencies.GetVersion(), this._launchAtLogin.IsOn, this._showToastNotifications.IsOn, this._downloadUpdatesAutomatically.IsOn)
         {
             DownloadedVersionToInstallAfterExit = this._updateChecker.DownloadedVersionToInstallAfterExit,
             ShowLogCommand = new RelayCommand(ShowLog),
@@ -198,6 +199,11 @@ class TrayApplication : IDisposable
         {
             this._showToastNotifications.TurnOnOrOff(this._viewModel.ShowsToastNotifications);
         }
+
+        if (e.PropertyName == nameof(AppViewModel.DownloadsUpdatesAutomatically))
+        {
+            ApplyDownloadUpdatesAutomatically(this._viewModel.DownloadsUpdatesAutomatically);
+        }
     }
 
     void ApplyLaunchAtLogin(bool wantsLaunchAtLogin)
@@ -214,6 +220,16 @@ class TrayApplication : IDisposable
         }
 
         this._launchAtLogin.TurnOff();
+    }
+
+    /// <summary>Checks right away when turned on, instead of waiting for the next periodic check.</summary>
+    void ApplyDownloadUpdatesAutomatically(bool wantsAutomaticUpdates)
+    {
+        this._downloadUpdatesAutomatically.TurnOnOrOff(wantsAutomaticUpdates);
+        if (wantsAutomaticUpdates)
+        {
+            _ = CheckForUpdatesAsync();
+        }
     }
 
     bool CanVerifyApiKey() => ApiKeyBeingEdited.Length > 0 && ApiKeyBeingEdited != this._apiKeyVerifier.SavedApiKey?.Value;
