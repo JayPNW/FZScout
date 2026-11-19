@@ -23,11 +23,12 @@
       <rect x="22.75" y="19" width="2.5" height="6" fill="#FFFFFF"/>     <!-- exclamation mark -->
       <rect x="22.75" y="26.5" width="2.5" height="2.5" fill="#FFFFFF"/> <!-- its dot -->
     </g>
-    <!-- A big blue circle with a white up arrow covering the top right, so it shows at tray size. -->
+    <!-- A big orange circle with a white up arrow covering the top right, so it shows at tray size.
+         Orange contrasts with the green gem and doesn't look like the red problem badge or the Windows accent color. -->
     <g id="update-badge">
-      <circle cx="21" cy="11" r="11" fill="#04223F"/>  <!-- rim -->
-      <circle cx="21" cy="11" r="9.3" fill="#2A8CFF"/> <!-- badge -->
-      <polygon points="21,3.5 28,11 23.2,11 23.2,17.5 18.8,17.5 18.8,11 14,11" fill="#FFFFFF"/> <!-- up arrow -->
+      <circle cx="22" cy="10" r="10" fill="#3A1A00"/> <!-- rim -->
+      <circle cx="22" cy="10" r="8.4" fill="#FF8A00"/> <!-- badge -->
+      <polygon points="22,3.5 28,10 24,10 24,16 20,16 20,10 16,10" fill="#FFFFFF"/> <!-- up arrow -->
     </g>
   </defs>
   <use id="colored-picture" xlink:href="#picture"/>
