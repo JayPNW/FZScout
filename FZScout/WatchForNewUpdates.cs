@@ -11,10 +11,10 @@ class WatchForNewUpdates : IDisposable
 
     public WatchForNewUpdates(TimeProvider timeProvider)
     {
-        this._checkingForUpdates = Task.Run(() => UpdateChecker.DownloadNewestReleaseNowAndDailyUntilCancelled(timeProvider, this._stopCheckingForUpdates.Token));
+        this._checkingForUpdates = Task.Run(() => UpdateChecker.DownloadNewestReleaseNowAndPeriodicallyUntilCancelled(timeProvider, this._stopCheckingForUpdates.Token));
     }
 
-    /// <summary>For checking right away, on top of the daily checks. Whatever it downloads also gets installed after exit.</summary>
+    /// <summary>For checking right away, on top of the periodic checks. Whatever it downloads also gets installed after exit.</summary>
     public GitHubUpdateChecker UpdateChecker { get; } = new();
 
     public void Dispose()

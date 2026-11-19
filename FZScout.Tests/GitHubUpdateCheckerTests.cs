@@ -120,7 +120,7 @@ public class GitHubUpdateCheckerTests
         using var installDir = new TempDirectory();
         var checker = CreateChecker("1.0.0", new FakeUpdateSource(FeedWithRelease("2.0.0")), installDir);
         using var stopChecking = new CancellationTokenSource();
-        var checking = checker.DownloadNewestReleaseNowAndDailyUntilCancelled(new FakeTimeProvider(), stopChecking.Token);
+        var checking = checker.DownloadNewestReleaseNowAndPeriodicallyUntilCancelled(new FakeTimeProvider(), stopChecking.Token);
 
         stopChecking.Cancel();
         await checking;

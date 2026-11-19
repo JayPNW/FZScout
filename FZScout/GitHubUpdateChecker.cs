@@ -10,7 +10,7 @@ namespace FZScout;
 /// </summary>
 class GitHubUpdateChecker(IUpdateSource updateSource, IVelopackLocator? locator = null)
 {
-    public static readonly TimeSpan TimeBetweenChecks = TimeSpan.FromDays(1);
+    public static readonly TimeSpan TimeBetweenChecks = TimeSpan.FromHours(5);
 
     readonly UpdateManager _updateManager = new(updateSource, locator: locator);
     readonly SemaphoreSlim _oneCheckAtATime = new(1, 1);
@@ -37,7 +37,7 @@ class GitHubUpdateChecker(IUpdateSource updateSource, IVelopackLocator? locator 
     }
 
     /// <summary>Returns quietly once cancelled, dropping any download still in progress.</summary>
-    public async Task DownloadNewestReleaseNowAndDailyUntilCancelled(TimeProvider timeProvider, CancellationToken cancellationToken)
+    public async Task DownloadNewestReleaseNowAndPeriodicallyUntilCancelled(TimeProvider timeProvider, CancellationToken cancellationToken)
     {
         try
         {
@@ -54,7 +54,7 @@ class GitHubUpdateChecker(IUpdateSource updateSource, IVelopackLocator? locator 
 
     /// <summary>
     /// Keeps any earlier download when GitHub is unreachable or has nothing newer. Waits for a check that's already running,
-    /// so the daily check and one the user asked for never download at the same time.
+    /// so the periodic check and one the user asked for never download at the same time.
     /// </summary>
     public async Task<UpdateCheckResult> DownloadNewestRelease(CancellationToken cancellationToken = default)
     {
