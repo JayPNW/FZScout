@@ -28,7 +28,7 @@ class TrayApplication : IDisposable
     readonly AppStatus _status;
     readonly DispatcherTimer _showStatusWhenItChangesByItself = new();
     readonly LaunchAtLogin.StartupApp _launchAtLogin;
-    readonly ShowToastNotifications _showToastNotifications = new();
+    readonly OnUnlessTurnedOffSetting _showToastNotifications = OnUnlessTurnedOffSetting.ShowToastNotifications();
     readonly ApiKeyVerifier _apiKeyVerifier;
     readonly AsyncRelayCommand _verifyApiKeyCommand;
     bool _hasExplainedHidingToTray;
@@ -196,7 +196,7 @@ class TrayApplication : IDisposable
 
         if (e.PropertyName == nameof(AppViewModel.ShowsToastNotifications))
         {
-            ApplyShowToastNotifications(this._viewModel.ShowsToastNotifications);
+            this._showToastNotifications.TurnOnOrOff(this._viewModel.ShowsToastNotifications);
         }
     }
 
@@ -214,17 +214,6 @@ class TrayApplication : IDisposable
         }
 
         this._launchAtLogin.TurnOff();
-    }
-
-    void ApplyShowToastNotifications(bool wantsToastNotifications)
-    {
-        if (wantsToastNotifications)
-        {
-            this._showToastNotifications.TurnOn();
-            return;
-        }
-
-        this._showToastNotifications.TurnOff();
     }
 
     bool CanVerifyApiKey() => ApiKeyBeingEdited.Length > 0 && ApiKeyBeingEdited != this._apiKeyVerifier.SavedApiKey?.Value;
