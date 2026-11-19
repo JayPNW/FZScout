@@ -1,4 +1,4 @@
-namespace FZScout.Tests.Scouting;
+﻿namespace FZScout.Tests.Scouting;
 
 public class CharacterScoutLoggedInTests : CharacterScoutTestFixture
 {

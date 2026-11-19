@@ -100,6 +100,19 @@ class AppStatus(TimeProvider timeProvider)
         }
     }
 
+    public DateTimeOffset? ChangesByItselfAt
+    {
+        get
+        {
+            if (HasStopped)
+            {
+                return null;
+            }
+
+            return new[] { FutureOrNull(WaitingForBonusMessageUntil), FutureOrNull(CampFinishesAt) }.Min();
+        }
+    }
+
     string ScoutingDescription
     {
         get
@@ -153,19 +166,6 @@ class AppStatus(TimeProvider timeProvider)
         }
     }
 
-    public DateTimeOffset? ChangesByItselfAt
-    {
-        get
-        {
-            if (HasStopped)
-            {
-                return null;
-            }
-
-            return new[] { FutureOrNull(WaitingForBonusMessageUntil), FutureOrNull(CampFinishesAt) }.Min();
-        }
-    }
-
     DateTimeOffset? CampFinishesAt
     {
         get
@@ -194,6 +194,10 @@ class AppStatus(TimeProvider timeProvider)
         }
     }
 
+    bool IsWaitingForBonusMessage => WaitingForBonusMessageUntil > timeProvider.GetUtcNow();
+
+    string WaitingForBonusMessageDescription => $"waiting until {ToLocalTime(WaitingForBonusMessageUntil!.Value):HH:mm:ss} for a bonus message";
+
     DateTimeOffset? FutureOrNull(DateTimeOffset? time)
     {
         if (time > timeProvider.GetUtcNow())
@@ -203,10 +207,6 @@ class AppStatus(TimeProvider timeProvider)
 
         return null;
     }
-
-    bool IsWaitingForBonusMessage => WaitingForBonusMessageUntil > timeProvider.GetUtcNow();
-
-    string WaitingForBonusMessageDescription => $"waiting until {ToLocalTime(WaitingForBonusMessageUntil!.Value):HH:mm:ss} for a bonus message";
 
     DateTimeOffset ToLocalTime(DateTimeOffset time) => TimeZoneInfo.ConvertTime(time, timeProvider.LocalTimeZone);
 }

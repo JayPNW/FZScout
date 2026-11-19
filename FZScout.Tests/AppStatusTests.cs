@@ -1,4 +1,4 @@
-using FZScout.Site;
+﻿using FZScout.Site;
 using Microsoft.Extensions.Time.Testing;
 
 namespace FZScout.Tests;
