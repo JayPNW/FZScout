@@ -43,7 +43,7 @@ class TrayApplication : IDisposable
         this._userInput = userInput;
         this._updateChecker = updateChecker;
         this._launchAtLogin = launchAtLogin;
-        this._status = new AppStatus(this._dependencies.TimeProvider);
+        this._status = new AppStatus(this._dependencies.TimeProvider) { IsUpdateDownloaded = updateChecker.DownloadedVersionToInstallAfterExit is not null };
         this._apiKeyVerifier = new ApiKeyVerifier(this._dependencies.ApiKeyStore, this._dependencies.FangbreakerZoneClient, this._dependencies.Log);
         this._apiKeyVerifier.ApiKeySaved += () => UpdateStatus(ForgetProblems);
         this._verifyApiKeyCommand = new AsyncRelayCommand(VerifyThenSaveApiKeyAsync, CanVerifyApiKey);
@@ -60,6 +60,7 @@ class TrayApplication : IDisposable
         app.WaitingForBonusMessageUntilChanged += waitingUntil => UpdateStatus(status => status.WaitingForBonusMessageUntil = waitingUntil);
         app.ApiKeyRejected += () => UpdateStatus(status => status.IsApiKeyRejected = true);
         app.ScoutingStarted += () => UpdateStatus(status => status.IsScouting = true);
+        updateChecker.NewerReleaseDownloaded += () => UpdateStatus(status => status.IsUpdateDownloaded = true);
         app.BonusShownOnSiteForCurrentZoneChanged += shown => UpdateStatus(status => status.BonusShownOnSiteForCurrentZone = shown);
     }
 

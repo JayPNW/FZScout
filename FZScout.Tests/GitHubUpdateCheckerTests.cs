@@ -28,6 +28,19 @@ public class GitHubUpdateCheckerTests
     }
 
     [Fact]
+    public async Task AnnouncesEachDownload()
+    {
+        using var installDir = new TempDirectory();
+        var checker = CreateChecker("1.0.0", new FakeUpdateSource(FeedWithRelease("2.0.0")), installDir);
+        var announcements = 0;
+        checker.NewerReleaseDownloaded += () => announcements++;
+
+        await checker.DownloadNewestRelease(TestContext.Current.CancellationToken);
+
+        Assert.Equal(1, announcements);
+    }
+
+    [Fact]
     public async Task SaysWhichVersionItDownloaded()
     {
         using var installDir = new TempDirectory();

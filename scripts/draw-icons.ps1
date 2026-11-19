@@ -4,7 +4,8 @@
 # a grey gem, for before scouting starts, into FZScout/FZScoutNotScouting.ico,
 # a grey gem with a red problem badge, for once the app has stopped on its own, into FZScout/FZScoutStopped.ico,
 # and the gem and hourglass with that badge, for after a problem until the next success, into FZScout/FZScoutProblem.ico
-# and FZScout/FZScoutWaitingProblem.ico.
+# and FZScout/FZScoutWaitingProblem.ico,
+# and the gem with a blue update badge, for once a newer release is downloaded, into FZScout/FZScoutUpdateDownloaded.ico.
 # Each icon's 32px rendering also goes into docs/assets as a PNG of the same name, for the docs' tray icon table.
 # Each size is rendered from the SVG rather than scaled, so the small ones stay crisp.
 $ErrorActionPreference = 'Stop'
@@ -46,3 +47,4 @@ WriteIcon 'gem.svg' @('grey-picture') 'FZScoutNotScouting.ico'
 WriteIcon 'gem.svg' @('grey-picture', 'problem-badge') 'FZScoutStopped.ico'
 WriteIcon 'gem.svg' @('colored-picture', 'problem-badge') 'FZScoutProblem.ico'
 WriteIcon 'hourglass.svg' @('colored-picture', 'problem-badge') 'FZScoutWaitingProblem.ico'
+WriteIcon 'gem.svg' @('colored-picture', 'update-badge') 'FZScoutUpdateDownloaded.ico'

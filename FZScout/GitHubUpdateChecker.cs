@@ -20,6 +20,8 @@ class GitHubUpdateChecker(IUpdateSource updateSource, IVelopackLocator? locator 
     {
     }
 
+    public event Action? NewerReleaseDownloaded;
+
     public SemanticVersion? DownloadedVersionToInstallAfterExit => DownloadedUpdateToInstallAfterExit?.TargetFullRelease.Version;
 
     UpdateInfo? DownloadedUpdateToInstallAfterExit { get; set; }
@@ -84,6 +86,7 @@ class GitHubUpdateChecker(IUpdateSource updateSource, IVelopackLocator? locator 
 
             await this._updateManager.DownloadUpdatesAsync(update, cancelToken: cancellationToken);
             DownloadedUpdateToInstallAfterExit = update;
+            NewerReleaseDownloaded?.Invoke();
             return new DownloadedNewerRelease(update.TargetFullRelease.Version);
         }
         catch (Exception exception) when (!cancellationToken.IsCancellationRequested)

@@ -87,6 +87,23 @@ public class AppStatusTests
     }
 
     [Fact]
+    public void ShowsAnUpdateWasDownloadedWhenNothingElseIsGoingOn()
+    {
+        this._status.IsUpdateDownloaded = true;
+
+        Assert.Equal((ScoutingStatus.ScoutingWithUpdateDownloaded, "FZScout: update downloaded; it installs when FZScout exits", null), Shown());
+    }
+
+    [Fact]
+    public void ShowsOtherStatusesInsteadOfADownloadedUpdate()
+    {
+        this._status.IsUpdateDownloaded = true;
+        this._status.WaitingForBonusMessageUntil = Start.AddMinutes(5);
+
+        Assert.Equal((ScoutingStatus.WaitingForBonusMessage, "FZScout: waiting until 12:05:00 for a bonus message", Start.AddMinutes(5)), Shown());
+    }
+
+    [Fact]
     public void ShowsWhatTheSiteShowsForTheCurrentZone()
     {
         this._status.BonusShownOnSiteForCurrentZone = new BonusShownOnSite(Server.Fangbreaker, "Crushbone", new BonusKey("loot"));

@@ -38,6 +38,7 @@ static class AppIcon
         ScoutingStatus.ScoutingAfterProblem => "FZScoutProblem.ico",
         ScoutingStatus.WaitingForBonusMessage => "FZScoutWaiting.ico",
         ScoutingStatus.WaitingForBonusMessageAfterProblem => "FZScoutWaitingProblem.ico",
+        ScoutingStatus.ScoutingWithUpdateDownloaded => "FZScoutUpdateDownloaded.ico",
         _ => throw new ArgumentOutOfRangeException(nameof(scoutingStatus), scoutingStatus, null),
     };
 

@@ -1,5 +1,5 @@
 <!-- FZScout's main icon, an emerald gem, on a 32-unit grid.
-     draw-icons.ps1 switches which of the <use>s at the bottom are shown to make the grey and problem icons too. -->
+     draw-icons.ps1 switches which of the <use>s at the bottom are shown to make the grey, problem and update icons too. -->
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 32 32">
   <defs>
     <!-- Flat table on top, crown down to the girdle, pavilion down to a point. -->
@@ -23,8 +23,15 @@
       <rect x="22.75" y="19" width="2.5" height="6" fill="#FFFFFF"/>     <!-- exclamation mark -->
       <rect x="22.75" y="26.5" width="2.5" height="2.5" fill="#FFFFFF"/> <!-- its dot -->
     </g>
+    <!-- A blue circle with a white up arrow in the top right corner, clear of the problem badge. -->
+    <g id="update-badge">
+      <circle cx="24" cy="8" r="8" fill="#04223F"/>   <!-- rim -->
+      <circle cx="24" cy="8" r="6.5" fill="#1E74D6"/> <!-- badge -->
+      <polygon points="24,3.5 28.5,8.5 25.3,8.5 25.3,12.5 22.7,12.5 22.7,8.5 19.5,8.5" fill="#FFFFFF"/> <!-- up arrow -->
+    </g>
   </defs>
   <use id="colored-picture" xlink:href="#picture"/>
   <use id="grey-picture" xlink:href="#picture" filter="url(#grey)" display="none"/>
   <use id="problem-badge" xlink:href="#badge" display="none"/>
+  <use id="update-badge" xlink:href="#update-badge" display="none"/>
 </svg>

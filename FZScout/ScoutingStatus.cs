@@ -9,4 +9,5 @@ enum ScoutingStatus
     ScoutingAfterProblem,
     WaitingForBonusMessage,
     WaitingForBonusMessageAfterProblem,
+    ScoutingWithUpdateDownloaded,
 }

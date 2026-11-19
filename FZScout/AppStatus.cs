@@ -21,6 +21,8 @@ class AppStatus(TimeProvider timeProvider)
 
     public bool IsApiKeyRejected { get; set; }
 
+    public bool IsUpdateDownloaded { get; set; }
+
     public BonusShownOnSite? BonusShownOnSiteForCurrentZone { get; set; }
 
     public ScoutingStatus ScoutingStatus
@@ -50,6 +52,11 @@ class AppStatus(TimeProvider timeProvider)
             if (HadProblemSinceLastSuccess)
             {
                 return ScoutingStatus.ScoutingAfterProblem;
+            }
+
+            if (IsUpdateDownloaded)
+            {
+                return ScoutingStatus.ScoutingWithUpdateDownloaded;
             }
 
             return ScoutingStatus.Scouting;
@@ -103,6 +110,11 @@ class AppStatus(TimeProvider timeProvider)
             if (HadProblemSinceLastSuccess)
             {
                 return $"FZScout: {MostUsefulProblemDescription}";
+            }
+
+            if (IsUpdateDownloaded)
+            {
+                return "FZScout: update downloaded; it installs when FZScout exits";
             }
 
             return "FZScout";
