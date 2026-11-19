@@ -14,7 +14,7 @@ class CharacterScout(Character character, Log log, BonusReporter bonusReporter)
     public static readonly TimeSpan IdleTimeout = TimeSpan.FromMinutes(5);
 
     /// <summary>A kill that triggers the bonus message gets it in the same second.</summary>
-    public static readonly TimeSpan KillTimeout = TimeSpan.FromSeconds(5);
+    public static readonly TimeSpan KillTimeout = TimeSpan.FromSeconds(3);
 
     public const string ReportIssuesUrl = $"https://github.com/{GitHubRepository.OwnerAndName}/issues/new";
 
