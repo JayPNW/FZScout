@@ -35,6 +35,17 @@ public class AppStatusTests
     }
 
     [Fact]
+    public void ShowsEverQuestLoggingIsOffAboveEverythingButStopping()
+    {
+        this._status.WaitingForBonusMessageUntil = Start.AddMinutes(5);
+        this._status.HadProblemSinceLastSuccess = true;
+
+        this._status.IsEverQuestLoggingEnabled = false;
+
+        Assert.Equal((ScoutingStatus.EverQuestLoggingDisabled, "FZScout: EverQuest logging is off. Type `/log` on in EverQuest.", Start.AddMinutes(5)), Shown());
+    }
+
+    [Fact]
     public void IsScoutingWhenNothingElseIsGoingOn()
     {
         Assert.Equal((ScoutingStatus.Scouting, "FZScout", null), Shown());

@@ -1,6 +1,7 @@
 ﻿{
   ApiKeyStore: WindowsCredentialManagerApiKeyStore,
   FangbreakerZoneClient: FangbreakerZoneClient,
+  FindRunningEverQuestInstalls: EverQuestLogWatcher.FindRunningInstalls,
   GetVersion: Program.GetVersion,
   Log: Log,
   TimeProvider: SystemTimeProvider,

@@ -28,7 +28,8 @@ public class AppTests
             this._time,
             TryClaimSingleInstance: this._singleInstance.TryClaim,
             this._apiKeyStore,
-            this._site.Client));
+            this._site.Client,
+            FindRunningEverQuestInstalls: () => []));
     }
 
     static CancellationToken Cancel => TestContext.Current.CancellationToken;

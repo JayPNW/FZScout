@@ -34,6 +34,7 @@ static class AppIcon
     {
         ScoutingStatus.NotScouting => "FZScoutNotScouting.ico",
         ScoutingStatus.Stopped => "FZScoutStopped.ico",
+        ScoutingStatus.EverQuestLoggingDisabled => "FZScoutProblem.ico",
         ScoutingStatus.Scouting => GemResourceName,
         ScoutingStatus.ScoutingAfterProblem => "FZScoutProblem.ico",
         ScoutingStatus.WaitingForBonusMessage => "FZScoutWaiting.ico",

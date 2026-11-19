@@ -5,6 +5,7 @@ enum ScoutingStatus
 {
     NotScouting,
     Stopped,
+    EverQuestLoggingDisabled,
     Scouting,
     ScoutingAfterProblem,
     WaitingForBonusMessage,

@@ -43,7 +43,8 @@ static class Program
             timeProvider,
             TryClaimSingleInstance: SingleInstance.TryClaim,
             ApiKeyStore: new WindowsCredentialManagerApiKeyStore(),
-            new FangbreakerZoneClient()));
+            new FangbreakerZoneClient(),
+            FindRunningEverQuestInstalls: new EverQuestLogWatcher.EverQuestLogWatcher().FindRunningInstalls));
     }
 
     static string? GetVersion() => Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;

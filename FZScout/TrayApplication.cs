@@ -58,6 +58,7 @@ class TrayApplication : IDisposable
         ShowStatus();
         app.WaitingForBonusMessageUntilChanged += waitingUntil => UpdateStatus(status => status.WaitingForBonusMessageUntil = waitingUntil);
         app.ApiKeyRejected += () => UpdateStatus(status => status.IsApiKeyRejected = true);
+        app.IsEverQuestLoggingEnabledChanged += isEnabled => UpdateStatus(status => status.IsEverQuestLoggingEnabled = isEnabled);
         app.ScoutingStarted += () => UpdateStatus(status => status.IsScouting = true);
         updateChecker.NewerReleaseDownloaded += () => UpdateStatus(status => status.IsUpdateDownloaded = true);
         app.BonusShownOnSiteForCurrentZoneChanged += shown => UpdateStatus(status => status.BonusShownOnSiteForCurrentZone = shown);

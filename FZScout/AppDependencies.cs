@@ -9,4 +9,5 @@ record AppDependencies(
     TimeProvider TimeProvider,
     Func<IDisposable?> TryClaimSingleInstance,
     IApiKeyStore ApiKeyStore,
-    FangbreakerZoneClient FangbreakerZoneClient);
+    FangbreakerZoneClient FangbreakerZoneClient,
+    Func<IReadOnlyList<EverQuestLogWatcher.RunningEverQuestInstall>> FindRunningEverQuestInstalls);

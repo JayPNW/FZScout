@@ -17,6 +17,8 @@ class AppStatus(TimeProvider timeProvider)
     /// <summary>Can already have passed, since the scouts only notice that when the next message arrives.</summary>
     public DateTimeOffset? WaitingForBonusMessageUntil { get; set; }
 
+    public bool IsEverQuestLoggingEnabled { get; set; } = true;
+
     public bool HadProblemSinceLastSuccess { get; set; }
 
     public bool IsApiKeyRejected { get; set; }
@@ -37,6 +39,11 @@ class AppStatus(TimeProvider timeProvider)
             if (!IsScouting)
             {
                 return ScoutingStatus.NotScouting;
+            }
+
+            if (!IsEverQuestLoggingEnabled)
+            {
+                return ScoutingStatus.EverQuestLoggingDisabled;
             }
 
             if (IsWaitingForBonusMessage && HadProblemSinceLastSuccess)
@@ -95,6 +102,11 @@ class AppStatus(TimeProvider timeProvider)
             if (!IsScouting)
             {
                 return "FZScout: not scouting yet";
+            }
+
+            if (!IsEverQuestLoggingEnabled)
+            {
+                return "FZScout: EverQuest logging is off. Type `/log` on in EverQuest.";
             }
 
             if (IsWaitingForBonusMessage && HadProblemSinceLastSuccess)

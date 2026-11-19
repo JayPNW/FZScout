@@ -19,6 +19,8 @@ class App(AppDependencies dependencies)
 
     public event Action? ApiKeyRejected;
 
+    public event Action<bool>? IsEverQuestLoggingEnabledChanged;
+
     public AppDependencies Dependencies => dependencies;
 
     public async Task RunAsync()
@@ -36,7 +38,9 @@ class App(AppDependencies dependencies)
 
         var scout = CreateScout();
         ScoutingStarted?.Invoke();
+        var watchingEverQuestLogging = CreateEverQuestLoggingMonitor().CheckRepeatedlyAsync(Dependencies.UserInput.ExitRequested);
         await WatchLogsAndReportBonusesAsync(scout, Dependencies.UserInput.ExitRequested);
+        await watchingEverQuestLogging;
     }
 
     /// <summary>The only time the key is checked without the user asking, so a bad one shows up before the first report.</summary>
@@ -54,6 +58,13 @@ class App(AppDependencies dependencies)
             Dependencies.Log.Error($"API key rejected. Enter a new one in Settings. {result.Error}");
             ApiKeyRejected?.Invoke();
         }
+    }
+
+    EverQuestLoggingMonitor CreateEverQuestLoggingMonitor()
+    {
+        var monitor = new EverQuestLoggingMonitor(Dependencies.FindRunningEverQuestInstalls, Dependencies.Log, Dependencies.TimeProvider);
+        monitor.IsEverQuestLoggingEnabledChanged += isEnabled => IsEverQuestLoggingEnabledChanged?.Invoke(isEnabled);
+        return monitor;
     }
 
     Scout CreateScout()
