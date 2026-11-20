@@ -41,7 +41,7 @@
         <TextBlock Margin="0,8,0,0">
             <Run Text="Get an API key from" />
             <Hyperlink NavigateUri="https://fangbreaker.zone/account" RequestNavigate="OpenLinkInBrowser">fangbreaker.zone/account</Hyperlink><Run Text="." />
-            <Hyperlink NavigateUri="https://jaypnw.github.io/FZScout/create-api-key.html" RequestNavigate="OpenLinkInBrowser">Need help?</Hyperlink>
+            <Hyperlink NavigateUri="https://fzscout.zone/create-api-key.html" RequestNavigate="OpenLinkInBrowser">Need help?</Hyperlink>
         </TextBlock>
 
         <TextBlock Margin="0,8,0,0" TextWrapping="Wrap">
