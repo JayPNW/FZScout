@@ -74,4 +74,21 @@ public class RunningEverQuestMonitorTests
 
         Assert.Equal([true, false], changes);
     }
+
+    [Fact]
+    public void SkipsTheCheckWhileEverQuestHasEqclientIniLocked()
+    {
+        var changes = new List<bool>();
+        var time = new FakeTimeProvider();
+        var monitor = new RunningEverQuestMonitor(
+            () => throw new IOException("The process cannot access the file because another process has locked a portion of the file."),
+            new Log(this._output, time),
+            time);
+        monitor.IsEverQuestRunningChanged += changes.Add;
+
+        monitor.CheckRunningEverQuests();
+
+        Assert.Empty(changes);
+        Assert.Empty(Output);
+    }
 }

@@ -15,9 +15,19 @@ class RunningEverQuestMonitor(Func<IReadOnlyList<RunningEverQuestInstall>> findR
 
     public event Action<bool>? IsEverQuestRunningChanged;
 
+    /// <summary>Skips this check when a file can't be read, such as when EverQuest has <c>eqclient.ini</c> locked while writing it; the next check will try again.</summary>
     public void CheckRunningEverQuests()
     {
-        var runningEverQuestInstalls = findRunningEverQuestInstalls();
+        IReadOnlyList<RunningEverQuestInstall> runningEverQuestInstalls;
+        try
+        {
+            runningEverQuestInstalls = findRunningEverQuestInstalls();
+        }
+        catch (IOException)
+        {
+            return;
+        }
+
         CheckWhetherEverQuestIsRunning(runningEverQuestInstalls);
         CheckWhetherEverQuestLoggingIsEnabled(runningEverQuestInstalls);
     }
