@@ -60,7 +60,6 @@ class TrayApplication : IDisposable
         app.ApiKeyRejected += () => UpdateStatus(status => status.IsApiKeyRejected = true);
         app.IsEverQuestLoggingEnabledChanged += isEnabled => UpdateStatus(status => status.IsEverQuestLoggingEnabled = isEnabled);
         app.IsEverQuestRunningChanged += isRunning => UpdateStatus(status => status.IsEverQuestRunning = isRunning);
-        app.AnyCharacterLoggedInUntilChanged += loggedInUntil => UpdateStatus(status => status.AnyCharacterLoggedInUntil = loggedInUntil);
         app.ScoutingStarted += () => UpdateStatus(status => status.IsScouting = true);
         updateChecker.NewerReleaseDownloaded += () => UpdateStatus(status => status.IsUpdateDownloaded = true);
         app.BonusShownOnSiteForCurrentZoneChanged += shown => UpdateStatus(status => status.BonusShownOnSiteForCurrentZone = shown);

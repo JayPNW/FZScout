@@ -13,11 +13,6 @@ class Scout(ServerListCache serverListCache, Log log, BonusReporter bonusReporte
     /// <summary>For the zone of the character with the latest message; null when that zone isn't on the site or the site couldn't be reached.</summary>
     public event Action<BonusShownOnSite?>? BonusShownOnSiteForCurrentZoneChanged;
 
-    public event Action<DateTimeOffset?>? AnyCharacterLoggedInUntilChanged;
-
-    /// <summary>The latest of the characters' <see cref="CharacterScout.LoggedInUntil"/>, so null when none has logged in.</summary>
-    public DateTimeOffset? AnyCharacterLoggedInUntil => this._characters.Values.Max(character => character.LoggedInUntil);
-
     /// <summary>Like <see cref="CharacterScout.WaitingForBonusMessageUntil"/>, this can already have passed.</summary>
     public DateTimeOffset? WaitingForBonusMessageUntil => this._characters.Values.Max(character => character.WaitingForBonusMessageUntil);
 
@@ -35,9 +30,7 @@ class Scout(ServerListCache serverListCache, Log log, BonusReporter bonusReporte
         var waitingForBonusMessageUntilBefore = WaitingForBonusMessageUntil;
         var zoneBefore = scout.CurrentZone;
         var characterWaitingForBonusMessageUntilBefore = scout.WaitingForBonusMessageUntil;
-        var anyCharacterLoggedInUntilBefore = AnyCharacterLoggedInUntil;
         await scout.HandleAsync(logEvent, now, serverLists, cancellationToken);
-        NotifyIfAnyCharacterLoggedInUntilChanged(anyCharacterLoggedInUntilBefore);
         if (WaitingForBonusMessageUntil != waitingForBonusMessageUntilBefore)
         {
             WaitingForBonusMessageUntilChanged?.Invoke(WaitingForBonusMessageUntil);
@@ -48,26 +41,6 @@ class Scout(ServerListCache serverListCache, Log log, BonusReporter bonusReporte
         if (siteMayShowSomethingNew && BonusShownOnSiteForCurrentZoneChanged is { } notifyBonusShownOnSiteChanged)
         {
             notifyBonusShownOnSiteChanged(await GetBonusShownOnSiteAsync(server, scout.CurrentZone, cancellationToken));
-        }
-    }
-
-    /// <summary>For when EverQuest exits, since that logs nothing.</summary>
-    public void ForgetCharactersBeingLoggedIn()
-    {
-        var anyCharacterLoggedInUntilBefore = AnyCharacterLoggedInUntil;
-        foreach (var character in this._characters.Values)
-        {
-            character.ForgetBeingLoggedIn();
-        }
-
-        NotifyIfAnyCharacterLoggedInUntilChanged(anyCharacterLoggedInUntilBefore);
-    }
-
-    void NotifyIfAnyCharacterLoggedInUntilChanged(DateTimeOffset? anyCharacterLoggedInUntilBefore)
-    {
-        if (AnyCharacterLoggedInUntil != anyCharacterLoggedInUntilBefore)
-        {
-            AnyCharacterLoggedInUntilChanged?.Invoke(AnyCharacterLoggedInUntil);
         }
     }
 

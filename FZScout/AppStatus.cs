@@ -21,9 +21,6 @@ class AppStatus(TimeProvider timeProvider)
 
     public bool IsEverQuestRunning { get; set; }
 
-    /// <summary>See <see cref="Scout.AnyCharacterLoggedInUntil"/>.</summary>
-    public DateTimeOffset? AnyCharacterLoggedInUntil { get; set; }
-
     public bool HadProblemSinceLastSuccess { get; set; }
 
     public bool IsApiKeyRejected { get; set; }
@@ -66,7 +63,7 @@ class AppStatus(TimeProvider timeProvider)
                 return ScoutingStatus.ScoutingAfterProblem;
             }
 
-            if (!IsEverQuestRunning || !IsAnyCharacterLoggedIn)
+            if (!IsEverQuestRunning)
             {
                 return ScoutingStatus.NotScouting;
             }
@@ -109,7 +106,7 @@ class AppStatus(TimeProvider timeProvider)
                 return null;
             }
 
-            return new[] { FutureOrNull(WaitingForBonusMessageUntil), FutureOrNull(CampFinishesAt) }.Min();
+            return FutureOrNull(WaitingForBonusMessageUntil);
         }
     }
 
@@ -152,11 +149,6 @@ class AppStatus(TimeProvider timeProvider)
                 return "FZScout: waiting for EverQuest to start";
             }
 
-            if (!IsAnyCharacterLoggedIn)
-            {
-                return "FZScout: waiting for a character to log in";
-            }
-
             if (IsUpdateDownloaded)
             {
                 return "FZScout: update downloaded; it installs when FZScout exits";
@@ -165,21 +157,6 @@ class AppStatus(TimeProvider timeProvider)
             return "FZScout";
         }
     }
-
-    DateTimeOffset? CampFinishesAt
-    {
-        get
-        {
-            if (AnyCharacterLoggedInUntil == DateTimeOffset.MaxValue)
-            {
-                return null;
-            }
-
-            return AnyCharacterLoggedInUntil;
-        }
-    }
-
-    bool IsAnyCharacterLoggedIn => AnyCharacterLoggedInUntil > timeProvider.GetUtcNow();
 
     string MostUsefulProblemDescription
     {
