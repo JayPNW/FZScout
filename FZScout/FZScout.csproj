@@ -47,7 +47,7 @@
     <PackageReference Include="EverQuestLogWatcher" />
     <PackageReference Include="FZApiClient" />
     <PackageReference Include="Hardcodet.NotifyIcon.Wpf" />
-    <PackageReference Include="LaunchAtLogin" />
+    <PackageReference Include="LaunchAtLogin.Velopack" />
     <PackageReference Include="Meziantou.Framework.Win32.CredentialManager" />
     <PackageReference Include="NotificationTrayIconVisibility" />
     <PackageReference Include="Velopack" />

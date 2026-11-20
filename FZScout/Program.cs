@@ -1,21 +1,21 @@
 ﻿using System.Reflection;
 using System.Windows;
 using FZScout.Site;
+using LaunchAtLogin;
 using Velopack;
 
 namespace FZScout;
 
 static class Program
 {
-    static readonly LaunchAtLogin.StartupApp StartupApp = new("FZScout");
+    static readonly StartupApp StartupApp = new("FZScout");
 
     extension(VelopackApp)
     {
         public static void InstallPendingUpdates()
         {
             VelopackApp.Build()
-                .OnAfterInstallFastCallback(_ => StartupApp.AddToStartupApps())
-                .OnBeforeUninstallFastCallback(_ => StartupApp.RemoveFromStartupApps())
+                .KeepInStartupApps(StartupApp)
                 .Run();
         }
     }
