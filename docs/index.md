@@ -10,7 +10,7 @@ Set-and-forget app that watches for Everquest Resource Hunter zone bonuses and a
 1. Paste the API key into FZScout Settings.
 
 The FZScout icon should appear in your system tray notification area. 
-Leave it running while you play and it will automatically report zone bonuses as you play.
+Leave it running and it will automatically report zone bonuses as you play.
 
 # Tray Icons
 
