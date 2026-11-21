@@ -10,20 +10,12 @@ static class Program
 {
     static readonly StartupApp StartupApp = new("FZScout");
 
-    extension(VelopackApp)
-    {
-        public static void InstallPendingUpdates()
-        {
-            VelopackApp.Build()
-                .KeepInStartupApps(StartupApp)
-                .Run();
-        }
-    }
-
     [STAThread]
     static void Main()
     {
-        VelopackApp.InstallPendingUpdates();
+        VelopackApp.Build()
+            .KeepInStartupApps(StartupApp)
+            .Run();
         using var updates = new WatchForNewUpdates(() => Settings.Load(StartupApp).UpdateAutomatically, TimeProvider.System);
 
         var application = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
