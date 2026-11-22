@@ -38,6 +38,7 @@ static class ZoneNames
         ["Takish-Hiz: Sunken Library"] = "Takish-Hiz",
         ["Takish-Hiz: The Palace Grounds"] = "Takish-Hiz",
         ["Takish-Hiz: Within the Compact"] = "Takish-Hiz",
+        ["Temple of Cazic-Thule"] = "Temple of Cazic-Thule (2.0)",
         ["The Castle of Mistmoore"] = "Castle Mistmoore",
         ["The City of Guk"] = "Upper Guk",
         ["The City of Thurgadin"] = "Thurgadin",
@@ -85,10 +86,14 @@ static class ZoneNames
         return new KnownZone(siteName);
     }
 
+    /// <summary>
+    /// Prefers the mapped name, but falls back to the log name when the site doesn't list the mapped one.
+    /// For example, Fangbreaker lists "Temple of Cazic-Thule (2.0)" but Frostreaver lists "Temple of Cazic-Thule".
+    /// </summary>
     static string? SiteName(string logZone, IReadOnlySet<string> siteZones)
     {
-        var candidate = LogToSite.GetValueOrDefault(logZone, logZone);
-        return AddOrRemoveThePrefix(candidate).FirstOrDefault(siteZones.Contains);
+        IEnumerable<string> candidates = [LogToSite.GetValueOrDefault(logZone, logZone), logZone];
+        return candidates.SelectMany(AddOrRemoveThePrefix).FirstOrDefault(siteZones.Contains);
     }
 
     /// <summary>A leading "The " is optional: "The Burning Woods" in the log is "Burning Woods" on the site, and the other way around.</summary>

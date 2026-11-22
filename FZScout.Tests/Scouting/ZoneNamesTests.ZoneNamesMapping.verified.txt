@@ -33,6 +33,7 @@
 | Takish-Hiz: Sunken Library                       | Takish-Hiz                                     |
 | Takish-Hiz: The Palace Grounds                   | Takish-Hiz                                     |
 | Takish-Hiz: Within the Compact                   | Takish-Hiz                                     |
+| Temple of Cazic-Thule                            | Temple of Cazic-Thule (2.0)                    |
 | The Castle of Mistmoore                          | Castle Mistmoore                               |
 | The City of Guk                                  | Upper Guk                                      |
 | The City of Thurgadin                            | Thurgadin                                      |
@@ -219,8 +220,6 @@
 | <same>                                           | Surefall Glade                                 |
 | <same>                                           | Swamp of No Hope                               |
 | <same>                                           | Tacvi, Seat of the Slaver                      |
-| <same>                                           | Temple of Cazic-Thule                          |
-| <same>                                           | Temple of Cazic-Thule (2.0)                    |
 | <same>                                           | Temple of Droga                                |
 | <same>                                           | Temple of Marr                                 |
 | <same>                                           | Temple of Solusek Ro                           |
