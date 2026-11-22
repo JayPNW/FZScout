@@ -19,3 +19,16 @@ Leave it running and it will automatically report zone bonuses as you play.
 | ![Emerald gem](assets/FZScout.png)              | FZScout is watching your log and ready to report bonuses.           |
 | ![Emerald hourglass](assets/FZScoutWaiting.png) | Waiting for timeout to report "none".                               |
 | ![Grey gem](assets/FZScoutNotScouting.png)      | Waiting for EQ.                                            |
+
+# Limitations
+
+## Zones
+
+| Name | Issue |
+|-|-|
+| Nedaria's Landing | Missing from the site |
+| Cabilis | The site lists just one zone but it's actually two zones |
+| Felwithe | The site lists just one zone but it's actually two zones |
+| Kaladin | The site lists just one zone but it's actually two zones |
+| Neriak | The site lists just one zone but it's actually three zones |
+| Temple of Cazic-Thule | Has a different name on the two sites |
