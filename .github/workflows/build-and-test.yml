@@ -3,6 +3,7 @@ name: Build and Test
 on:
   push:
   pull_request:
+  workflow_dispatch:
   schedule:
     - cron: '23 8 * * 1'
 
@@ -23,9 +24,9 @@ jobs:
           name: received-screenshots
           path: '**/*.received.*'
       - run: dotnet tool restore
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
       - name: Publish prerelease
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main'
         run: ./scripts/release.ps1 -Prerelease ci.${{ github.run_number }} -GitHubToken ${{ secrets.GITHUB_TOKEN }}
 
   dependabot-merge:
@@ -33,10 +34,16 @@ jobs:
     if: github.event_name == 'pull_request' && github.event.pull_request.user.login == 'dependabot[bot]' && github.event.repository.fork == false
     runs-on: ubuntu-latest
     permissions:
+      actions: write
       contents: write
       pull-requests: write
     steps:
       - run: gh pr merge --rebase "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # A push made with GITHUB_TOKEN doesn't trigger workflows, but a dispatch does.
+      - run: gh workflow run build-and-test.yml --ref main
+        env:
+          GH_REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
