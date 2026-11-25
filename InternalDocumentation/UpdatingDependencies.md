@@ -4,7 +4,7 @@
 | --- | --- | --- |
 | NuGet packages | [Directory.Packages.props](/Directory.Packages.props) | Dependabot |
 | GitHub Actions | [.github/workflows/](/.github/workflows/) | Dependabot |
-| .NET tools | [dotnet-tools.json](/dotnet-tools.json) | Us |
+| .NET tools | [dotnet-tools.json](/.config/dotnet-tools.json) | Us |
 | .NET SDK | [global.json](/global.json) | Us |
 
 ## What Dependabot does
