@@ -5,7 +5,7 @@
   <ItemGroup>
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageVersion Include="Magick.NET-Q8-AnyCPU" Version="15.1.0" />
-    <PackageVersion Include="EverQuestLogWatcher" Version="0.1.0-ci.39" />
+    <PackageVersion Include="EverQuestLogWatcher" Version="0.1.2" />
     <PackageVersion Include="FZApiClient" Version="0.1.0-ci.23" />
     <PackageVersion Include="LaunchAtLogin.Velopack" Version="0.1.0-ci.26" />
     <PackageVersion Include="Hardcodet.NotifyIcon.Wpf" Version="2.0.1" />
